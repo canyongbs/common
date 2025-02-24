@@ -1,0 +1,10 @@
+{
+    "name": "common",
+    "private": true,
+    "type": "module",
+    "devDependencies": {
+        "@shufo/prettier-plugin-blade": "1.13.4",
+        "prettier": "^3.0.0",
+        "prettier-plugin-organize-imports": "^4.1.0"
+    }
+}
