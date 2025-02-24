@@ -1,0 +1,69 @@
+{
+    "name": "canyongbs/common",
+    "type": "package",
+    "license": "Elastic-2.0",
+    "require": {
+        "filament/filament": "^3.0",
+        "laravel/framework": "^11.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.60",
+        "phpstan/phpstan": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "CanyonGBS\\Common\\": "src/"
+        }
+    },
+    "scripts": {
+        "php-cs-format": [
+            "./vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix -v --config=./php-cs-fixer.php"
+        ],
+        "php-cs-format-dryrun": [
+            "@php-cs-format --dry-run --stop-on-violation"
+        ],
+        "php-cs-clear-cache": [
+            "rm -f ./.php-cs-fixer.cache"
+        ],
+        "prettier": [
+            "./node_modules/.bin/prettier \"resources/**/*{.css,.blade.php,.js}\" --config ./.prettierrc.json --ignore-path ./.prettierignore --cache"
+        ],
+        "prettier-format": [
+            "@prettier --write"
+        ],
+        "prettier-format-dryrun": [
+            "@prettier --check"
+        ],
+        "clear-prettier-cache": [
+            "rm -f ./node_modules/.cache/prettier/.prettier-cache"
+        ],
+        "format-dryrun": [
+            "@php-cs-format-dryrun",
+            "@prettier-format-dryrun"
+        ],
+        "format": [
+            "@php-cs-format",
+            "@prettier-format"
+        ],
+        "lint": [
+            "./vendor/bin/phpstan analyse --memory-limit=2G"
+        ],
+        "checks": [
+            "@format-dryrun",
+            "@lint"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Canyon GBS"
+        }
+    ],
+    "minimum-stability": "stable",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CanyonGBS\\Common\\CommonServiceProvider"
+            ]
+        }
+    }
+}
