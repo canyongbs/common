@@ -115,3 +115,27 @@ jobs:
         uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687
         with:
           fail-if-changed: "true"
+
+  lint:
+    runs-on: ubuntu-22.04
+
+    timeout-minutes: 15
+
+    needs: [build-deps, enforce-copyright, fix-code-style]
+
+    steps:
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: gd, gmp, redis
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup Dependencies
+        uses: ./.github/actions/composer-dependency-setup
+
+      - name: Linting
+        run: composer lint
