@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b78e4ef78b01b0b0eb7431940302faca",
+    "content-hash": "1545bb7c657b090d1ccaa44cbae5ae21",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2023,16 +2023,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v11.43.2",
+            "version": "v11.44.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "99d1573698abc42222f04d25fcd5b213d0eedf21"
+                "reference": "e9a33da34815ac1ed46c7e4c477a775f4592f0a7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/99d1573698abc42222f04d25fcd5b213d0eedf21",
-                "reference": "99d1573698abc42222f04d25fcd5b213d0eedf21",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/e9a33da34815ac1ed46c7e4c477a775f4592f0a7",
+                "reference": "e9a33da34815ac1ed46c7e4c477a775f4592f0a7",
                 "shasum": ""
             },
             "require": {
@@ -2234,7 +2234,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2025-02-19T21:53:48+00:00"
+            "time": "2025-02-24T13:08:54+00:00"
         },
         {
             "name": "laravel/prompts",
@@ -7661,16 +7661,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.69.1",
+            "version": "v3.70.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "13b0c0eede38c11cd674b080f2b485d0f14ffa9f"
+                "reference": "2ecd5aae0edc937f0d5aa4a22d1d705c6b2e084e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/13b0c0eede38c11cd674b080f2b485d0f14ffa9f",
-                "reference": "13b0c0eede38c11cd674b080f2b485d0f14ffa9f",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/2ecd5aae0edc937f0d5aa4a22d1d705c6b2e084e",
+                "reference": "2ecd5aae0edc937f0d5aa4a22d1d705c6b2e084e",
                 "shasum": ""
             },
             "require": {
@@ -7752,7 +7752,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.69.1"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.70.0"
             },
             "funding": [
                 {
@@ -7760,7 +7760,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-02-18T23:57:43+00:00"
+            "time": "2025-02-22T23:30:51+00:00"
         },
         {
             "name": "phpstan/phpstan",
@@ -8687,10 +8687,10 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {},
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
