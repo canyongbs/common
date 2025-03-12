@@ -34,42 +34,58 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common;
+namespace CanyonGBS\Common\Enums;
 
-use Filament\Support\Colors\Color;
+use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Facades\FilamentColor;
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class CommonServiceProvider extends PackageServiceProvider
+enum Color: string implements HasLabel
 {
-    public function configurePackage(Package $package): void
+    case Gray = 'gray';
+
+    case Red = 'red';
+
+    case Orange = 'orange';
+
+    case Amber = 'amber';
+
+    case Yellow = 'yellow';
+
+    case Lime = 'lime';
+
+    case Green = 'green';
+
+    case Emerald = 'emerald';
+
+    case Teal = 'teal';
+
+    case Cyan = 'cyan';
+
+    case Sky = 'sky';
+
+    case Blue = 'blue';
+
+    case Indigo = 'indigo';
+
+    case Violet = 'violet';
+
+    case Purple = 'purple';
+
+    case Fuchsia = 'fuchsia';
+
+    case Pink = 'pink';
+
+    case Rose = 'rose';
+
+    public function getLabel(): string
     {
-        $package
-            ->name('common')
-            ->hasViews();
+        return $this->name;
     }
 
-    public function packageBooted(): void
+    public function getRgb(): string
     {
-        FilamentColor::register([
-            'red' => Color::Red,
-            'orange' => Color::Orange,
-            'amber' => Color::Amber,
-            'yellow' => Color::Yellow,
-            'lime' => Color::Lime,
-            'green' => Color::Green,
-            'emerald' => Color::Emerald,
-            'teal' => Color::Teal,
-            'cyan' => Color::Cyan,
-            'sky' => Color::Sky,
-            'blue' => Color::Blue,
-            'indigo' => Color::Indigo,
-            'violet' => Color::Violet,
-            'purple' => Color::Purple,
-            'fuchsia' => Color::Fuchsia,
-            'pink' => Color::Pink,
-            'rose' => Color::Rose,
-        ]);
+        $color = FilamentColor::getColors()[$this->value][500];
+
+        return "rgb({$color})";
     }
 }

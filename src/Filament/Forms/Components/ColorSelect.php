@@ -34,42 +34,28 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common;
+namespace CanyonGBS\Common\Filament\Forms\Components;
 
-use Filament\Support\Colors\Color;
-use Filament\Support\Facades\FilamentColor;
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
+use CanyonGBS\Common\Enums\Color;
+use Filament\Forms\Components\Select;
 
-class CommonServiceProvider extends PackageServiceProvider
+class ColorSelect
 {
-    public function configurePackage(Package $package): void
+    public static function make(string $name = 'color'): Select
     {
-        $package
-            ->name('common')
-            ->hasViews();
-    }
-
-    public function packageBooted(): void
-    {
-        FilamentColor::register([
-            'red' => Color::Red,
-            'orange' => Color::Orange,
-            'amber' => Color::Amber,
-            'yellow' => Color::Yellow,
-            'lime' => Color::Lime,
-            'green' => Color::Green,
-            'emerald' => Color::Emerald,
-            'teal' => Color::Teal,
-            'cyan' => Color::Cyan,
-            'sky' => Color::Sky,
-            'blue' => Color::Blue,
-            'indigo' => Color::Indigo,
-            'violet' => Color::Violet,
-            'purple' => Color::Purple,
-            'fuchsia' => Color::Fuchsia,
-            'pink' => Color::Pink,
-            'rose' => Color::Rose,
-        ]);
+        return Select::make($name)
+            ->allowHtml()
+            ->native(false)
+            ->options(collect(Color::cases())
+                ->mapWithKeys(fn (Color $color): array => [
+                    $color->value => <<<HTML
+                        <div style="display: flex; align-items: center; gap: 0.5rem">
+                            <div style="display: block; height: 1.25rem; width: 1.25rem; border-radius: 100%; background: {$color->getRgb()}"></div>
+                            <span>{$color->getLabel()}</span>
+                        </div>
+                        HTML,
+                ])
+                ->all())
+            ->enum(Color::class);
     }
 }
