@@ -4,7 +4,7 @@
     "license": "Elastic-2.0",
     "require": {
         "filament/filament": "^3.0",
-        "laravel/framework": "^12.0"
+        "laravel/framework": "^11.0|^12.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.60",
