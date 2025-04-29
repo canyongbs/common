@@ -36,6 +36,7 @@
 
 namespace CanyonGBS\Common\Ai\Filament\Pages;
 
+use App\Filament\Forms\Components\Slider;
 use CanyonGBS\Common\Ai\Actions\ReInitializeAiServiceAssistant;
 use CanyonGBS\Common\Ai\Actions\ResetAiServiceIdsForAssistant;
 use CanyonGBS\Common\Ai\Enums\AiApplication;
@@ -43,10 +44,6 @@ use CanyonGBS\Common\Ai\Enums\AiMaxTokens;
 use CanyonGBS\Common\Ai\Enums\AiModel;
 use CanyonGBS\Common\Ai\Models\AiAssistant;
 use CanyonGBS\Common\Ai\Settings\AiSettings;
-use AdvisingApp\Authorization\Enums\LicenseType;
-use App\Filament\Clusters\GlobalArtificialIntelligence;
-use App\Filament\Forms\Components\Slider;
-use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;

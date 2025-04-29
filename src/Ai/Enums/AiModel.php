@@ -36,8 +36,6 @@
 
 namespace CanyonGBS\Common\Ai\Enums;
 
-use CanyonGBS\Common\Ai\Services\Contracts\AiService;
-use CanyonGBS\Common\Ai\Services\TestAiService;
 use AdvisingApp\IntegrationOpenAi\Services\OpenAiGpt35Service;
 use AdvisingApp\IntegrationOpenAi\Services\OpenAiGpt4oMiniService;
 use AdvisingApp\IntegrationOpenAi\Services\OpenAiGpt4oService;
@@ -45,6 +43,8 @@ use AdvisingApp\IntegrationOpenAi\Services\OpenAiGpt4Service;
 use AdvisingApp\IntegrationOpenAi\Services\OpenAiGptO1MiniService;
 use AdvisingApp\IntegrationOpenAi\Services\OpenAiGptO3MiniService;
 use AdvisingApp\IntegrationOpenAi\Services\OpenAiGptTestService;
+use CanyonGBS\Common\Ai\Services\Contracts\AiService;
+use CanyonGBS\Common\Ai\Services\TestAiService;
 use Filament\Support\Contracts\HasLabel;
 
 enum AiModel: string implements HasLabel

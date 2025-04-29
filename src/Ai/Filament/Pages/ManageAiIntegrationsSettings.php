@@ -40,8 +40,6 @@ use CanyonGBS\Common\Ai\Actions\ResetAiServiceIdsForModel;
 use CanyonGBS\Common\Ai\Enums\AiModel;
 use CanyonGBS\Common\Ai\Jobs\ReInitializeAiModel;
 use CanyonGBS\Common\Ai\Settings\AiIntegrationsSettings;
-use App\Filament\Clusters\GlobalArtificialIntelligence;
-use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
