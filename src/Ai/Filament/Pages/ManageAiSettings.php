@@ -40,7 +40,6 @@ use App\Filament\Forms\Components\Slider;
 use BackedEnum;
 use CanyonGBS\Common\Ai\Actions\ReInitializeAiServiceAssistant;
 use CanyonGBS\Common\Ai\Actions\ResetAiServiceIdsForAssistant;
-use CanyonGBS\Common\Ai\Enums\AiApplication;
 use CanyonGBS\Common\Ai\Enums\AiMaxTokens;
 use CanyonGBS\Common\Ai\Enums\AiModel;
 use CanyonGBS\Common\Ai\Models\Contracts\AiAssistant;
@@ -176,6 +175,16 @@ abstract class ManageAiSettings extends SettingsPage
             });
     }
 
+    /**
+     * @return class-string<BackedEnum>
+     */
+    abstract public static function getAiApplicationEnumClass(): string;
+
+    /**
+     * @return class-string<AiAssistant>
+     */
+    abstract public static function getAiAssistantModelClass(): string;
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['defaultAssistant'] = $this->defaultAssistant?->attributesToArray();
@@ -217,14 +226,4 @@ abstract class ManageAiSettings extends SettingsPage
 
         return parent::mutateFormDataBeforeSave($data);
     }
-
-    /**
-     * @return class-string<BackedEnum>
-     */
-    abstract public static function getAiApplicationEnumClass(): string;
-
-    /**
-     * @return class-string<AiAssistant>
-     */
-    abstract public static function getAiAssistantModelClass(): string;
 }

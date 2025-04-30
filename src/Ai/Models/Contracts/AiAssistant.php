@@ -36,7 +36,4 @@
 
 namespace CanyonGBS\Common\Ai\Models\Contracts;
 
-interface AiAssistant
-{
-    
-}
+interface AiAssistant {}
