@@ -37,12 +37,13 @@
 namespace CanyonGBS\Common\Ai\Filament\Pages;
 
 use App\Filament\Forms\Components\Slider;
+use BackedEnum;
 use CanyonGBS\Common\Ai\Actions\ReInitializeAiServiceAssistant;
 use CanyonGBS\Common\Ai\Actions\ResetAiServiceIdsForAssistant;
 use CanyonGBS\Common\Ai\Enums\AiApplication;
 use CanyonGBS\Common\Ai\Enums\AiMaxTokens;
 use CanyonGBS\Common\Ai\Enums\AiModel;
-use CanyonGBS\Common\Ai\Models\AiAssistant;
+use CanyonGBS\Common\Ai\Models\Contracts\AiAssistant;
 use CanyonGBS\Common\Ai\Settings\AiSettings;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
@@ -60,7 +61,7 @@ use Throwable;
  * @property-read ?AiAssistant $defaultAssistant
 
  */
-class ManageAiSettings extends SettingsPage
+abstract class ManageAiSettings extends SettingsPage
 {
     protected static string $settings = AiSettings::class;
 
@@ -69,8 +70,8 @@ class ManageAiSettings extends SettingsPage
     #[Computed]
     public function defaultAssistant(): ?AiAssistant
     {
-        return AiAssistant::query()
-            ->where('application', AiApplication::PersonalAssistant)
+        return static::getAiAssistantModelClass()::query()
+            ->where('application', static::getAiApplicationEnumClass()::PersonalAssistant)
             ->where('is_default', true)
             ->first();
     }
@@ -86,7 +87,7 @@ class ManageAiSettings extends SettingsPage
                     ->model($this->defaultAssistant)
                     ->schema([
                         Select::make('model')
-                            ->options(fn (Get $get): array => collect(AiApplication::parse($get('application'))->getModels())
+                            ->options(fn (Get $get): array => collect(static::getAiApplicationEnumClass()::parse($get('application'))->getModels())
                                 ->mapWithKeys(fn (AiModel $model): array => [$model->value => $model->getLabel()])
                                 ->all())
                             ->searchable()
@@ -216,4 +217,14 @@ class ManageAiSettings extends SettingsPage
 
         return parent::mutateFormDataBeforeSave($data);
     }
+
+    /**
+     * @return class-string<BackedEnum>
+     */
+    abstract public static function getAiApplicationEnumClass(): string;
+
+    /**
+     * @return class-string<AiAssistant>
+     */
+    abstract public static function getAiAssistantModelClass(): string;
 }
