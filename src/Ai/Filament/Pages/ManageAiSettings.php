@@ -36,7 +36,7 @@
 
 namespace CanyonGBS\Common\Ai\Filament\Pages;
 
-use App\Filament\Forms\Components\Slider;
+use CanyonGBS\Common\Filament\Forms\Components\Slider;
 use BackedEnum;
 use CanyonGBS\Common\Ai\Actions\ReInitializeAiServiceAssistant;
 use CanyonGBS\Common\Ai\Actions\ResetAiServiceIdsForAssistant;

@@ -36,13 +36,13 @@
 
 namespace CanyonGBS\Common\Ai\Enums;
 
-use AdvisingApp\IntegrationOpenAi\Services\OpenAiGpt35Service;
-use AdvisingApp\IntegrationOpenAi\Services\OpenAiGpt4oMiniService;
-use AdvisingApp\IntegrationOpenAi\Services\OpenAiGpt4oService;
-use AdvisingApp\IntegrationOpenAi\Services\OpenAiGpt4Service;
-use AdvisingApp\IntegrationOpenAi\Services\OpenAiGptO1MiniService;
-use AdvisingApp\IntegrationOpenAi\Services\OpenAiGptO3MiniService;
-use AdvisingApp\IntegrationOpenAi\Services\OpenAiGptTestService;
+use CanyonGBS\Common\Ai\Services\OpenAiGpt35Service;
+use CanyonGBS\Common\Ai\Services\OpenAiGpt4oMiniService;
+use CanyonGBS\Common\Ai\Services\OpenAiGpt4oService;
+use CanyonGBS\Common\Ai\Services\OpenAiGpt4Service;
+use CanyonGBS\Common\Ai\Services\OpenAiGptO1MiniService;
+use CanyonGBS\Common\Ai\Services\OpenAiGptO3MiniService;
+use CanyonGBS\Common\Ai\Services\OpenAiGptTestService;
 use CanyonGBS\Common\Ai\Services\Contracts\AiService;
 use CanyonGBS\Common\Ai\Services\TestAiService;
 use Filament\Support\Contracts\HasLabel;
