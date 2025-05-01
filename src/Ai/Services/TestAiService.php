@@ -42,8 +42,6 @@ use CanyonGBS\Common\Ai\Models\AiMessageFile;
 use CanyonGBS\Common\Ai\Models\AiThread;
 use CanyonGBS\Common\Ai\Services\Concerns\HasAiServiceHelpers;
 use CanyonGBS\Common\Ai\Services\Contracts\AiService;
-use AdvisingApp\Report\Enums\TrackedEventType;
-use AdvisingApp\Report\Jobs\RecordTrackedEvent;
 use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;

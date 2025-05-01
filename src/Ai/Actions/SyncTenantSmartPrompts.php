@@ -36,9 +36,9 @@
 
 namespace CanyonGBS\Common\Ai\Actions;
 
+use App\Http\Requests\Tenants\SyncTenantRequest;
 use CanyonGBS\Common\Ai\Models\Prompt;
 use CanyonGBS\Common\Ai\Models\PromptType;
-use App\Http\Requests\Tenants\SyncTenantRequest;
 use Illuminate\Support\Facades\DB;
 
 class SyncTenantSmartPrompts

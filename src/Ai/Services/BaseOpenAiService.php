@@ -36,7 +36,13 @@
 
 namespace CanyonGBS\Common\Ai\Services;
 
+use CanyonGBS\Common\Ai\DataTransferObjects\Assistants\AssistantsDataTransferObject;
+use CanyonGBS\Common\Ai\DataTransferObjects\Assistants\FileSearchDataTransferObject;
+use CanyonGBS\Common\Ai\DataTransferObjects\Assistants\ToolResourcesDataTransferObject;
+use CanyonGBS\Common\Ai\DataTransferObjects\Threads\ThreadsDataTransferObject;
 use CanyonGBS\Common\Ai\Exceptions\AiStreamEndedUnexpectedlyException;
+use CanyonGBS\Common\Ai\Exceptions\FileUploadsCannotBeDisabled;
+use CanyonGBS\Common\Ai\Exceptions\FileUploadsCannotBeEnabled;
 use CanyonGBS\Common\Ai\Exceptions\MessageResponseException;
 use CanyonGBS\Common\Ai\Exceptions\MessageResponseTimeoutException;
 use CanyonGBS\Common\Ai\Models\AiAssistant;
@@ -44,17 +50,9 @@ use CanyonGBS\Common\Ai\Models\AiMessage;
 use CanyonGBS\Common\Ai\Models\AiMessageFile;
 use CanyonGBS\Common\Ai\Models\AiThread;
 use CanyonGBS\Common\Ai\Services\Concerns\HasAiServiceHelpers;
+use CanyonGBS\Common\Ai\Services\Concerns\UploadsFiles;
 use CanyonGBS\Common\Ai\Services\Contracts\AiService;
 use CanyonGBS\Common\Ai\Settings\AiSettings;
-use CanyonGBS\Common\Ai\DataTransferObjects\Assistants\AssistantsDataTransferObject;
-use CanyonGBS\Common\Ai\DataTransferObjects\Assistants\FileSearchDataTransferObject;
-use CanyonGBS\Common\Ai\DataTransferObjects\Assistants\ToolResourcesDataTransferObject;
-use CanyonGBS\Common\Ai\DataTransferObjects\Threads\ThreadsDataTransferObject;
-use CanyonGBS\Common\Ai\Exceptions\FileUploadsCannotBeDisabled;
-use CanyonGBS\Common\Ai\Exceptions\FileUploadsCannotBeEnabled;
-use CanyonGBS\Common\Ai\Services\Concerns\UploadsFiles;
-use AdvisingApp\Report\Enums\TrackedEventType;
-use AdvisingApp\Report\Jobs\RecordTrackedEvent;
 use Closure;
 use Generator;
 use Illuminate\Support\Facades\Http;

@@ -36,7 +36,6 @@
 
 namespace CanyonGBS\Common\Ai\Filament\Pages;
 
-use CanyonGBS\Common\Filament\Forms\Components\Slider;
 use BackedEnum;
 use CanyonGBS\Common\Ai\Actions\ReInitializeAiServiceAssistant;
 use CanyonGBS\Common\Ai\Actions\ResetAiServiceIdsForAssistant;
@@ -44,6 +43,7 @@ use CanyonGBS\Common\Ai\Enums\AiMaxTokens;
 use CanyonGBS\Common\Ai\Enums\AiModel;
 use CanyonGBS\Common\Ai\Models\Contracts\AiAssistant;
 use CanyonGBS\Common\Ai\Settings\AiSettings;
+use CanyonGBS\Common\Filament\Forms\Components\Slider;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;

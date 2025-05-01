@@ -36,16 +36,16 @@
 
 namespace CanyonGBS\Common\Ai\Services\Concerns;
 
+use CanyonGBS\Common\Ai\DataTransferObjects\Files\FilesDataTransferObject;
+use CanyonGBS\Common\Ai\DataTransferObjects\VectorStoreFiles\VectorStoreFilesDataTransferObject;
+use CanyonGBS\Common\Ai\DataTransferObjects\VectorStores\VectorStoresDataTransferObject;
+use CanyonGBS\Common\Ai\Exceptions\FileUploadException;
 use CanyonGBS\Common\Ai\Exceptions\UploadedFileCouldNotBeProcessed;
 use CanyonGBS\Common\Ai\Models\AiAssistant;
 use CanyonGBS\Common\Ai\Models\AiAssistantFile;
 use CanyonGBS\Common\Ai\Models\AiMessageFile;
 use CanyonGBS\Common\Ai\Models\AiThread;
 use CanyonGBS\Common\Ai\Models\Contracts\AiFile;
-use CanyonGBS\Common\Ai\DataTransferObjects\Files\FilesDataTransferObject;
-use CanyonGBS\Common\Ai\DataTransferObjects\VectorStoreFiles\VectorStoreFilesDataTransferObject;
-use CanyonGBS\Common\Ai\DataTransferObjects\VectorStores\VectorStoresDataTransferObject;
-use CanyonGBS\Common\Ai\Exceptions\FileUploadException;
 use CURLFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;

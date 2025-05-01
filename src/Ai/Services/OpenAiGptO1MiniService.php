@@ -38,9 +38,9 @@ namespace CanyonGBS\Common\Ai\Services;
 
 use CanyonGBS\Common\Ai\Models\AiAssistant;
 use CanyonGBS\Common\Ai\Models\AiMessageFile;
+use CanyonGBS\Common\Ai\Services\Concerns\UploadsFiles;
 use CanyonGBS\Common\Ai\Services\Contracts\AiServiceLifecycleHooks;
 use CanyonGBS\Common\Ai\Settings\AiIntegrationsSettings;
-use CanyonGBS\Common\Ai\Services\Concerns\UploadsFiles;
 use OpenAI;
 
 class OpenAiGptO1MiniService extends BaseOpenAiService implements AiServiceLifecycleHooks

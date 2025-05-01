@@ -41,8 +41,6 @@ use CanyonGBS\Common\Ai\Exceptions\AiResponseToCompleteDoesNotExistException;
 use CanyonGBS\Common\Ai\Exceptions\AiThreadLockedException;
 use CanyonGBS\Common\Ai\Models\AiMessage;
 use CanyonGBS\Common\Ai\Models\AiThread;
-use AdvisingApp\Report\Enums\TrackedEventType;
-use AdvisingApp\Report\Jobs\RecordTrackedEvent;
 use Closure;
 
 class CompleteResponse

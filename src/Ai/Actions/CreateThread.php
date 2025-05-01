@@ -36,11 +36,11 @@
 
 namespace CanyonGBS\Common\Ai\Actions;
 
+use App\Models\Tenant;
 use CanyonGBS\Common\Ai\Enums\AiApplication;
 use CanyonGBS\Common\Ai\Models\AiAssistant;
 use CanyonGBS\Common\Ai\Models\AiThread;
 use CanyonGBS\Common\Ai\Settings\AiSettings;
-use App\Models\Tenant;
 
 class CreateThread
 {
