@@ -177,9 +177,9 @@
                             class="text-sm text-gray-950 dark:text-white"
                             x-text="group"
                         ></div>
-                        
+
                         <p
-                            class="text-xs text-gray-500 dark:text-gray-400 whitespace-normal"
+                            class="whitespace-normal text-xs text-gray-500 dark:text-gray-400"
                             x-text="description"
                         />
                     </div>
