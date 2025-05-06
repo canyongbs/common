@@ -44,6 +44,8 @@
         state: $wire.$entangle(@js($getStatePath())),
     
         availablePermissions: @js($getAvailablePermissions()),
+
+        descriptions: @js($getDescriptions()),
     
         visiblePermissionGroups: [],
     
@@ -52,6 +54,7 @@
                 .filter((group) => Object.values(this.availablePermissions[group]).some(
                     (permission) => this.state.includes(permission)
                 ))
+                .map((group) => ({group: group, description: descriptions}))
         },
     
         addGroup: function(group) {
@@ -102,12 +105,12 @@
                 >
                     <option value="">Add permission</option>
                     <template
-                        x-for="group in Object.keys(availablePermissions).filter((group) => ! visiblePermissionGroups.includes(group)).sort()"
+                        x-for="group in Object.keys(availablePermissions).filter((group) => ! visiblePermissionGroups.includes(group)).sort((a, b) => a.group.localeCompare(b.group))"
                         x-bind:key="group"
                     >
                         <option
                             x-bind:value="group"
-                            x-text="group"
+                            x-text="group.group"
                         ></option>
                     </template>
                 </x-filament::input.select>
@@ -166,7 +169,7 @@
         </div>
 
         <template
-            x-for="group in visiblePermissionGroups.sort()"
+            x-for="group in visiblePermissionGroups.sort((a, b) => a.group.localeCompare(b.group))"
             x-bind:key="group"
         >
             <div
@@ -175,12 +178,12 @@
                     <div>
                         <div
                             class="text-sm text-gray-950 dark:text-white"
-                            x-text="group"
+                            x-text="group.group"
                         ></div>
 
                         <p
                             class="whitespace-normal text-xs text-gray-500 dark:text-gray-400"
-                            x-text="description"
+                            x-text="group.description"
                         />
                     </div>
 
