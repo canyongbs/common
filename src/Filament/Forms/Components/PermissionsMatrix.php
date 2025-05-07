@@ -149,6 +149,7 @@ class PermissionsMatrix extends Field
 
     /**
      * @param array<mixed> $descriptions
+     *
      * @return static
      */
     public function descriptions(array $descriptions): static
