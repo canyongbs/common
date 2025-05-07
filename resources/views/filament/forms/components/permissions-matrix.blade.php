@@ -54,7 +54,6 @@
                 .filter((group) => Object.values(this.availablePermissions[group]).some(
                     (permission) => this.state.includes(permission)
                 ))
-                .map((group) => ({group: group, description: descriptions}))
         },
     
         addGroup: function(group) {
@@ -105,12 +104,12 @@
                 >
                     <option value="">Add permission</option>
                     <template
-                        x-for="group in Object.keys(availablePermissions).filter((group) => ! visiblePermissionGroups.includes(group)).sort((a, b) => a.group.localeCompare(b.group))"
+                        x-for="group in Object.keys(availablePermissions).filter((group) => ! visiblePermissionGroups.includes(group)).sort()"
                         x-bind:key="group"
                     >
                         <option
                             x-bind:value="group"
-                            x-text="group.group"
+                            x-text="group"
                         ></option>
                     </template>
                 </x-filament::input.select>
@@ -169,7 +168,7 @@
         </div>
 
         <template
-            x-for="group in visiblePermissionGroups.sort((a, b) => a.group.localeCompare(b.group))"
+            x-for="group in visiblePermissionGroups.sort()"
             x-bind:key="group"
         >
             <div
@@ -178,12 +177,12 @@
                     <div>
                         <div
                             class="text-sm text-gray-950 dark:text-white"
-                            x-text="group.group"
+                            x-text="group"
                         ></div>
 
                         <p
                             class="whitespace-normal text-xs text-gray-500 dark:text-gray-400"
-                            x-text="group.description"
+                            x-text="descriptions[group.replaceAll(' ', '')]"
                         />
                     </div>
 
