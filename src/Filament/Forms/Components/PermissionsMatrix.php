@@ -44,13 +44,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-/**
- * @property array<mixed> $descriptions
- */
 class PermissionsMatrix extends Field
 {
     protected string $view = 'common::filament.forms.components.permissions-matrix';
 
+    /** @var array<Object> $descriptions */
     protected array $descriptions = [];
 
     protected string | Closure $guard;
@@ -148,9 +146,7 @@ class PermissionsMatrix extends Field
     }
 
     /**
-     * @param array<mixed> $descriptions
-     *
-     * @return static
+     * @param array<Object> $descriptions
      */
     public function descriptions(array $descriptions): static
     {
