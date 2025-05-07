@@ -51,7 +51,7 @@ class PermissionsMatrix extends Field
     protected array $descriptions;
 
     protected string | Closure $guard;
-    
+
     protected string | Closure $permissionGroupModel;
 
     protected function setUp(): void
@@ -148,7 +148,7 @@ class PermissionsMatrix extends Field
     {
         $this->descriptions = [];
 
-        foreach($descriptions as $description) {
+        foreach ($descriptions as $description) {
             $this->descriptions[$description->name] = $description->value;
         }
 

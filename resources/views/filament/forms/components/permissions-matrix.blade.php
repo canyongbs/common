@@ -44,7 +44,7 @@
         state: $wire.$entangle(@js($getStatePath())),
     
         availablePermissions: @js($getAvailablePermissions()),
-
+    
         descriptions: @js($getDescriptions()),
     
         visiblePermissionGroups: [],
