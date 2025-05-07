@@ -144,17 +144,24 @@ class PermissionsMatrix extends Field
         return $permissions;
     }
 
+    /**
+     * @return static
+     */
     public function descriptions(array $descriptions): static
     {
         $this->descriptions = [];
 
         foreach ($descriptions as $description) {
+            throw_unless($description instanceof string);
             $this->descriptions[$description->name] = $description->value;
         }
 
         return $this;
     }
 
+    /**
+     * @return array<Object>
+     */
     public function getDescriptions(): array
     {
         return $this->descriptions;
