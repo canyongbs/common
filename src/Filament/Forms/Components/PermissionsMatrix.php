@@ -44,11 +44,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/**
+ * @property array<mixed> $descriptions
+ */
 class PermissionsMatrix extends Field
 {
     protected string $view = 'common::filament.forms.components.permissions-matrix';
 
-    protected array $descriptions;
+    protected array $descriptions = [];
 
     protected string | Closure $guard;
 
@@ -145,6 +148,7 @@ class PermissionsMatrix extends Field
     }
 
     /**
+     * @param array<mixed> $descriptions
      * @return static
      */
     public function descriptions(array $descriptions): static
@@ -152,7 +156,6 @@ class PermissionsMatrix extends Field
         $this->descriptions = [];
 
         foreach ($descriptions as $description) {
-            throw_unless($description instanceof string);
             $this->descriptions[$description->name] = $description->value;
         }
 
@@ -164,7 +167,7 @@ class PermissionsMatrix extends Field
      */
     public function getDescriptions(): array
     {
-        return $this->descriptions;
+        return $this->evaluate($this->descriptions);
     }
 
     public function permissionGroupModel(string | Closure $model): static
