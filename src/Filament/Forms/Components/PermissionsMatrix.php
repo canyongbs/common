@@ -48,6 +48,9 @@ class PermissionsMatrix extends Field
 {
     protected string $view = 'common::filament.forms.components.permissions-matrix';
 
+    /** @var array<Object> $descriptions */
+    protected array $descriptions = [];
+
     protected string | Closure $guard;
 
     protected string | Closure $permissionGroupModel;
@@ -140,6 +143,28 @@ class PermissionsMatrix extends Field
             }, initial: []);
 
         return $permissions;
+    }
+
+    /**
+     * @param array<Object> $descriptions
+     */
+    public function descriptions(array $descriptions): static
+    {
+        $this->descriptions = [];
+
+        foreach ($descriptions as $description) {
+            $this->descriptions[$description->name] = $description->value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array<Object>
+     */
+    public function getDescriptions(): array
+    {
+        return $this->evaluate($this->descriptions);
     }
 
     public function permissionGroupModel(string | Closure $model): static

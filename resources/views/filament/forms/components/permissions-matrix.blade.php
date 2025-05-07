@@ -45,6 +45,8 @@
     
         availablePermissions: @js($getAvailablePermissions()),
     
+        descriptions: @js($getDescriptions()),
+    
         visiblePermissionGroups: [],
     
         init: function() {
@@ -172,10 +174,17 @@
             <div
                 class="flex flex-col divide-y divide-gray-950/5 xl:flex-row xl:divide-x xl:divide-y-0 dark:divide-white/10">
                 <div class="group flex items-center justify-between gap-3 px-3 py-2 xl:flex-1">
-                    <div
-                        class="text-sm text-gray-950 dark:text-white"
-                        x-text="group"
-                    ></div>
+                    <div>
+                        <div
+                            class="text-sm text-gray-950 dark:text-white"
+                            x-text="group"
+                        ></div>
+
+                        <p
+                            class="whitespace-normal text-xs text-gray-500 dark:text-gray-400"
+                            x-text="descriptions[group.replaceAll(' ', '')]"
+                        />
+                    </div>
 
                     @if (!$isDisabled)
                         <x-filament::link
