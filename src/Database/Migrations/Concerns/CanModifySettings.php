@@ -39,7 +39,7 @@ namespace CanyonGBS\Common\Database\Migrations\Concerns;
 use Closure;
 use Illuminate\Support\Facades\DB;
 
-trait CanModifySettings
+trait CanModifySettings /** @phpstan-ignore trait.unused */
 {
     /**
      * @param Closure(mixed): mixed $modifyPayload

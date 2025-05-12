@@ -39,7 +39,7 @@ namespace CanyonGBS\Common\Database\Migrations\Concerns;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-trait CanModifyPermissions
+trait CanModifyPermissions /** @phpstan-ignore trait.unused */
 {
     /**
      * @param array<string, string> $names The keys of the array should be the permission names and the values should be the name of the group they belong to.
