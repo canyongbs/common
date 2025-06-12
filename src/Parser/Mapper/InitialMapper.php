@@ -10,9 +10,9 @@ use CanyonGBS\Common\Parser\Part\Initial;
  */
 class InitialMapper extends AbstractMapper
 {
-    protected $matchLastPart = false;
+    protected bool $matchLastPart = false;
 
-    private $combinedMax = 2;
+    private int $combinedMax = 2;
 
     public function __construct(int $combinedMax = 2, bool $matchLastPart = false)
     {
@@ -21,10 +21,10 @@ class InitialMapper extends AbstractMapper
     }
 
     /**
-     * map intials in parts array
+     * Map initials in the parts array.
      *
-     * @param array $parts the name parts
-     * @return array the mapped parts
+     * @param array<int, string|AbstractPart> $parts The name parts
+     * @return array<int, string|AbstractPart> The mapped parts
      */
     public function map(array $parts): array
     {

@@ -4,9 +4,9 @@ namespace CanyonGBS\Common\Parser\Part;
 
 class LastnamePrefix extends Lastname
 {
-    protected $normalized = '';
+    protected string $normalized = '';
 
-    public function __construct(string $value, string $normalized = null)
+    public function __construct(string $value, ?string $normalized = null)
     {
         $this->normalized = $normalized ?? $value;
 

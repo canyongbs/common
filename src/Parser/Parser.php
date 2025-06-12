@@ -16,33 +16,36 @@ class Parser
     /**
      * @var string
      */
-    protected $whitespace = " \r\n\t";
+    protected string $whitespace = " \r\n\t";
 
     /**
-     * @var array
+     * @var array<int, FirstnameMapper|LastnameMapper|MiddlenameMapper|SalutationMapper|SuffixMapper|NicknameMapper|InitialMapper>
      */
-    protected $mappers = [];
+    protected array $mappers = [];
 
     /**
-     * @var array
+     * @var array<string>
      */
-    protected $languages = [];
+    protected array $languages = [];
 
     /**
-     * @var array
+     * @var array<string, string>
      */
-    protected $nicknameDelimiters = [];
+    protected array $nicknameDelimiters = [];
 
     /**
      * @var int
      */
-    protected $maxSalutationIndex = 0;
+    protected int $maxSalutationIndex = 0;
 
     /**
      * @var int
      */
     protected $maxCombinedInitials = 2;
 
+    /**
+     * @param array<string> $languages
+     */
     public function __construct(array $languages = [])
     {
         if (empty($languages)) {
@@ -83,14 +86,15 @@ class Parser
     }
 
     /**
-     * handles split-parsing of comma-separated name parts
+     * Handles split-parsing of comma-separated name parts
      *
-     * @param $left - the name part left of the comma
-     * @param $right - the name part right of the comma
+     * @param string $first  The name part on the left
+     * @param string $second The name part in the middle
+     * @param string $third  The name part on the right
      *
      * @return Name
      */
-    protected function parseSplitName($first, $second, $third): Name
+    protected function parseSplitName(string $first, string $second, string $third): Name
     {
         $parts = array_merge(
             $this->getFirstSegmentParser()->parse($first)->getParts(),
@@ -150,9 +154,9 @@ class Parser
     }
 
     /**
-     * get the mappers for this parser
+     * Get the mappers for this parser
      *
-     * @return array
+     * @return array<int, FirstnameMapper|LastnameMapper|MiddlenameMapper|SalutationMapper|SuffixMapper|NicknameMapper|InitialMapper>
      */
     public function getMappers(): array
     {
@@ -174,7 +178,8 @@ class Parser
     /**
      * set the mappers for this parser
      *
-     * @param array $mappers
+     * @param array<int, FirstnameMapper|LastnameMapper|MiddlenameMapper|SalutationMapper|SuffixMapper|NicknameMapper|InitialMapper> $mappers
+     *
      * @return Parser
      */
     public function setMappers(array $mappers): Parser
@@ -196,7 +201,7 @@ class Parser
 
         $name = trim($name);
 
-        return preg_replace('/[' . preg_quote($whitespace) . ']+/', ' ', $name);
+        return preg_replace('/[' . preg_quote($whitespace, '/') . ']+/', ' ', $name);
     }
 
     /**
@@ -212,10 +217,10 @@ class Parser
     /**
      * set the string of characters that are supposed to be treated as whitespace
      *
-     * @param $whitespace
+     * @param string $whitespace
      * @return Parser
      */
-    public function setWhitespace($whitespace): Parser
+    public function setWhitespace(string $whitespace): Parser
     {
         $this->whitespace = $whitespace;
 
@@ -223,7 +228,7 @@ class Parser
     }
 
     /**
-     * @return array
+     * @return array<string, string>
      */
     protected function getPrefixes()
     {
@@ -238,7 +243,7 @@ class Parser
     }
 
     /**
-     * @return array
+     * @return array<int, string>
      */
     protected function getSuffixes()
     {
@@ -253,7 +258,7 @@ class Parser
     }
 
     /**
-     * @return array
+     * @return array<string, string>
      */
     protected function getSalutations()
     {
@@ -268,7 +273,7 @@ class Parser
     }
 
     /**
-     * @return array
+     * @return array<string, string>
      */
     public function getNicknameDelimiters(): array
     {
@@ -276,7 +281,7 @@ class Parser
     }
 
     /**
-     * @param array $nicknameDelimiters
+     * @param array<string, string> $nicknameDelimiters
      * @return Parser
      */
     public function setNicknameDelimiters(array $nicknameDelimiters): Parser

@@ -4,9 +4,9 @@ namespace CanyonGBS\Common\Parser\Part;
 
 abstract class PreNormalizedPart extends AbstractPart
 {
-    protected $normalized = '';
+    protected string $normalized = '';
 
-    public function __construct(string $value, string $normalized = null)
+    public function __construct(string $value, ?string $normalized = null)
     {
         $this->normalized = $normalized ?? $value;
 

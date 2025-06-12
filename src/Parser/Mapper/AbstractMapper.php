@@ -8,18 +8,16 @@ use CanyonGBS\Common\Parser\Part\Nickname;
 abstract class AbstractMapper
 {
     /**
-     * implements the mapping of parts
-     *
-     * @param array $parts - the name parts
-     * @return array $parts - the mapped parts
+     * @param array<int, string|AbstractPart> $parts
+     * @return array<int, string|AbstractPart>
      */
     abstract public function map(array $parts);
 
     /**
-     * checks if there are still unmapped parts left before the given position
+     * Checks if there are still unmapped parts left before the given position.
      *
-     * @param array $parts
-     * @param $index
+     * @param array<int, AbstractPart> $parts
+     * @param int $index
      * @return bool
      */
     protected function hasUnmappedPartsBefore(array $parts, $index): bool
@@ -28,19 +26,15 @@ abstract class AbstractMapper
             if ($k === $index) {
                 break;
             }
-
-            if (!($part instanceof AbstractPart)) {
-                return true;
-            }
         }
 
         return false;
     }
 
     /**
-     * @param string $type
-     * @param array $parts
-     * @return int|bool
+     * @param class-string $type
+     * @param array<int, object> $parts
+     * @return int|false
      */
     protected function findFirstMapped(string $type, array $parts)
     {

@@ -10,14 +10,14 @@ class Name
     private const PARTS_NAMESPACE = 'CanyonGBS\Common\Parser\Part';
 
     /**
-     * @var array the parts that make up this name
+     * @var array<int, AbstractPart>
      */
-    protected $parts = [];
+    protected array $parts = [];
 
     /**
-     * constructor takes the array of parts this name consists of
+     * Constructor takes the array of parts this name consists of
      *
-     * @param array|null $parts
+     * @param array<int, AbstractPart>|null $parts
      */
     public function __construct(?array $parts = null)
     {
@@ -37,7 +37,7 @@ class Name
     /**
      * set the parts this name consists of
      *
-     * @param array $parts
+     * @param array<int, AbstractPart> $parts
      * @return $this
      */
     public function setParts(array $parts): Name
@@ -50,7 +50,7 @@ class Name
     /**
      * get the parts this name consists of
      *
-     * @return array
+     * @return array<int, AbstractPart>
      */
     public function getParts(): array
     {
@@ -59,7 +59,7 @@ class Name
 
     /**
      * @param bool $format
-     * @return array
+     * @return array<string, mixed>
      */
     public function getAll(bool $format = false): array
     {
@@ -203,7 +203,7 @@ class Name
         $matched = [];
 
         foreach ($this->parts as $part) {
-            if ($part instanceof AbstractPart && $this->isType($part, $type, $strict)) {
+            if ($this->isType($part, $type, $strict)) {
                 $matched[] = $part->normalize();
             }
         }

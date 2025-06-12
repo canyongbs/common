@@ -7,14 +7,14 @@ abstract class AbstractPart
     /**
      * @var string the wrapped value
      */
-    protected $value;
+    protected string $value;
 
     /**
      * constructor allows passing the value to wrap
      *
      * @param $value
      */
-    public function __construct($value)
+    public function __construct(string $value)
     {
         $this->setValue($value);
     }
@@ -62,9 +62,9 @@ abstract class AbstractPart
      * to be used during normalize
      *
      * @param $word
-     * @return mixed
+     * @return string
      */
-    protected function camelcase($word): string
+    protected function camelcase(string $word): string
     {
         if (preg_match('/\p{L}(\p{Lu}*\p{Ll}\p{Ll}*\p{Lu}|\p{Ll}*\p{Lu}\p{Lu}*\p{Ll})\p{L}*/u', $word)) {
             return $word;
@@ -76,10 +76,10 @@ abstract class AbstractPart
     /**
      * camelcasing callback
      *
-     * @param $matches
+     * @param array<int, string> $matches
      * @return string
      */
-    protected function camelcaseReplace($matches): string
+    protected function camelcaseReplace(array $matches): string
     {
         if (function_exists('mb_convert_case')) {
             return mb_convert_case($matches[0], MB_CASE_TITLE, 'UTF-8');

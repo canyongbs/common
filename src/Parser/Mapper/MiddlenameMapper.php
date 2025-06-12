@@ -9,7 +9,7 @@ use CanyonGBS\Common\Parser\Part\Middlename;
 
 class MiddlenameMapper extends AbstractMapper
 {
-    protected $mapWithoutLastname = false;
+    protected bool $mapWithoutLastname = false;
 
     public function __construct(bool $mapWithoutLastname = false)
     {
@@ -17,10 +17,10 @@ class MiddlenameMapper extends AbstractMapper
     }
 
     /**
-     * map middlenames in the parts array
+     * Map middlenames in the parts array
      *
-     * @param array $parts the name parts
-     * @return array the mapped parts
+     * @param array<int, string|AbstractPart> $parts the name parts
+     * @return array<int, string|AbstractPart|Firstname|Middlename> the mapped parts
      */
     public function map(array $parts): array
     {
@@ -40,10 +40,10 @@ class MiddlenameMapper extends AbstractMapper
         return $this->mapFrom($start, $parts);
     }
 
-    /**
-     * @param $start
-     * @param $parts
-     * @return mixed
+   /**
+     * @param int $start
+     * @param array<int, string|AbstractPart> $parts
+     * @return array<int, string|AbstractPart|Middlename>
      */
     protected function mapFrom($start, $parts): array
     {

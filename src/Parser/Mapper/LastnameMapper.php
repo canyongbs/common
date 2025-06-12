@@ -12,10 +12,14 @@ use CanyonGBS\Common\Parser\Part\Suffix;
 
 class LastnameMapper extends AbstractMapper
 {
+    /** @var array<string> */
     protected $prefixes = [];
 
-    protected $matchSinglePart = false;
+    protected bool $matchSinglePart = false;
 
+    /**
+     * @param array<string> $prefixes
+     */
     public function __construct(array $prefixes, bool $matchSinglePart = false)
     {
         $this->prefixes = $prefixes;
@@ -23,10 +27,10 @@ class LastnameMapper extends AbstractMapper
     }
 
     /**
-     * map lastnames in the parts array
+     * Map lastnames in the parts array
      *
-     * @param array $parts the name parts
-     * @return array the mapped parts
+     * @param array<string> $parts The name parts
+     * @return array<string|AbstractPart|Lastname>
      */
     public function map(array $parts): array
     {
@@ -38,11 +42,11 @@ class LastnameMapper extends AbstractMapper
     }
 
     /**
-     * we map the parts in reverse order because it makes more
+     * We map the parts in reverse order because it makes more
      * sense to parse for the lastname starting from the end
      *
-     * @param array $parts
-     * @return array
+     * @param array<string|AbstractPart> $parts
+     * @return array<string|AbstractPart|Lastname>
      */
     protected function mapParts(array $parts): array
     {
@@ -79,10 +83,10 @@ class LastnameMapper extends AbstractMapper
     }
 
     /**
-     * try to map this part as a lastname prefix or as a combined
+     * Try to map this part as a lastname prefix or as a combined
      * lastname part containing a prefix
      *
-     * @param array $parts
+     * @param array<int, string|AbstractPart> $parts
      * @param int $k
      * @return Lastname|null
      */
@@ -118,9 +122,9 @@ class LastnameMapper extends AbstractMapper
     }
 
     /**
-     * skip through the parts we want to ignore and return the start index
+     * Skip through the parts we want to ignore and return the start index
      *
-     * @param array $parts
+     * @param array<int, string|AbstractPart> $parts
      * @return int
      */
     protected function skipIgnoredParts(array $parts): int
@@ -137,12 +141,12 @@ class LastnameMapper extends AbstractMapper
     }
 
     /**
-     * indicates if we should stop mapping at the given index $k
+     * Indicates if we should stop mapping at the given index $k
      *
-     * the assumption is that lastname parts have already been found
+     * The assumption is that lastname parts have already been found
      * but we want to see if we should add more parts
      *
-     * @param array $parts
+     * @param array<int, AbstractPart> $parts
      * @param int $k
      * @return bool
      */
@@ -164,9 +168,9 @@ class LastnameMapper extends AbstractMapper
     }
 
     /**
-     * indicates if the given part should be ignored (skipped) during mapping
+     * Indicates if the given part should be ignored (skipped) during mapping.
      *
-     * @param $part
+     * @param string|AbstractPart $part
      * @return bool
      */
     protected function isIgnoredPart($part) {
@@ -174,13 +178,13 @@ class LastnameMapper extends AbstractMapper
     }
 
     /**
-     * remap ignored parts as lastname
+     * Remap ignored parts as lastname.
      *
-     * if the mapping did not derive any lastname this is called to transform
-     * any previously ignored parts into lastname parts
+     * If the mapping did not derive any lastname, this is called to transform
+     * any previously ignored parts into lastname parts.
      *
-     * @param array $parts
-     * @return array
+     * @param array<int, string|AbstractPart> $parts
+     * @return array<int, AbstractPart>
      */
     protected function remapIgnored(array $parts): array
     {
@@ -200,7 +204,9 @@ class LastnameMapper extends AbstractMapper
     }
 
     /**
-     * @param array $parts
+     * Check if the part at the given index is followed by a Lastname.
+     *
+     * @param array<int, string|AbstractPart> $parts
      * @param int $index
      * @return bool
      */
@@ -221,7 +227,7 @@ class LastnameMapper extends AbstractMapper
      *
      * This expects the parts array and index to be in the original order.
      *
-     * @param array $parts
+     * @param array<int, string|AbstractPart> $parts
      * @param int $index
      * @return bool
      */
@@ -246,11 +252,11 @@ class LastnameMapper extends AbstractMapper
     }
 
     /**
-     * find the next non-nickname index in parts
+     * Find the next non-nickname index in parts.
      *
-     * @param $parts
-     * @param $startIndex
-     * @return int|void
+     * @param array<int, string|AbstractPart> $parts
+     * @param int $startIndex
+     * @return int
      */
     protected function skipNicknameParts($parts, $startIndex)
     {
