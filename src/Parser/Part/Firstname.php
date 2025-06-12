@@ -36,6 +36,4 @@
 
 namespace CanyonGBS\Common\Parser\Part;
 
-class Firstname extends GivenNamePart
-{
-}
+class Firstname extends GivenNamePart {}

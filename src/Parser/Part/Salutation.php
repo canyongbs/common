@@ -36,7 +36,4 @@
 
 namespace CanyonGBS\Common\Parser\Part;
 
-class Salutation extends PreNormalizedPart
-{
-
-}
+class Salutation extends PreNormalizedPart {}

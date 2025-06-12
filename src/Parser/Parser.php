@@ -37,13 +37,13 @@
 namespace CanyonGBS\Common\Parser;
 
 use CanyonGBS\Common\Parser\Language\English;
+use CanyonGBS\Common\Parser\Mapper\FirstnameMapper;
+use CanyonGBS\Common\Parser\Mapper\InitialMapper;
+use CanyonGBS\Common\Parser\Mapper\LastnameMapper;
+use CanyonGBS\Common\Parser\Mapper\MiddlenameMapper;
 use CanyonGBS\Common\Parser\Mapper\NicknameMapper;
 use CanyonGBS\Common\Parser\Mapper\SalutationMapper;
 use CanyonGBS\Common\Parser\Mapper\SuffixMapper;
-use CanyonGBS\Common\Parser\Mapper\InitialMapper;
-use CanyonGBS\Common\Parser\Mapper\LastnameMapper;
-use CanyonGBS\Common\Parser\Mapper\FirstnameMapper;
-use CanyonGBS\Common\Parser\Mapper\MiddlenameMapper;
 
 class Parser
 {
@@ -98,6 +98,7 @@ class Parser
      * - suffix (II, Phd, Jr, etc)
      *
      * @param string $name
+     *
      * @return Name
      */
     public function parse($name): Name
@@ -117,6 +118,126 @@ class Parser
         }
 
         return new Name($parts);
+    }
+
+    /**
+     * Get the mappers for this parser
+     *
+     * @return array<int, FirstnameMapper|LastnameMapper|MiddlenameMapper|SalutationMapper|SuffixMapper|NicknameMapper|InitialMapper>
+     */
+    public function getMappers(): array
+    {
+        if (empty($this->mappers)) {
+            $this->setMappers([
+                new NicknameMapper($this->getNicknameDelimiters()),
+                new SalutationMapper($this->getSalutations(), $this->getMaxSalutationIndex()),
+                new SuffixMapper($this->getSuffixes()),
+                new InitialMapper($this->getMaxCombinedInitials()),
+                new LastnameMapper($this->getPrefixes()),
+                new FirstnameMapper(),
+                new MiddlenameMapper(),
+            ]);
+        }
+
+        return $this->mappers;
+    }
+
+    /**
+     * set the mappers for this parser
+     *
+     * @param array<int, FirstnameMapper|LastnameMapper|MiddlenameMapper|SalutationMapper|SuffixMapper|NicknameMapper|InitialMapper> $mappers
+     *
+     * @return Parser
+     */
+    public function setMappers(array $mappers): Parser
+    {
+        $this->mappers = $mappers;
+
+        return $this;
+    }
+
+    /**
+     * get a string of characters that are supposed to be treated as whitespace
+     *
+     * @return string
+     */
+    public function getWhitespace(): string
+    {
+        return $this->whitespace;
+    }
+
+    /**
+     * set the string of characters that are supposed to be treated as whitespace
+     *
+     * @param string $whitespace
+     *
+     * @return Parser
+     */
+    public function setWhitespace(string $whitespace): Parser
+    {
+        $this->whitespace = $whitespace;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getNicknameDelimiters(): array
+    {
+        return $this->nicknameDelimiters;
+    }
+
+    /**
+     * @param array<string, string> $nicknameDelimiters
+     *
+     * @return Parser
+     */
+    public function setNicknameDelimiters(array $nicknameDelimiters): Parser
+    {
+        $this->nicknameDelimiters = $nicknameDelimiters;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxSalutationIndex(): int
+    {
+        return $this->maxSalutationIndex;
+    }
+
+    /**
+     * @param int $maxSalutationIndex
+     *
+     * @return Parser
+     */
+    public function setMaxSalutationIndex(int $maxSalutationIndex): Parser
+    {
+        $this->maxSalutationIndex = $maxSalutationIndex;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxCombinedInitials(): int
+    {
+        return $this->maxCombinedInitials;
+    }
+
+    /**
+     * @param int $maxCombinedInitials
+     *
+     * @return Parser
+     */
+    public function setMaxCombinedInitials(int $maxCombinedInitials): Parser
+    {
+        $this->maxCombinedInitials = $maxCombinedInitials;
+
+        return $this;
     }
 
     /**
@@ -188,45 +309,10 @@ class Parser
     }
 
     /**
-     * Get the mappers for this parser
-     *
-     * @return array<int, FirstnameMapper|LastnameMapper|MiddlenameMapper|SalutationMapper|SuffixMapper|NicknameMapper|InitialMapper>
-     */
-    public function getMappers(): array
-    {
-        if (empty($this->mappers)) {
-            $this->setMappers([
-                new NicknameMapper($this->getNicknameDelimiters()),
-                new SalutationMapper($this->getSalutations(), $this->getMaxSalutationIndex()),
-                new SuffixMapper($this->getSuffixes()),
-                new InitialMapper($this->getMaxCombinedInitials()),
-                new LastnameMapper($this->getPrefixes()),
-                new FirstnameMapper(),
-                new MiddlenameMapper(),
-            ]);
-        }
-
-        return $this->mappers;
-    }
-
-    /**
-     * set the mappers for this parser
-     *
-     * @param array<int, FirstnameMapper|LastnameMapper|MiddlenameMapper|SalutationMapper|SuffixMapper|NicknameMapper|InitialMapper> $mappers
-     *
-     * @return Parser
-     */
-    public function setMappers(array $mappers): Parser
-    {
-        $this->mappers = $mappers;
-
-        return $this;
-    }
-
-    /**
      * normalize the name
      *
      * @param string $name
+     *
      * @return string
      */
     protected function normalize(string $name): string
@@ -236,29 +322,6 @@ class Parser
         $name = trim($name);
 
         return preg_replace('/[' . preg_quote($whitespace, '/') . ']+/', ' ', $name);
-    }
-
-    /**
-     * get a string of characters that are supposed to be treated as whitespace
-     *
-     * @return string
-     */
-    public function getWhitespace(): string
-    {
-        return $this->whitespace;
-    }
-
-    /**
-     * set the string of characters that are supposed to be treated as whitespace
-     *
-     * @param string $whitespace
-     * @return Parser
-     */
-    public function setWhitespace(string $whitespace): Parser
-    {
-        $this->whitespace = $whitespace;
-
-        return $this;
     }
 
     /**
@@ -304,62 +367,5 @@ class Parser
         }
 
         return $salutations;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function getNicknameDelimiters(): array
-    {
-        return $this->nicknameDelimiters;
-    }
-
-    /**
-     * @param array<string, string> $nicknameDelimiters
-     * @return Parser
-     */
-    public function setNicknameDelimiters(array $nicknameDelimiters): Parser
-    {
-        $this->nicknameDelimiters = $nicknameDelimiters;
-
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMaxSalutationIndex(): int
-    {
-        return $this->maxSalutationIndex;
-    }
-
-    /**
-     * @param int $maxSalutationIndex
-     * @return Parser
-     */
-    public function setMaxSalutationIndex(int $maxSalutationIndex): Parser
-    {
-        $this->maxSalutationIndex = $maxSalutationIndex;
-
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMaxCombinedInitials(): int
-    {
-        return $this->maxCombinedInitials;
-    }
-
-    /**
-     * @param int $maxCombinedInitials
-     * @return Parser
-     */
-    public function setMaxCombinedInitials(int $maxCombinedInitials): Parser
-    {
-        $this->maxCombinedInitials = $maxCombinedInitials;
-
-        return $this;
     }
 }

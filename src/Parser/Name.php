@@ -37,7 +37,6 @@
 namespace CanyonGBS\Common\Parser;
 
 use CanyonGBS\Common\Parser\Part\AbstractPart;
-use CanyonGBS\Common\Parser\Part\GivenNamePart;
 
 class Name
 {
@@ -72,6 +71,7 @@ class Name
      * set the parts this name consists of
      *
      * @param array<int, AbstractPart> $parts
+     *
      * @return $this
      */
     public function setParts(array $parts): Name
@@ -93,6 +93,7 @@ class Name
 
     /**
      * @param bool $format
+     *
      * @return array<string, mixed>
      */
     public function getAll(bool $format = false): array
@@ -110,9 +111,10 @@ class Name
 
         foreach ($keys as $key => $args) {
             $method = sprintf('get%s', ucfirst($key));
-            if ($value = call_user_func_array(array($this, $method), $args)) {
+
+            if ($value = call_user_func_array([$this, $method], $args)) {
                 $results[$key] = $value;
-            };
+            }
         }
 
         return $results;
@@ -153,6 +155,7 @@ class Name
      * get the last name
      *
      * @param bool $pure
+     *
      * @return string
      */
     public function getLastname(bool $pure = false): string
@@ -204,6 +207,7 @@ class Name
      * get the nick name(s)
      *
      * @param bool $wrap
+     *
      * @return string
      */
     public function getNickname(bool $wrap = false): string
@@ -230,6 +234,7 @@ class Name
      *
      * @param string $type
      * @param bool $strict
+     *
      * @return string
      */
     protected function export(string $type, bool $strict = false): string
@@ -242,7 +247,7 @@ class Name
             }
         }
 
-        return implode(' ',  $matched);
+        return implode(' ', $matched);
     }
 
     /**
@@ -251,6 +256,7 @@ class Name
      * @param AbstractPart $part
      * @param string $type
      * @param bool $strict
+     *
      * @return bool
      */
     protected function isType(AbstractPart $part, string $type, bool $strict = false): bool

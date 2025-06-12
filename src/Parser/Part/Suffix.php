@@ -36,7 +36,4 @@
 
 namespace CanyonGBS\Common\Parser\Part;
 
-class Suffix extends PreNormalizedPart
-{
-
-}
+class Suffix extends PreNormalizedPart {}

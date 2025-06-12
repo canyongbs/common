@@ -54,6 +54,7 @@ class MiddlenameMapper extends AbstractMapper
      * Map middlenames in the parts array
      *
      * @param array<int, string|AbstractPart> $parts the name parts
+     *
      * @return array<int, string|AbstractPart|Firstname|Middlename> the mapped parts
      */
     public function map(array $parts): array
@@ -74,11 +75,12 @@ class MiddlenameMapper extends AbstractMapper
         return $this->mapFrom($start, $parts);
     }
 
-   /**
-     * @param int $start
-     * @param array<int, string|AbstractPart> $parts
-     * @return array<int, string|AbstractPart|Middlename>
-     */
+    /**
+      * @param int $start
+      * @param array<int, string|AbstractPart> $parts
+      *
+      * @return array<int, string|AbstractPart|Middlename>
+      */
     protected function mapFrom($start, $parts): array
     {
         // If we don't expect a lastname, include the last part,
