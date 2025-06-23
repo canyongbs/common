@@ -44,9 +44,9 @@ use CanyonGBS\Common\Parser\Part\Initial;
  */
 class InitialMapper extends AbstractMapper
 {
-    protected bool $matchLastPart = false;
+    protected $matchLastPart = false;
 
-    private int $combinedMax = 2;
+    private $combinedMax = 2;
 
     public function __construct(int $combinedMax = 2, bool $matchLastPart = false)
     {
@@ -55,11 +55,10 @@ class InitialMapper extends AbstractMapper
     }
 
     /**
-     * Map initials in the parts array.
+     * map intials in parts array
      *
-     * @param array<int, string|AbstractPart> $parts The name parts
-     *
-     * @return array<int, string|AbstractPart> The mapped parts
+     * @param array $parts the name parts
+     * @return array the mapped parts
      */
     public function map(array $parts): array
     {
@@ -72,7 +71,7 @@ class InitialMapper extends AbstractMapper
                 continue;
             }
 
-            if (! $this->matchLastPart && $k === $last) {
+            if (!$this->matchLastPart && $k === $last) {
                 continue;
             }
 
@@ -97,7 +96,6 @@ class InitialMapper extends AbstractMapper
 
     /**
      * @param string $part
-     *
      * @return bool
      */
     protected function isInitial(string $part): bool
@@ -108,6 +106,6 @@ class InitialMapper extends AbstractMapper
             return true;
         }
 
-        return ($length === 2 && substr($part, -1) === '.');
+        return ($length === 2 && substr($part, -1) ===  '.');
     }
 }

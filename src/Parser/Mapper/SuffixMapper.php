@@ -41,18 +41,12 @@ use CanyonGBS\Common\Parser\Part\Suffix;
 
 class SuffixMapper extends AbstractMapper
 {
-    /**
-     * @var array<string>
-     */
-    protected array $suffixes = [];
+    protected $suffixes = [];
 
-    protected bool $matchSinglePart = false;
+    protected $matchSinglePart = false;
 
-    protected int $reservedParts = 2;
+    protected $reservedParts = 2;
 
-    /**
-     * @param array<int, string> $suffixes
-     */
     public function __construct(array $suffixes, bool $matchSinglePart = false, int $reservedParts = 2)
     {
         $this->suffixes = $suffixes;
@@ -61,15 +55,15 @@ class SuffixMapper extends AbstractMapper
     }
 
     /**
-     * @param array<int, string|AbstractPart> $parts
+     * map suffixes in the parts array
      *
-     * @return array<int, Suffix|string>
+     * @param array $parts the name parts
+     * @return array the mapped parts
      */
     public function map(array $parts): array
     {
         if ($this->isMatchingSinglePart($parts)) {
             $parts[0] = new Suffix($parts[0], $this->suffixes[$this->getKey($parts[0])]);
-
             return $parts;
         }
 
@@ -78,7 +72,7 @@ class SuffixMapper extends AbstractMapper
         for ($k = $start; $k > $this->reservedParts - 1; $k--) {
             $part = $parts[$k];
 
-            if (! $this->isSuffix($part)) {
+            if (!$this->isSuffix($part)) {
                 break;
             }
 
@@ -89,13 +83,12 @@ class SuffixMapper extends AbstractMapper
     }
 
     /**
-     * @param array<string> $parts
-     *
+     * @param $parts
      * @return bool
      */
-    protected function isMatchingSinglePart(array $parts): bool
+    protected function isMatchingSinglePart($parts): bool
     {
-        if (! $this->matchSinglePart) {
+        if (!$this->matchSinglePart) {
             return false;
         }
 
@@ -107,11 +100,10 @@ class SuffixMapper extends AbstractMapper
     }
 
     /**
-     * @param string|AbstractPart $part
-     *
+     * @param $part
      * @return bool
      */
-    protected function isSuffix(string|AbstractPart $part): bool
+    protected function isSuffix($part): bool
     {
         if ($part instanceof AbstractPart) {
             return false;

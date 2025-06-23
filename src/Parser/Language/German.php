@@ -40,7 +40,7 @@ use CanyonGBS\Common\Parser\LanguageInterface;
 
 class German implements LanguageInterface
 {
-    public const SUFFIXES = [
+    const SUFFIXES = [
         '1.' => '1.',
         '2.' => '2.',
         '3.' => '3.',
@@ -53,14 +53,14 @@ class German implements LanguageInterface
         'v' => 'V',
     ];
 
-    public const SALUTATIONS = [
+    const SALUTATIONS = [
         'herr' => 'Herr',
         'hr' => 'Herr',
         'frau' => 'Frau',
-        'fr' => 'Frau',
+        'fr' => 'Frau'
     ];
 
-    public const LASTNAME_PREFIXES = [
+    const LASTNAME_PREFIXES = [
         'der' => 'der',
         'von' => 'von',
     ];

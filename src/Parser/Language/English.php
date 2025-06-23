@@ -40,7 +40,7 @@ use CanyonGBS\Common\Parser\LanguageInterface;
 
 class English implements LanguageInterface
 {
-    public const SUFFIXES = [
+    const SUFFIXES = [
         '1st' => '1st',
         '2nd' => '2nd',
         '3rd' => '3rd',
@@ -53,7 +53,10 @@ class English implements LanguageInterface
         'v' => 'V',
         'apr' => 'APR',
         'cme' => 'CME',
+        'dds' => 'DDS',
         'dmd' => 'DMD',
+        'dvm' => 'DVM',
+        'esq' => 'Esq',
         'jr' => 'Jr',
         'junior' => 'Junior',
         'ma' => 'MA',
@@ -65,7 +68,7 @@ class English implements LanguageInterface
         'sr' => 'Sr',
     ];
 
-    public const SALUTATIONS = [
+    const SALUTATIONS = [
         'dr' => 'Dr.',
         'fr' => 'Fr.',
         'madam' => 'Madam',
@@ -80,10 +83,10 @@ class English implements LanguageInterface
         'sir' => 'Sir',
         'prof' => 'Prof.',
         'his honour' => 'His Honour',
-        'her honour' => 'Her Honour',
+        'her honour' => 'Her Honour'
     ];
 
-    public const LASTNAME_PREFIXES = [
+    const LASTNAME_PREFIXES = [
         'da' => 'da',
         'de' => 'de',
         'del' => 'del',

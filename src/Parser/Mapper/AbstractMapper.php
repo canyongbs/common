@@ -41,18 +41,18 @@ use CanyonGBS\Common\Parser\Part\AbstractPart;
 abstract class AbstractMapper
 {
     /**
-     * @param array<int, string|AbstractPart> $parts
+     * implements the mapping of parts
      *
-     * @return array<int, string|AbstractPart>
+     * @param array $parts - the name parts
+     * @return array $parts - the mapped parts
      */
     abstract public function map(array $parts);
 
     /**
-     * Checks if there are still unmapped parts left before the given position.
+     * checks if there are still unmapped parts left before the given position
      *
-     * @param array<int, AbstractPart> $parts
-     * @param int $index
-     *
+     * @param array $parts
+     * @param $index
      * @return bool
      */
     protected function hasUnmappedPartsBefore(array $parts, $index): bool
@@ -61,16 +61,19 @@ abstract class AbstractMapper
             if ($k === $index) {
                 break;
             }
+
+            if (!($part instanceof AbstractPart)) {
+                return true;
+            }
         }
 
         return false;
     }
 
     /**
-     * @param class-string $type
-     * @param array<int, object> $parts
-     *
-     * @return int|false
+     * @param string $type
+     * @param array $parts
+     * @return int|bool
      */
     protected function findFirstMapped(string $type, array $parts)
     {
@@ -89,7 +92,6 @@ abstract class AbstractMapper
      * get the registry lookup key for the given word
      *
      * @param string $word the word
-     *
      * @return string the key
      */
     protected function getKey($word): string

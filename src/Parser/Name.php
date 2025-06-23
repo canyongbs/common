@@ -43,16 +43,16 @@ class Name
     private const PARTS_NAMESPACE = 'CanyonGBS\Common\Parser\Part';
 
     /**
-     * @var array<int, AbstractPart>
+     * @var array the parts that make up this name
      */
-    protected array $parts = [];
+    protected $parts = [];
 
     /**
-     * Constructor takes the array of parts this name consists of
+     * constructor takes the array of parts this name consists of
      *
-     * @param array<int, AbstractPart>|null $parts
+     * @param array|null $parts
      */
-    public function __construct(?array $parts = null)
+    public function __construct(?array $parts)
     {
         if (null !== $parts) {
             $this->setParts($parts);
@@ -70,8 +70,7 @@ class Name
     /**
      * set the parts this name consists of
      *
-     * @param array<int, AbstractPart> $parts
-     *
+     * @param array $parts
      * @return $this
      */
     public function setParts(array $parts): Name
@@ -84,7 +83,7 @@ class Name
     /**
      * get the parts this name consists of
      *
-     * @return array<int, AbstractPart>
+     * @return array
      */
     public function getParts(): array
     {
@@ -93,8 +92,7 @@ class Name
 
     /**
      * @param bool $format
-     *
-     * @return array<string, mixed>
+     * @return array
      */
     public function getAll(bool $format = false): array
     {
@@ -111,10 +109,9 @@ class Name
 
         foreach ($keys as $key => $args) {
             $method = sprintf('get%s', ucfirst($key));
-
-            if ($value = call_user_func_array([$this, $method], $args)) {
+            if ($value = call_user_func_array(array($this, $method), $args)) {
                 $results[$key] = $value;
-            }
+            };
         }
 
         return $results;
@@ -155,7 +152,6 @@ class Name
      * get the last name
      *
      * @param bool $pure
-     *
      * @return string
      */
     public function getLastname(bool $pure = false): string
@@ -207,7 +203,6 @@ class Name
      * get the nick name(s)
      *
      * @param bool $wrap
-     *
      * @return string
      */
     public function getNickname(bool $wrap = false): string
@@ -234,7 +229,6 @@ class Name
      *
      * @param string $type
      * @param bool $strict
-     *
      * @return string
      */
     protected function export(string $type, bool $strict = false): string
@@ -242,12 +236,12 @@ class Name
         $matched = [];
 
         foreach ($this->parts as $part) {
-            if ($this->isType($part, $type, $strict)) {
+            if ($part instanceof AbstractPart && $this->isType($part, $type, $strict)) {
                 $matched[] = $part->normalize();
             }
         }
 
-        return implode(' ', $matched);
+        return implode(' ',  $matched);
     }
 
     /**
@@ -256,7 +250,6 @@ class Name
      * @param AbstractPart $part
      * @param string $type
      * @param bool $strict
-     *
      * @return bool
      */
     protected function isType(AbstractPart $part, string $type, bool $strict = false): bool
@@ -270,3 +263,4 @@ class Name
         return is_a($part, $className);
     }
 }
+

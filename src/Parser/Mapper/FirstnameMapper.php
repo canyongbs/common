@@ -45,11 +45,10 @@ use CanyonGBS\Common\Parser\Part\Salutation;
 class FirstnameMapper extends AbstractMapper
 {
     /**
-     * Map firstnames in parts array.
+     * map firstnames in parts array
      *
-     * @param array<int, string|AbstractPart> $parts The parts
-     *
-     * @return array<int, string|AbstractPart> The mapped parts
+     * @param array $parts the parts
+     * @return array the mapped parts
      */
     public function map(array $parts): array
     {
@@ -67,9 +66,8 @@ class FirstnameMapper extends AbstractMapper
     }
 
     /**
-     * @param string|AbstractPart $part
-     *
-     * @return AbstractPart
+     * @param $part
+     * @return Firstname
      */
     protected function handleSinglePart($part): AbstractPart
     {
@@ -81,8 +79,7 @@ class FirstnameMapper extends AbstractMapper
     }
 
     /**
-     * @param array<int, AbstractPart|string|mixed> $parts
-     *
+     * @param array $parts
      * @return int|null
      */
     protected function findFirstnamePosition(array $parts): ?int
@@ -114,8 +111,7 @@ class FirstnameMapper extends AbstractMapper
     }
 
     /**
-     * @param array<int, AbstractPart> $parts
-     *
+     * @param array $parts
      * @return int
      */
     protected function getStartIndex(array $parts): int
@@ -133,3 +129,4 @@ class FirstnameMapper extends AbstractMapper
         return $index + 1;
     }
 }
+

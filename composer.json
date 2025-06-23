@@ -8,11 +8,14 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.60",
-        "phpstan/phpstan": "^2.1"
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5",
+        "php-coveralls/php-coveralls": "^0.1.0",
+        "php-mock/php-mock-phpunit": "^2.13"
     },
     "autoload": {
         "psr-4": {
-            "CanyonGBS\\Common\\": "src/"
+            "CanyonGBS\\Common\\": ["src/","tests/"]
         }
     },
     "scripts": {
