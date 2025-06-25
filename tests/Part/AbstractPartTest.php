@@ -1,28 +1,24 @@
 <?php
 
 use CanyonGBS\Common\Parser\Part\AbstractPart;
-use PHPUnit\Framework\TestCase;
+test('normalize', function () {
+     $part = $this->getMockBuilder(AbstractPart::class)
+            ->setConstructorArgs(['abc'])
+            ->onlyMethods([]) 
+            ->getMock();
+    expect($part->normalize())->toEqual('abc');
+});
 
-class AbstractPartTest extends TestCase
-{
-    /**
-     * make sure the placeholder normalize() method returns the original value
-     */
-    public function testNormalize()
-    {
-        $part = $this->getMockForAbstractClass(AbstractPart::class, ['abc']);
-        $this->assertEquals('abc', $part->normalize());
-    }
+test('set value unwraps', function () {
+     $part = $this->getMockBuilder(AbstractPart::class)
+            ->setConstructorArgs(['abc'])
+            ->onlyMethods([]) 
+            ->getMock();
+    expect($part->getValue())->toEqual('abc');
 
-    /**
-     * make sure we unwrap any parts during setValue() calls
-     */
-    public function testSetValueUnwraps()
-    {
-        $part = $this->getMockForAbstractClass(AbstractPart::class, ['abc']);
-        $this->assertEquals('abc', $part->getValue());
-
-        $part = $this->getMockForAbstractClass(AbstractPart::class, [$part]);
-        $this->assertEquals('abc', $part->getValue());
-    }
-}
+    $wrappedPart = $this->getMockBuilder(AbstractPart::class)
+            ->setConstructorArgs([$part])
+            ->onlyMethods([]) 
+            ->getMock();
+    expect($wrappedPart->getValue())->toEqual('abc');
+});

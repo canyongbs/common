@@ -11,11 +11,15 @@
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^11.5",
         "php-coveralls/php-coveralls": "^0.1.0",
-        "php-mock/php-mock-phpunit": "^2.13"
+        "php-mock/php-mock-phpunit": "^2.13",
+        "pestphp/pest": "^3.8",
+        "orchestra/testbench": "^10.4",
+        "pestphp/pest-plugin-laravel": "^3.2"
     },
     "autoload": {
         "psr-4": {
-            "CanyonGBS\\Common\\": ["src/","tests/"]
+            "CanyonGBS\\Common\\": "src/",
+            "CanyonGBS\\Common\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -67,6 +71,11 @@
             "providers": [
                 "CanyonGBS\\Common\\CommonServiceProvider"
             ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     }
 }

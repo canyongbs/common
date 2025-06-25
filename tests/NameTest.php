@@ -10,63 +10,49 @@ use CanyonGBS\Common\Parser\Part\Middlename;
 use CanyonGBS\Common\Parser\Part\Nickname;
 use CanyonGBS\Common\Parser\Part\Salutation;
 use CanyonGBS\Common\Parser\Part\Suffix;
-use PHPUnit\Framework\TestCase;
+test('to string', function () {
+    $parts = [
+        new Salutation('Mr', 'Mr.'),
+        new Firstname('James'),
+        new Middlename('Morgan'),
+        new Nickname('Jim'),
+        new Initial('T.'),
+        new Lastname('Smith'),
+        new Suffix('I', 'I'),
+    ];
 
-class NameTest extends TestCase
-{
-    public function testToString()
-    {
-        $parts = [
-            new Salutation('Mr', 'Mr.'),
-            new Firstname('James'),
-            new Middlename('Morgan'),
-            new Nickname('Jim'),
-            new Initial('T.'),
-            new Lastname('Smith'),
-            new Suffix('I', 'I'),
-        ];
+    $name = new Name($parts);
 
-        $name = new Name($parts);
+    expect($name->getParts())->toBe($parts);
+    expect((string) $name)->toBe('Mr. James (Jim) Morgan T. Smith I');
+});
+test('get nickname', function () {
+    $name = new Name([
+        new Nickname('Jim'),
+    ]);
 
-        $this->assertSame($parts, $name->getParts());
-        $this->assertSame('Mr. James (Jim) Morgan T. Smith I', (string) $name);
-    }
+    expect($name->getNickname())->toBe('Jim');
+    expect($name->getNickname(true))->toBe('(Jim)');
+});
+test('getting lastname and lastname prefix separately', function () {
+    $name = new Name([
+        new Firstname('Frank'),
+        new LastnamePrefix('van'),
+        new Lastname('Delft'),
+    ]);
 
-    public function testGetNickname()
-    {
-        $name = new Name([
-            new Nickname('Jim'),
-        ]);
-
-        $this->assertSame('Jim', $name->getNickname());
-        $this->assertSame('(Jim)', $name->getNickname(true));
-    }
-
-    public function testGettingLastnameAndLastnamePrefixSeparately()
-    {
-        $name = new Name([
-            new Firstname('Frank'),
-            new LastnamePrefix('van'),
-            new Lastname('Delft'),
-        ]);
-
-        $this->assertSame('Frank', $name->getFirstname());
-        $this->assertSame('van', $name->getLastnamePrefix());
-        $this->assertSame('Delft', $name->getLastname(true));
-        $this->assertSame('van Delft', $name->getLastname());
-    }
-
-    public function testGetGivenNameShouldReturnGivenNameInGivenOrder(): void
-    {
-        $parser = new Parser();
-        $name = $parser->parse('Schuler, J. Peter M.');
-        $this->assertSame('J. Peter M.', $name->getGivenName());
-    }
-
-    public function testGetFullNameShouldReturnTheFullNameInGivenOrder(): void
-    {
-        $parser = new Parser();
-        $name = $parser->parse('Schuler, J. Peter M.');
-        $this->assertSame('J. Peter M. Schuler', $name->getFullName());
-    }
-}
+    expect($name->getFirstname())->toBe('Frank');
+    expect($name->getLastnamePrefix())->toBe('van');
+    expect($name->getLastname(true))->toBe('Delft');
+    expect($name->getLastname())->toBe('van Delft');
+});
+test('get given name should return given name in given order', function () {
+    $parser = new Parser();
+    $name = $parser->parse('Schuler, J. Peter M.');
+    expect($name->getGivenName())->toBe('J. Peter M.');
+});
+test('get full name should return the full name in given order', function () {
+    $parser = new Parser();
+    $name = $parser->parse('Schuler, J. Peter M.');
+    expect($name->getFullName())->toBe('J. Peter M. Schuler');
+});

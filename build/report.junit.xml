@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/home/ankit-canyon/common/phpunit.xml" tests="2" assertions="0" errors="2" failures="0" skipped="0" time="0.000000">
+    <testsuite name="Test Suite" tests="2" assertions="0" errors="2" failures="0" skipped="0" time="0.000000">
+      <testsuite name="Tests\Feature\ExampleTest" file="tests/Feature/ExampleTest.php" tests="1" assertions="0" errors="1" failures="0" skipped="0" time="0.000000">
+        <testcase name="it returns a successful response" file="tests/Feature/ExampleTest.php::it returns a successful response" class="Tests\Feature\ExampleTest" classname="Tests.Feature.ExampleTest" assertions="0" time="0.000000">
+          <error type="Error">it returns a successful responseError: Failed opening required '/home/ankit-canyon/common/bootstrap/app.php' (include_path='.:/usr/share/php')
+at vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:30
+at vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:54
+at vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:91
+at vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:44</error>
+        </testcase>
+      </testsuite>
+      <testsuite name="Tests\Unit\ExampleTest" file="tests/Unit/ExampleTest.php" tests="1" assertions="0" errors="1" failures="0" skipped="0" time="0.000000">
+        <testcase name="that true is true" file="tests/Unit/ExampleTest.php::that true is true" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" assertions="0" time="0.000000">
+          <error type="Error">that true is trueError: Failed opening required '/home/ankit-canyon/common/bootstrap/app.php' (include_path='.:/usr/share/php')
+at vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:30
+at vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:54
+at vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:91
+at vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:44</error>
+        </testcase>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

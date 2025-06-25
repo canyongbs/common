@@ -1,68 +1,54 @@
 <?php
 
-namespace CanyonGBS\Common;
-
 use CanyonGBS\Common\Parser\Language\German;
 use CanyonGBS\Common\Parser\Name;
 use CanyonGBS\Common\Parser\Parser;
-use PHPUnit\Framework\TestCase;
 
-class GermanParserTest extends TestCase
-{
-    /**
-     * @return array
-     */
-    public static function provider()
-    {
-        return [
+/**
+ * @return array
+ */
+dataset('provider', function () {
+    return [
+        [
+            'Herr Schmidt',
             [
-                'Herr Schmidt',
-                [
-                    'salutation' => 'Herr',
-                    'lastname' => 'Schmidt',
-                ]
-            ],
+                'salutation' => 'Herr',
+                'lastname' => 'Schmidt',
+            ]
+        ],
+        [
+            'Frau Maria Lange',
             [
-                'Frau Maria Lange',
-                [
-                    'salutation' => 'Frau',
-                    'firstname' => 'Maria',
-                    'lastname' => 'Lange',
-                ]
-            ],
+                'salutation' => 'Frau',
+                'firstname' => 'Maria',
+                'lastname' => 'Lange',
+            ]
+        ],
+        [
+            'Hr. Juergen von der Lippe',
             [
-                'Hr. Juergen von der Lippe',
-                [
-                    'salutation' => 'Herr',
-                    'firstname' => 'Juergen',
-                    'lastname' => 'von der Lippe',
-                ]
-            ],
+                'salutation' => 'Herr',
+                'firstname' => 'Juergen',
+                'lastname' => 'von der Lippe',
+            ]
+        ],
+        [
+            'Fr. Charlotte von Stein',
             [
-                'Fr. Charlotte von Stein',
-                [
-                    'salutation' => 'Frau',
-                    'firstname' => 'Charlotte',
-                    'lastname' => 'von Stein',
-                ]
-            ],
-        ];
-    }
+                'salutation' => 'Frau',
+                'firstname' => 'Charlotte',
+                'lastname' => 'von Stein',
+            ]
+        ],
+    ];
+});
 
-    /**
-     * @dataProvider provider
-     *
-     * @param $input
-     * @param $expectation
-     */
-    public function testParse($input, $expectation)
-    {
-        $parser = new Parser([
-            new German()
-        ]);
-        $name = $parser->parse($input);
+test('parse', function ($input, $expectation) {
+    $parser = new Parser([
+        new German()
+    ]);
+    $name = $parser->parse($input);
 
-        $this->assertInstanceOf(Name::class, $name);
-        $this->assertEquals($expectation, $name->getAll());
-    }
-}
+    expect($name)->toBeInstanceOf(Name::class);
+    expect($name->getAll())->toEqual($expectation);
+})->with('provider');

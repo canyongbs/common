@@ -1,23 +1,14 @@
 <?php
 
-namespace CanyonGBS\Common\Mapper;
+// uses(CanyonGBS\Common\Parser\Tests\Mapper\AbstractMapperTest::class);
 
-use PHPUnit\Framework\TestCase;
 
-abstract class AbstractMapperTest extends TestCase
-{
-    /**
-     * @dataProvider provider
-     *
-     * @param $input
-     * @param $expectation
-     */
-    public function testMap($input, $expectation, $arguments = [])
-    {
-        $mapper = call_user_func_array([$this, 'getMapper'], $arguments);
+// beforeEach(function () {
+//     $this->getMapper = fn (...$args) => call_user_func_array([new AbstractMapperTest(), 'getMapper'], $args);
+// });
 
-        $this->assertEquals($expectation, $mapper->map($input));
-    }
+// test('map', function ($input, $expectation, $arguments = []) {
+//     $mapper = ($this->getMapper)(...$arguments);
 
-    abstract protected function getMapper();
-}
+//     expect($mapper->map($input))->toEqual($expectation);
+// })->with('provider');
