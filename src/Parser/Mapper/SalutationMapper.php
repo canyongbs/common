@@ -41,10 +41,17 @@ use CanyonGBS\Common\Parser\Part\Salutation;
 
 class SalutationMapper extends AbstractMapper
 {
-    protected $salutations = [];
+    /**
+     * @var array<string, string>
+     */
+    protected array $salutations = [];
 
-    protected $maxIndex = 0;
+    protected int $maxIndex = 0;
 
+    /**
+     * @param array<int|string> $salutations
+     * @param int $maxIndex
+     */
     public function __construct(array $salutations, $maxIndex = 0)
     {
         $this->salutations = $salutations;
@@ -52,10 +59,10 @@ class SalutationMapper extends AbstractMapper
     }
 
     /**
-     * map salutations in the parts array
+     * Map salutations in the parts array.
      *
-     * @param array $parts the name parts
-     * @return array the mapped parts
+     * @param array<int, string> $parts The name parts.
+     * @return array<int, string> The mapped parts.
      */
     public function map(array $parts): array
     {
@@ -73,13 +80,11 @@ class SalutationMapper extends AbstractMapper
     }
 
     /**
-     * We pass the full parts array and the current position to allow
-     * not only single-word matches but also combined matches with
-     * subsequent words (parts).
+     * Substitute salutation in the given parts array starting at a given index.
      *
-     * @param array $parts
+     * @param array<int, string> $parts
      * @param int $start
-     * @return array
+     * @return array<int, string|AbstractPart>
      */
     protected function substituteWithSalutation(array $parts, int $start): array
     {
@@ -104,12 +109,10 @@ class SalutationMapper extends AbstractMapper
     }
 
     /**
-     * check if the given subset matches the given keys entry by entry,
-     * which means word by word, except that we first need to key-ify
-     * the subset words
+     * Check if the subset matches the given keys.
      *
-     * @param array $keys
-     * @param array $subset
+     * @param array<int, string> $keys
+     * @param array<int, string|AbstractPart> $subset
      * @return bool
      */
     private function isMatchingSubset(array $keys, array $subset): bool

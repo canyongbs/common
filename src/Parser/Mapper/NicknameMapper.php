@@ -42,7 +42,7 @@ use CanyonGBS\Common\Parser\Part\Nickname;
 class NicknameMapper extends AbstractMapper
 {
     /**
-     * @var array
+     * @var array<string, string>
      */
     protected $delimiters = [
         '[' => ']',
@@ -53,6 +53,9 @@ class NicknameMapper extends AbstractMapper
         '\'' => '\''
     ];
 
+    /**
+     * @param array<string, string> $delimiters
+     */
     public function __construct(array $delimiters = [])
     {
         if (!empty($delimiters)) {
@@ -61,10 +64,10 @@ class NicknameMapper extends AbstractMapper
     }
 
     /**
-     * map nicknames in the parts array
+     * Map nicknames in the parts array
      *
-     * @param array $parts the name parts
-     * @return array the mapped parts
+     * @param array<int, string|AbstractPart> $parts the name parts
+     * @return array<int, string|AbstractPart|Nickname> the mapped parts
      */
     public function map(array $parts): array
     {

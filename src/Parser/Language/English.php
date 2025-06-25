@@ -104,16 +104,25 @@ class English implements LanguageInterface
         'von' => 'von',
     ];
 
+    /**
+     * @return array<string, string>
+     */
     public function getSuffixes(): array
     {
         return self::SUFFIXES;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getSalutations(): array
     {
         return self::SALUTATIONS;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getLastnamePrefixes(): array
     {
         return self::LASTNAME_PREFIXES;

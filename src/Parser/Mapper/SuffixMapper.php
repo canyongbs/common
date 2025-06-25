@@ -41,12 +41,18 @@ use CanyonGBS\Common\Parser\Part\Suffix;
 
 class SuffixMapper extends AbstractMapper
 {
-    protected $suffixes = [];
+    /** 
+     * @var array<string> 
+     */
+    protected array $suffixes = [];
 
-    protected $matchSinglePart = false;
+    protected bool $matchSinglePart = false;
 
-    protected $reservedParts = 2;
+    protected int $reservedParts = 2;
 
+    /**
+     * @param array<int, string> $suffixes
+     */
     public function __construct(array $suffixes, bool $matchSinglePart = false, int $reservedParts = 2)
     {
         $this->suffixes = $suffixes;
@@ -55,10 +61,8 @@ class SuffixMapper extends AbstractMapper
     }
 
     /**
-     * map suffixes in the parts array
-     *
-     * @param array $parts the name parts
-     * @return array the mapped parts
+     * @param array<int, string|AbstractPart> $parts
+     * @return array<int, Suffix|string>
      */
     public function map(array $parts): array
     {
@@ -82,8 +86,8 @@ class SuffixMapper extends AbstractMapper
         return $parts;
     }
 
-    /**
-     * @param $parts
+   /**
+     * @param array<string> $parts
      * @return bool
      */
     protected function isMatchingSinglePart($parts): bool
@@ -100,7 +104,7 @@ class SuffixMapper extends AbstractMapper
     }
 
     /**
-     * @param $part
+     * @param string|AbstractPart $part
      * @return bool
      */
     protected function isSuffix($part): bool
