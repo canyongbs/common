@@ -58,6 +58,7 @@ class InitialMapper extends AbstractMapper
      * Map initials in the parts array.
      *
      * @param array<int, string|AbstractPart> $parts The name parts
+     *
      * @return array<int, string|AbstractPart> The mapped parts
      */
     public function map(array $parts): array
@@ -71,7 +72,7 @@ class InitialMapper extends AbstractMapper
                 continue;
             }
 
-            if (!$this->matchLastPart && $k === $last) {
+            if (! $this->matchLastPart && $k === $last) {
                 continue;
             }
 
@@ -96,6 +97,7 @@ class InitialMapper extends AbstractMapper
 
     /**
      * @param string $part
+     *
      * @return bool
      */
     protected function isInitial(string $part): bool
@@ -106,6 +108,6 @@ class InitialMapper extends AbstractMapper
             return true;
         }
 
-        return ($length === 2 && substr($part, -1) ===  '.');
+        return ($length === 2 && substr($part, -1) === '.');
     }
 }

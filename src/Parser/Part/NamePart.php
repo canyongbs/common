@@ -48,4 +48,3 @@ abstract class NamePart extends AbstractPart
         return $this->camelcase($this->getValue());
     }
 }
-

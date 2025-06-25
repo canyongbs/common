@@ -40,7 +40,6 @@ use CanyonGBS\Common\Parser\Part\Firstname;
 use CanyonGBS\Common\Parser\Part\Lastname;
 use CanyonGBS\Common\Parser\Part\Suffix;
 
-
 /**
  * @return array
  */

@@ -42,6 +42,7 @@ abstract class AbstractMapper
 {
     /**
      * @param array<int, string|AbstractPart> $parts
+     *
      * @return array<int, string|AbstractPart>
      */
     abstract public function map(array $parts);
@@ -51,6 +52,7 @@ abstract class AbstractMapper
      *
      * @param array<int, mixed> $parts
      * @param int $index
+     *
      * @return bool
      */
     protected function hasUnmappedPartsBefore(array $parts, $index): bool
@@ -60,7 +62,7 @@ abstract class AbstractMapper
                 break;
             }
 
-            if (!($part instanceof AbstractPart)) {
+            if (! ($part instanceof AbstractPart)) {
                 return true;
             }
         }
@@ -71,6 +73,7 @@ abstract class AbstractMapper
     /**
      * @param class-string $type
      * @param array<int, object> $parts
+     *
      * @return int|false
      */
     protected function findFirstMapped(string $type, array $parts)
@@ -90,6 +93,7 @@ abstract class AbstractMapper
      * get the registry lookup key for the given word
      *
      * @param string $word the word
+     *
      * @return string the key
      */
     protected function getKey($word): string

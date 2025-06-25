@@ -36,7 +36,8 @@
 
 use function PHPUnit\Framework\assertEquals;
 
-function testMap(array $input, array $expectation, array $arguments = [], callable $getMapper): void {
+function testMap(array $input, array $expectation, array $arguments = [], callable $getMapper): void
+{
     $mapper = call_user_func_array($getMapper, $arguments);
     assertEquals($expectation, $mapper->map($input));
 }

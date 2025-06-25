@@ -48,7 +48,7 @@ dataset('provider', function () {
             [
                 'salutation' => 'Herr',
                 'lastname' => 'Schmidt',
-            ]
+            ],
         ],
         [
             'Frau Maria Lange',
@@ -56,7 +56,7 @@ dataset('provider', function () {
                 'salutation' => 'Frau',
                 'firstname' => 'Maria',
                 'lastname' => 'Lange',
-            ]
+            ],
         ],
         [
             'Hr. Juergen von der Lippe',
@@ -64,7 +64,7 @@ dataset('provider', function () {
                 'salutation' => 'Herr',
                 'firstname' => 'Juergen',
                 'lastname' => 'von der Lippe',
-            ]
+            ],
         ],
         [
             'Fr. Charlotte von Stein',
@@ -72,14 +72,14 @@ dataset('provider', function () {
                 'salutation' => 'Frau',
                 'firstname' => 'Charlotte',
                 'lastname' => 'von Stein',
-            ]
+            ],
         ],
     ];
 });
 
 test('parse', function ($input, $expectation) {
     $parser = new Parser([
-        new German()
+        new German(),
     ]);
     $name = $parser->parse($input);
 

@@ -44,6 +44,7 @@ use CanyonGBS\Common\Parser\Part\Middlename;
 use CanyonGBS\Common\Parser\Part\Nickname;
 use CanyonGBS\Common\Parser\Part\Salutation;
 use CanyonGBS\Common\Parser\Part\Suffix;
+
 test('to string', function () {
     $parts = [
         new Salutation('Mr', 'Mr.'),

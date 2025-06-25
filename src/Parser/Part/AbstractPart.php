@@ -58,6 +58,7 @@ abstract class AbstractPart
      * (can take string or part instance)
      *
      * @param string|AbstractPart $value
+     *
      * @return $this
      */
     public function setValue($value): AbstractPart
@@ -96,6 +97,7 @@ abstract class AbstractPart
      * to be used during normalize
      *
      * @param $word
+     *
      * @return string
      */
     protected function camelcase(string $word): string
@@ -111,6 +113,7 @@ abstract class AbstractPart
      * camelcasing callback
      *
      * @param array<int, string> $matches
+     *
      * @return string
      */
     protected function camelcaseReplace(array $matches): string
@@ -118,7 +121,7 @@ abstract class AbstractPart
         if (function_exists('mb_convert_case')) {
             return mb_convert_case($matches[0], MB_CASE_TITLE, 'UTF-8');
         }
-        
+
         return ucfirst(strtolower($matches[0]));
     }
 }

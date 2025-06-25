@@ -62,6 +62,7 @@ class SalutationMapper extends AbstractMapper
      * Map salutations in the parts array.
      *
      * @param array<int, string> $parts The name parts.
+     *
      * @return array<int, string> The mapped parts.
      */
     public function map(array $parts): array
@@ -84,12 +85,14 @@ class SalutationMapper extends AbstractMapper
      *
      * @param array<int, string> $parts
      * @param int $start
+     *
      * @return array<int, string|AbstractPart>
      */
     protected function substituteWithSalutation(array $parts, int $start): array
     {
         if ($this->isSalutation($parts[$start])) {
             $parts[$start] = new Salutation($parts[$start], $this->salutations[$this->getKey($parts[$start])]);
+
             return $parts;
         }
 
@@ -101,6 +104,7 @@ class SalutationMapper extends AbstractMapper
 
             if ($this->isMatchingSubset($keys, $subset)) {
                 array_splice($parts, $start, $length, [new Salutation(implode(' ', $subset), $salutation)]);
+
                 return $parts;
             }
         }
@@ -109,10 +113,23 @@ class SalutationMapper extends AbstractMapper
     }
 
     /**
+     * check if the given word is a viable salutation
+     *
+     * @param string $word the word to check
+     *
+     * @return bool
+     */
+    protected function isSalutation($word): bool
+    {
+        return (array_key_exists($this->getKey($word), $this->salutations));
+    }
+
+    /**
      * Check if the subset matches the given keys.
      *
      * @param array<int, string> $keys
      * @param array<int, string|AbstractPart> $subset
+     *
      * @return bool
      */
     private function isMatchingSubset(array $keys, array $subset): bool
@@ -124,16 +141,5 @@ class SalutationMapper extends AbstractMapper
         }
 
         return true;
-    }
-
-    /**
-     * check if the given word is a viable salutation
-     *
-     * @param string $word the word to check
-     * @return bool
-     */
-    protected function isSalutation($word): bool
-    {
-        return (array_key_exists($this->getKey($word), $this->salutations));
     }
 }

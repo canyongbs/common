@@ -24,7 +24,7 @@
     },
     "scripts": {
         "php-cs-format": [
-            "./vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix -v --config=./php-cs-fixer.php"
+            "export PHP_CS_FIXER_IGNORE_ENV=1 ; ./vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix -v --config=./php-cs-fixer.php"
         ],
         "php-cs-format-dryrun": [
             "@php-cs-format --dry-run --stop-on-violation"

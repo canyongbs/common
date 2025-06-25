@@ -38,6 +38,7 @@ use CanyonGBS\Common\Parser\Language\English;
 use CanyonGBS\Common\Parser\Mapper\SalutationMapper;
 use CanyonGBS\Common\Parser\Part\Firstname;
 use CanyonGBS\Common\Parser\Part\Salutation;
+
 /**
  * @return array
  */
