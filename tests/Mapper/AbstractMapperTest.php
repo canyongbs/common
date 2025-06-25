@@ -34,15 +34,9 @@
 </COPYRIGHT>
 */
 
-// uses(CanyonGBS\Common\Parser\Tests\Mapper\AbstractMapperTest::class);
+use function PHPUnit\Framework\assertEquals;
 
-
-// beforeEach(function () {
-//     $this->getMapper = fn (...$args) => call_user_func_array([new AbstractMapperTest(), 'getMapper'], $args);
-// });
-
-// test('map', function ($input, $expectation, $arguments = []) {
-//     $mapper = ($this->getMapper)(...$arguments);
-
-//     expect($mapper->map($input))->toEqual($expectation);
-// })->with('provider');
+function testMap(array $input, array $expectation, array $arguments = [], callable $getMapper): void {
+    $mapper = call_user_func_array($getMapper, $arguments);
+    assertEquals($expectation, $mapper->map($input));
+}
