@@ -36,8 +36,8 @@
 
 namespace CanyonGBS\Common\Tests\PhpStan\Rules;
 
-use PHPStan\Rules\Rule;
 use CanyonGBS\Common\PhpStan\Rules\MissingClosureParameterTypehintRule;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -45,11 +45,6 @@ use PHPStan\Testing\RuleTestCase;
  */
 class MissingClosureParameterTypehintRuleTest extends RuleTestCase
 {
-    protected function getRule(): Rule
-    {
-        return new MissingClosureParameterTypehintRule();
-    }
-
     public function testRule(): void
     {
         $this->analyse([__DIR__ . '/data/MissingClosureParameterTypehintRuleFixture.php'], [
@@ -70,5 +65,10 @@ class MissingClosureParameterTypehintRuleTest extends RuleTestCase
                 12,
             ],
         ]);
+    }
+
+    protected function getRule(): Rule
+    {
+        return new MissingClosureParameterTypehintRule();
     }
 }
