@@ -50,19 +50,19 @@ class MissingClosureParameterTypehintRuleTest extends RuleTestCase
         $this->analyse([__DIR__ . '/data/MissingClosureParameterTypehintRuleFixture.php'], [
             [
                 'Parameter #1 $a of anonymous function has no typehint.',
-                3,
+                37,
             ],
             [
                 'Parameter #2 $b of anonymous function has no typehint.',
-                3,
+                37,
             ],
             [
                 'Parameter #1 $c of anonymous function has no typehint.',
-                12,
+                46,
             ],
             [
                 'Parameter #2 $d of anonymous function has no typehint.',
-                12,
+                46,
             ],
         ]);
     }
