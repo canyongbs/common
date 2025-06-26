@@ -7,17 +7,24 @@
         "laravel/framework": "^11.0|^12.0"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.60",
-        "phpstan/phpstan": "^2.1"
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5",
+        "php-coveralls/php-coveralls": "^0.1.0",
+        "php-mock/php-mock-phpunit": "^2.13",
+        "pestphp/pest": "^3.8",
+        "orchestra/testbench": "^10.4",
+        "pestphp/pest-plugin-laravel": "^3.2",
+        "friendsofphp/php-cs-fixer": "^3.75"
     },
     "autoload": {
         "psr-4": {
-            "CanyonGBS\\Common\\": "src/"
+            "CanyonGBS\\Common\\": "src/",
+            "CanyonGBS\\Common\\Tests\\": "tests"
         }
     },
     "scripts": {
         "php-cs-format": [
-            "./vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix -v --config=./php-cs-fixer.php"
+            "export PHP_CS_FIXER_IGNORE_ENV=1 ; ./vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix -v --config=./php-cs-fixer.php"
         ],
         "php-cs-format-dryrun": [
             "@php-cs-format --dry-run --stop-on-violation"
@@ -64,6 +71,11 @@
             "providers": [
                 "CanyonGBS\\Common\\CommonServiceProvider"
             ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     }
 }
