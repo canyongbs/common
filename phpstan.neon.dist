@@ -1,3 +1,6 @@
+rules:
+    - CanyonGBS\Common\PhpStan\Rules\MissingClosureParameterTypehintRule
+
 parameters:
 
     paths:

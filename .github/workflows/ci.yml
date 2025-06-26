@@ -150,3 +150,34 @@ jobs:
         with:
           path: tmp
           key: "phpstan-result-cache-${{ github.run_id }}"
+
+  test:
+    runs-on: ubuntu-22.04
+
+    timeout-minutes: 15
+
+    needs: [enforce-copyright, fix-code-style]
+
+    steps:
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+          extensions: gd, gmp, redis, mailparse
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup Dependencies
+        uses: ./.github/actions/composer-dependency-setup
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+      - run: npm install
+
+      - name: Execute tests
+        run: ./vendor/bin/pest --configuration phpunit.xml --parallel
