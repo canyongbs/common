@@ -36,6 +36,7 @@
 
 namespace CanyonGBS\Common\Enums;
 
+use Filament\Support\Colors\Color as ColorHelper;
 use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Facades\FilamentColor;
 
@@ -84,8 +85,6 @@ enum Color: string implements HasLabel
 
     public function getRgb(): string
     {
-        $color = FilamentColor::getColors()[$this->value][500];
-
-        return "rgb({$color})";
+        return ColorHelper::convertToRgb(FilamentColor::getColors()[$this->value][500]);
     }
 }
