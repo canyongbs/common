@@ -111,6 +111,10 @@ class PermissionsMatrix extends Field
                     ->pluck('name', 'id')
                     ->all();
 
+                if (empty($permissions)) {
+                    return $carry;
+                }
+
                 if ((! in_array("{$permissionGroupNameSlugHyphen}.view-any", $permissions)) && (! in_array("{$permissionGroupNameSlugUnderscore}.view-any", $permissions))) {
                     // @phpstan-ignore property.notFound
                     report(new Exception('Permissions discovered which are not normalized: ' . json_encode($permissions) . ' in group ' . $permissionGroup->name));
