@@ -13,19 +13,18 @@ jobs:
 
         steps:
             - name: Checkout `main` Branch
-              uses: actions/checkout@v4
+              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #6.0.1
               with:
                   token: ${{ secrets.PAT }}
 
             - name: Set up Ruby
-              uses: ruby/setup-ruby@v1
+              uses: ruby/setup-ruby@d697be2f83c6234b20877c3b5eac7a7f342f0d0c #1.269.0
 
             - name: Run copyright script
               run: ruby ./copyright.rb
 
             - name: Create Pull Request
-              # SHA of release v6.1.0
-              uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725
+              uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 #8.0.0
               with:
                   token: ${{ secrets.PAT }}
                   commit-message: >
