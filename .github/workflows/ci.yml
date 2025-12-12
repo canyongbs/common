@@ -41,7 +41,7 @@ jobs:
             - name: Check for changes
               if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
               # SHA of release v20.0.1
-              uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687
+              uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf
               with:
                   fail-if-changed: 'true'
 
@@ -107,7 +107,7 @@ jobs:
             - name: Check for changes
               if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
               # SHA of release v20.0.1
-              uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687
+              uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf
               with:
                   fail-if-changed: 'true'
 
