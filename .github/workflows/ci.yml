@@ -16,16 +16,16 @@ jobs:
         steps:
             - name: Checkout code | Internal
               if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
-              uses: actions/checkout@v4
+              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #6.0.1
               with:
                   token: ${{ secrets.pat-token }}
 
             - name: Checkout code | External
               if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
-              uses: actions/checkout@v4
+              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #6.0.1
 
             - name: Set up Ruby
-              uses: ruby/setup-ruby@v1
+              uses: ruby/setup-ruby@d697be2f83c6234b20877c3b5eac7a7f342f0d0c #1.269.0
 
             - name: Run Ruby Script
               run: ruby ./copyright.rb
@@ -60,13 +60,13 @@ jobs:
 
             - name: Checkout code | Internal
               if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
-              uses: actions/checkout@v4
+              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #6.0.1
               with:
                   token: ${{ secrets.pat-token }}
 
             - name: Checkout code | External
               if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
-              uses: actions/checkout@v4
+              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #6.0.1
 
             - name: Setup Dependencies
               uses: ./.github/actions/composer-dependency-setup
@@ -125,7 +125,7 @@ jobs:
                   coverage: none
                   extensions: gd, gmp, redis
 
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #6.0.1
               with:
                   fetch-depth: 0
                   fetch-tags: true
@@ -165,7 +165,7 @@ jobs:
                   coverage: none
                   extensions: gd, gmp, redis, mailparse
 
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #6.0.1
               with:
                   fetch-depth: 0
                   fetch-tags: true
