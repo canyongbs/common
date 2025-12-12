@@ -75,14 +75,14 @@ class SuffixMapper extends AbstractMapper
 
         $start = count($parts) - 1;
 
-        for ($k = $start; $k > $this->reservedParts - 1; $k--) {
-            $part = $parts[$k];
+        for ($index = $start; $index > $this->reservedParts - 1; $index--) {
+            $part = $parts[$index];
 
             if (! $this->isSuffix($part)) {
                 break;
             }
 
-            $parts[$k] = new Suffix($part, $this->suffixes[$this->getKey($part)]);
+            $parts[$index] = new Suffix($part, $this->suffixes[$this->getKey($part)]);
         }
 
         return $parts;

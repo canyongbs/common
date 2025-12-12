@@ -57,8 +57,8 @@ abstract class AbstractMapper
      */
     protected function hasUnmappedPartsBefore(array $parts, $index): bool
     {
-        foreach ($parts as $k => $part) {
-            if ($k === $index) {
+        foreach ($parts as $key => $part) {
+            if ($key === $index) {
                 break;
             }
 
@@ -80,9 +80,9 @@ abstract class AbstractMapper
     {
         $total = count($parts);
 
-        for ($i = 0; $i < $total; $i++) {
-            if ($parts[$i] instanceof $type) {
-                return $i;
+        for ($idx = 0; $idx < $total; $idx++) {
+            if ($parts[$idx] instanceof $type) {
+                return $idx;
             }
         }
 

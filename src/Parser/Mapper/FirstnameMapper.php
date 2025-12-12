@@ -92,22 +92,22 @@ class FirstnameMapper extends AbstractMapper
         $length = count($parts);
         $start = $this->getStartIndex($parts);
 
-        for ($k = $start; $k < $length; $k++) {
-            $part = $parts[$k];
+        for ($index = $start; $index < $length; $index++) {
+            $part = $parts[$index];
 
             if ($part instanceof Lastname) {
                 break;
             }
 
             if ($part instanceof Initial && null === $pos) {
-                $pos = $k;
+                $pos = $index;
             }
 
             if ($part instanceof AbstractPart) {
                 continue;
             }
 
-            return $k;
+            return $index;
         }
 
         return $pos;
