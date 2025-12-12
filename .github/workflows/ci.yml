@@ -1,183 +1,183 @@
 name: CI
 
 on:
-  workflow_call:
-    secrets:
-      pat-token:
-        required: true
-  workflow_dispatch:
+    workflow_call:
+        secrets:
+            pat-token:
+                required: true
+    workflow_dispatch:
 
 jobs:
-  enforce-copyright:
-    runs-on: ubuntu-22.04
+    enforce-copyright:
+        runs-on: ubuntu-22.04
 
-    timeout-minutes: 10
+        timeout-minutes: 10
 
-    steps:
-      - name: Checkout code | Internal
-        if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.pat-token }}
+        steps:
+            - name: Checkout code | Internal
+              if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.pat-token }}
 
-      - name: Checkout code | External
-        if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+            - name: Checkout code | External
+              if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
+              uses: actions/checkout@v4
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+            - name: Set up Ruby
+              uses: ruby/setup-ruby@v1
 
-      - name: Run Ruby Script
-        run: ruby ./copyright.rb
+            - name: Run Ruby Script
+              run: ruby ./copyright.rb
 
-      - name: Commit changes
-        if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
-        # SHA of release v5.0.1
-        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842
-        with:
-          commit_message: >
-            chore: fix enforcement of copyright on all files
+            - name: Commit changes
+              if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
+              # SHA of release v5.0.1
+              uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842
+              with:
+                  commit_message: >
+                      chore: fix enforcement of copyright on all files
 
-      - name: Check for changes
-        if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
-        # SHA of release v20.0.1
-        uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687
-        with:
-          fail-if-changed: "true"
+            - name: Check for changes
+              if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
+              # SHA of release v20.0.1
+              uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687
+              with:
+                  fail-if-changed: 'true'
 
-  fix-code-style:
-    runs-on: ubuntu-22.04
+    fix-code-style:
+        runs-on: ubuntu-22.04
 
-    timeout-minutes: 10
+        timeout-minutes: 10
 
-    needs: [enforce-copyright]
+        needs: [enforce-copyright]
 
-    steps:
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          coverage: none
+        steps:
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  coverage: none
 
-      - name: Checkout code | Internal
-        if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.pat-token }}
+            - name: Checkout code | Internal
+              if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.pat-token }}
 
-      - name: Checkout code | External
-        if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+            - name: Checkout code | External
+              if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
+              uses: actions/checkout@v4
 
-      - name: Setup Dependencies
-        uses: ./.github/actions/composer-dependency-setup
+            - name: Setup Dependencies
+              uses: ./.github/actions/composer-dependency-setup
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
-      - run: npm install
+            - uses: actions/setup-node@v4
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: 'npm'
+            - run: npm install
 
-      - name: Cache PHP CS Fixer
-        uses: actions/cache@v4
-        with:
-          path: .php-cs-fixer.cache
-          key: ${{ runner.OS }}-${{ github.repository }}-phpcsfixer-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.OS }}-${{ github.repository }}-phpcsfixer-
+            - name: Cache PHP CS Fixer
+              uses: actions/cache@v4
+              with:
+                  path: .php-cs-fixer.cache
+                  key: ${{ runner.OS }}-${{ github.repository }}-phpcsfixer-${{ github.run_id }}
+                  restore-keys: |
+                      ${{ runner.OS }}-${{ github.repository }}-phpcsfixer-
 
-      - name: Cache Prettier
-        uses: actions/cache@v4
-        with:
-            path: ./node_modules/.cache/prettier/.prettier-cache
-            key: ${{ runner.OS }}-${{ github.repository }}-prettier-${{ github.run_id }}
-            restore-keys: |
-              ${{ runner.OS }}-${{ github.repository }}-prettier-
+            - name: Cache Prettier
+              uses: actions/cache@v4
+              with:
+                  path: ./node_modules/.cache/prettier/.prettier-cache
+                  key: ${{ runner.OS }}-${{ github.repository }}-prettier-${{ github.run_id }}
+                  restore-keys: |
+                      ${{ runner.OS }}-${{ github.repository }}-prettier-
 
-      - name: Run Formatters
-        run: composer format
+            - name: Run Formatters
+              run: composer format
 
-      - name: Commit changes
-        if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
-        # SHA of release v5.0.1
-        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842
-        with:
-          commit_message: >
-            chore: fix code style
+            - name: Commit changes
+              if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
+              # SHA of release v5.0.1
+              uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842
+              with:
+                  commit_message: >
+                      chore: fix code style
 
-      - name: Check for changes
-        if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
-        # SHA of release v20.0.1
-        uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687
-        with:
-          fail-if-changed: "true"
+            - name: Check for changes
+              if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
+              # SHA of release v20.0.1
+              uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687
+              with:
+                  fail-if-changed: 'true'
 
-  lint:
-    runs-on: ubuntu-22.04
+    lint:
+        runs-on: ubuntu-22.04
 
-    timeout-minutes: 15
+        timeout-minutes: 15
 
-    needs: [enforce-copyright, fix-code-style]
+        needs: [enforce-copyright, fix-code-style]
 
-    steps:
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          coverage: none
-          extensions: gd, gmp, redis
+        steps:
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  coverage: none
+                  extensions: gd, gmp, redis
 
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  fetch-tags: true
 
-      - name: Setup Dependencies
-        uses: ./.github/actions/composer-dependency-setup
+            - name: Setup Dependencies
+              uses: ./.github/actions/composer-dependency-setup
 
-      - name: "Restore result cache"
-        uses: actions/cache/restore@v4
-        with:
-          path: tmp
-          key: "phpstan-result-cache-${{ github.run_id }}"
-          restore-keys: |
-            phpstan-result-cache-
+            - name: 'Restore result cache'
+              uses: actions/cache/restore@v4
+              with:
+                  path: tmp
+                  key: 'phpstan-result-cache-${{ github.run_id }}'
+                  restore-keys: |
+                      phpstan-result-cache-
 
-      - name: Linting
-        run: ./vendor/bin/phpstan analyse --configuration phpstan-ci.neon --no-progress
+            - name: Linting
+              run: ./vendor/bin/phpstan analyse --configuration phpstan-ci.neon --no-progress
 
-      - name: "Save result cache"
-        uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
-        with:
-          path: tmp
-          key: "phpstan-result-cache-${{ github.run_id }}"
+            - name: 'Save result cache'
+              uses: actions/cache/save@v4
+              if: ${{ !cancelled() }}
+              with:
+                  path: tmp
+                  key: 'phpstan-result-cache-${{ github.run_id }}'
 
-  test:
-    runs-on: ubuntu-22.04
+    test:
+        runs-on: ubuntu-22.04
 
-    timeout-minutes: 15
+        timeout-minutes: 15
 
-    needs: [enforce-copyright, fix-code-style]
+        needs: [enforce-copyright, fix-code-style]
 
-    steps:
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          coverage: none
-          extensions: gd, gmp, redis, mailparse
+        steps:
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  coverage: none
+                  extensions: gd, gmp, redis, mailparse
 
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  fetch-tags: true
 
-      - name: Setup Dependencies
-        uses: ./.github/actions/composer-dependency-setup
+            - name: Setup Dependencies
+              uses: ./.github/actions/composer-dependency-setup
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
-      - run: npm install
+            - uses: actions/setup-node@v4
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: 'npm'
+            - run: npm install
 
-      - name: Execute tests
-        run: ./vendor/bin/pest --configuration phpunit.xml --parallel
+            - name: Execute tests
+              run: ./vendor/bin/pest --configuration phpunit.xml --parallel
