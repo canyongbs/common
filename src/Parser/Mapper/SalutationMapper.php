@@ -69,12 +69,12 @@ class SalutationMapper extends AbstractMapper
     {
         $max = ($this->maxIndex > 0) ? $this->maxIndex : floor(count($parts) / 2);
 
-        for ($k = 0; $k < $max; $k++) {
-            if ($parts[$k] instanceof AbstractPart) {
+        for ($index = 0; $index < $max; $index++) {
+            if ($parts[$index] instanceof AbstractPart) {
                 break;
             }
 
-            $parts = $this->substituteWithSalutation($parts, $k);
+            $parts = $this->substituteWithSalutation($parts, $index);
         }
 
         return $parts;
@@ -134,8 +134,8 @@ class SalutationMapper extends AbstractMapper
      */
     private function isMatchingSubset(array $keys, array $subset): bool
     {
-        for ($i = 0; $i < count($subset); $i++) {
-            if ($this->getKey($subset[$i]) !== $keys[$i]) {
+        for ($idx = 0; $idx < count($subset); $idx++) {
+            if ($this->getKey($subset[$idx]) !== $keys[$idx]) {
                 return false;
             }
         }

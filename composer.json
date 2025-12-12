@@ -15,7 +15,8 @@
         "pestphp/pest": "^3.8",
         "orchestra/testbench": "^10.4",
         "pestphp/pest-plugin-laravel": "^3.2",
-        "friendsofphp/php-cs-fixer": "^3.75"
+        "friendsofphp/php-cs-fixer": "^3.75",
+        "orrison/meliorstan": "^0.3.2"
     },
     "autoload": {
         "psr-4": {

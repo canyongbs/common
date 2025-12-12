@@ -85,29 +85,29 @@ class LastnameMapper extends AbstractMapper
      */
     protected function mapParts(array $parts): array
     {
-        $k = $this->skipIgnoredParts($parts) + 1;
+        $index = $this->skipIgnoredParts($parts) + 1;
         $remapIgnored = true;
 
-        while (--$k >= 0) {
-            $part = $parts[$k];
+        while (--$index >= 0) {
+            $part = $parts[$index];
 
             if ($part instanceof AbstractPart) {
                 break;
             }
 
-            if ($this->isFollowedByLastnamePart($parts, $k)) {
-                if ($mapped = $this->mapAsPrefixIfPossible($parts, $k)) {
-                    $parts[$k] = $mapped;
+            if ($this->isFollowedByLastnamePart($parts, $index)) {
+                if ($mapped = $this->mapAsPrefixIfPossible($parts, $index)) {
+                    $parts[$index] = $mapped;
 
                     continue;
                 }
 
-                if ($this->shouldStopMapping($parts, $k)) {
+                if ($this->shouldStopMapping($parts, $index)) {
                     break;
                 }
             }
 
-            $parts[$k] = new Lastname($part);
+            $parts[$index] = new Lastname($part);
             $remapIgnored = false;
         }
 
@@ -127,35 +127,35 @@ class LastnameMapper extends AbstractMapper
      */
     protected function skipIgnoredParts(array $parts): int
     {
-        $k = count($parts);
+        $index = count($parts);
 
-        while (--$k >= 0) {
-            if (! $this->isIgnoredPart($parts[$k])) {
+        while (--$index >= 0) {
+            if (! $this->isIgnoredPart($parts[$index])) {
                 break;
             }
         }
 
-        return $k;
+        return $index;
     }
 
     /**
-     * Indicates if we should stop mapping at the given index $k
+     * Indicates if we should stop mapping at the given index $index
      *
      * The assumption is that lastname parts have already been found
      * but we want to see if we should add more parts
      *
      * @param array<int, AbstractPart> $parts
-     * @param int $k
+     * @param int $index
      *
      * @return bool
      */
-    protected function shouldStopMapping(array $parts, int $k): bool
+    protected function shouldStopMapping(array $parts, int $index): bool
     {
-        if ($k < 1) {
+        if ($index < 1) {
             return true;
         }
 
-        $lastPart = $parts[$k + 1];
+        $lastPart = $parts[$index + 1];
 
         if ($lastPart instanceof LastnamePrefix) {
             return true;
@@ -188,16 +188,16 @@ class LastnameMapper extends AbstractMapper
      */
     protected function remapIgnored(array $parts): array
     {
-        $k = count($parts);
+        $index = count($parts);
 
-        while (--$k >= 0) {
-            $part = $parts[$k];
+        while (--$index >= 0) {
+            $part = $parts[$index];
 
             if (! $this->isIgnoredPart($part)) {
                 break;
             }
 
-            $parts[$k] = new Lastname($part);
+            $parts[$index] = new Lastname($part);
         }
 
         return $parts;
@@ -266,9 +266,9 @@ class LastnameMapper extends AbstractMapper
     {
         $total = count($parts);
 
-        for ($i = $startIndex; $i < $total; $i++) {
-            if (! ($parts[$i] instanceof Nickname)) {
-                return $i;
+        for ($index = $startIndex; $index < $total; $index++) {
+            if (! ($parts[$index] instanceof Nickname)) {
+                return $index;
             }
         }
 
@@ -280,18 +280,18 @@ class LastnameMapper extends AbstractMapper
      * lastname part containing a prefix
      *
      * @param array<int, string|AbstractPart> $parts
-     * @param int $k
+     * @param int $index
      *
      * @return Lastname|null
      */
-    private function mapAsPrefixIfPossible(array $parts, int $k): ?Lastname
+    private function mapAsPrefixIfPossible(array $parts, int $index): ?Lastname
     {
-        if ($this->isApplicablePrefix($parts, $k)) {
-            return new LastnamePrefix($parts[$k], $this->prefixes[$this->getKey($parts[$k])]);
+        if ($this->isApplicablePrefix($parts, $index)) {
+            return new LastnamePrefix($parts[$index], $this->prefixes[$this->getKey($parts[$index])]);
         }
 
-        if ($this->isCombinedWithPrefix($parts[$k])) {
-            return new Lastname($parts[$k]);
+        if ($this->isCombinedWithPrefix($parts[$index])) {
+            return new Lastname($parts[$index]);
         }
 
         return null;
