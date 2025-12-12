@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "afeac8dade0337fd530b9c95997c73cf",
+    "content-hash": "100c10f108b07aa48d0b5e530e2ccc08",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -9167,6 +9167,57 @@
                 "source": "https://github.com/orchestral/workbench/tree/v10.0.7"
             },
             "time": "2025-11-24T06:50:12+00:00"
+        },
+        {
+            "name": "orrison/meliorstan",
+            "version": "v0.3.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Orrison/MeliorStan.git",
+                "reference": "5ba2356be0a339e765cda9bc8feda665d3145ad6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Orrison/MeliorStan/zipball/5ba2356be0a339e765cda9bc8feda665d3145ad6",
+                "reference": "5ba2356be0a339e765cda9bc8feda665d3145ad6",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.3",
+                "phpstan/phpstan": "^2.1"
+            },
+            "require-dev": {
+                "brianium/paratest": "^7.10",
+                "friendsofphp/php-cs-fixer": "^3.76",
+                "phpunit/phpunit": "^12.2"
+            },
+            "type": "phpstan-extension",
+            "autoload": {
+                "psr-4": {
+                    "Orrison\\MeliorStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kevin Ullyott",
+                    "email": "ullyott.kevin@gmail.com"
+                }
+            ],
+            "description": "Provides PHPStan rules for improved code quality by detecting code smells and possible issues. In addition to enforcing particular naming and code style conventions to reduce bike-shedding.",
+            "homepage": "https://github.com/Orrison/MeliorStan",
+            "keywords": [
+                "PHPStan",
+                "phpstan-rules"
+            ],
+            "support": {
+                "issues": "https://github.com/Orrison/MeliorStan/issues",
+                "source": "https://github.com/Orrison/MeliorStan/tree/v0.3.2"
+            },
+            "time": "2025-10-16T06:13:26+00:00"
         },
         {
             "name": "pestphp/pest",
