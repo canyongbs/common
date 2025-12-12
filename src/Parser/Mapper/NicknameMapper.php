@@ -78,7 +78,7 @@ class NicknameMapper extends AbstractMapper
 
         $closingDelimiter = '';
 
-        foreach ($parts as $k => $part) {
+        foreach ($parts as $key => $part) {
             if ($part instanceof AbstractPart) {
                 continue;
             }
@@ -98,7 +98,7 @@ class NicknameMapper extends AbstractMapper
                 $part = substr($part, 0, -1);
             }
 
-            $parts[$k] = new Nickname(str_replace(['"', '\''], '', $part));
+            $parts[$key] = new Nickname(str_replace(["'", '\"'], '', $part));
         }
 
         return $parts;

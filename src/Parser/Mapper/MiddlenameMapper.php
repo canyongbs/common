@@ -87,8 +87,8 @@ class MiddlenameMapper extends AbstractMapper
         // otherwise skip the last (-1) because it should be a lastname
         $length = count($parts) - ($this->mapWithoutLastname ? 0 : 1);
 
-        for ($k = $start; $k < $length; $k++) {
-            $part = $parts[$k];
+        for ($index = $start; $index < $length; $index++) {
+            $part = $parts[$index];
 
             if ($part instanceof Lastname) {
                 break;
@@ -98,7 +98,7 @@ class MiddlenameMapper extends AbstractMapper
                 continue;
             }
 
-            $parts[$k] = new Middlename($part);
+            $parts[$index] = new Middlename($part);
         }
 
         return $parts;

@@ -65,14 +65,14 @@ class InitialMapper extends AbstractMapper
     {
         $last = count($parts) - 1;
 
-        for ($k = 0; $k < count($parts); $k++) {
-            $part = $parts[$k];
+        for ($index = 0; $index < count($parts); $index++) {
+            $part = $parts[$index];
 
             if ($part instanceof AbstractPart) {
                 continue;
             }
 
-            if (! $this->matchLastPart && $k === $last) {
+            if (! $this->matchLastPart && $index === $last) {
                 continue;
             }
 
@@ -81,14 +81,14 @@ class InitialMapper extends AbstractMapper
                 $length = strlen($stripped);
 
                 if (1 < $length && $length <= $this->combinedMax) {
-                    array_splice($parts, $k, 1, str_split($stripped));
+                    array_splice($parts, $index, 1, str_split($stripped));
                     $last = count($parts) - 1;
-                    $part = $parts[$k];
+                    $part = $parts[$index];
                 }
             }
 
             if ($this->isInitial($part)) {
-                $parts[$k] = new Initial($part);
+                $parts[$index] = new Initial($part);
             }
         }
 
