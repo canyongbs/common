@@ -32,16 +32,14 @@ jobs:
 
             - name: Commit changes
               if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
-              # SHA of release v5.0.1
-              uses: stefanzweifel/git-auto-commit-action@28e16e81777b558cc906c8750092100bbb34c5e3
+              uses: stefanzweifel/git-auto-commit-action@28e16e81777b558cc906c8750092100bbb34c5e3 #7.0.0
               with:
                   commit_message: >
                       chore: fix enforcement of copyright on all files
 
             - name: Check for changes
               if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
-              # SHA of release v20.0.1
-              uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf
+              uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf #20.0.4
               with:
                   fail-if-changed: 'true'
 
@@ -53,7 +51,7 @@ jobs:
         needs: [enforce-copyright]
 
         steps:
-            - uses: shivammathur/setup-php@v2
+            - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 #2.36.0
               with:
                   php-version: '8.4'
                   coverage: none
@@ -71,14 +69,14 @@ jobs:
             - name: Setup Dependencies
               uses: ./.github/actions/composer-dependency-setup
 
-            - uses: actions/setup-node@v6
+            - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f #6.1.0
               with:
                   node-version-file: '.nvmrc'
                   cache: 'npm'
             - run: npm install
 
             - name: Cache PHP CS Fixer
-              uses: actions/cache@v5
+              uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb #5.0.1
               with:
                   path: .php-cs-fixer.cache
                   key: ${{ runner.OS }}-${{ github.repository }}-phpcsfixer-${{ github.run_id }}
@@ -86,7 +84,7 @@ jobs:
                       ${{ runner.OS }}-${{ github.repository }}-phpcsfixer-
 
             - name: Cache Prettier
-              uses: actions/cache@v5
+              uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb #5.0.1
               with:
                   path: ./node_modules/.cache/prettier/.prettier-cache
                   key: ${{ runner.OS }}-${{ github.repository }}-prettier-${{ github.run_id }}
@@ -98,16 +96,14 @@ jobs:
 
             - name: Commit changes
               if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
-              # SHA of release v5.0.1
-              uses: stefanzweifel/git-auto-commit-action@28e16e81777b558cc906c8750092100bbb34c5e3
+              uses: stefanzweifel/git-auto-commit-action@28e16e81777b558cc906c8750092100bbb34c5e3 #7.0.0
               with:
                   commit_message: >
                       chore: fix code style
 
             - name: Check for changes
               if: ${{ github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
-              # SHA of release v20.0.1
-              uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf
+              uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf #20.0.4
               with:
                   fail-if-changed: 'true'
 
@@ -119,7 +115,7 @@ jobs:
         needs: [enforce-copyright, fix-code-style]
 
         steps:
-            - uses: shivammathur/setup-php@v2
+            - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 #2.36.0
               with:
                   php-version: '8.4'
                   coverage: none
@@ -134,7 +130,7 @@ jobs:
               uses: ./.github/actions/composer-dependency-setup
 
             - name: 'Restore result cache'
-              uses: actions/cache/restore@v5
+              uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb #5.0.1
               with:
                   path: tmp
                   key: 'phpstan-result-cache-${{ github.run_id }}'
@@ -145,7 +141,7 @@ jobs:
               run: ./vendor/bin/phpstan analyse --configuration phpstan-ci.neon --no-progress
 
             - name: 'Save result cache'
-              uses: actions/cache/save@v5
+              uses: actions/cache/save@9255dc7a253b0ccc959486e2bca901246202afeb #5.0.1
               if: ${{ !cancelled() }}
               with:
                   path: tmp
@@ -159,7 +155,7 @@ jobs:
         needs: [enforce-copyright, fix-code-style]
 
         steps:
-            - uses: shivammathur/setup-php@v2
+            - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 #2.36.0
               with:
                   php-version: '8.4'
                   coverage: none
@@ -173,7 +169,7 @@ jobs:
             - name: Setup Dependencies
               uses: ./.github/actions/composer-dependency-setup
 
-            - uses: actions/setup-node@v6
+            - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f #6.1.0
               with:
                   node-version-file: '.nvmrc'
                   cache: 'npm'
