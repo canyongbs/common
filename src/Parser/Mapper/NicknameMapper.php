@@ -98,7 +98,7 @@ class NicknameMapper extends AbstractMapper
                 $part = substr($part, 0, -1);
             }
 
-            $parts[$key] = new Nickname(str_replace(["'", '\"'], '', $part));
+            $parts[$key] = new Nickname(str_replace(['"', '\''], '', $part));
         }
 
         return $parts;
