@@ -3,6 +3,7 @@
     "type": "package",
     "license": "Elastic-2.0",
     "require": {
+        "php": "8.4.*",
         "filament/filament": "^4.3.1",
         "laravel/framework": "^11.0|^12.0"
     },
@@ -24,7 +25,7 @@
     },
     "scripts": {
         "php-cs-format": [
-            "export PHP_CS_FIXER_IGNORE_ENV=1 ; ./vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix -v --config=./php-cs-fixer.php"
+            "./vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix -v --config=./php-cs-fixer.php"
         ],
         "php-cs-format-dryrun": [
             "@php-cs-format --dry-run --stop-on-violation"
@@ -33,7 +34,7 @@
             "rm -f ./.php-cs-fixer.cache"
         ],
         "prettier": [
-            "./node_modules/.bin/prettier \"resources/**/*{.css,.blade.php,.js}\" --config ./.prettierrc.json --ignore-path ./.prettierignore --cache"
+            "./node_modules/.bin/prettier . --config ./.prettierrc.json --ignore-path ./.prettierignore --cache"
         ],
         "prettier-format": [
             "@prettier --write"
