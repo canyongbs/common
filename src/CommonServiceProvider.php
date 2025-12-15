@@ -53,10 +53,10 @@ class CommonServiceProvider extends PackageServiceProvider
 
     public function boot(): void
     {
-      TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
-        $component->optionsLimit(PHP_INT_MAX)
-          ->searchable();
-      });
+        TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
+            $component->optionsLimit(PHP_INT_MAX)
+                ->searchable();
+        });
     }
 
     public function packageBooted(): void
