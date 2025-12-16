@@ -1,5 +1,5 @@
 {
-    "name": "canyongbs/common",
+    "name": "canyongbs/commons",
     "type": "package",
     "license": "Elastic-2.0",
     "require": {
