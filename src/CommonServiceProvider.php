@@ -51,14 +51,6 @@ class CommonServiceProvider extends PackageServiceProvider
             ->hasViews();
     }
 
-    public function boot(): void
-    {
-        TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
-            $component->optionsLimit(PHP_INT_MAX)
-                ->searchable();
-        });
-    }
-
     public function packageBooted(): void
     {
         FilamentColor::register([
@@ -80,5 +72,10 @@ class CommonServiceProvider extends PackageServiceProvider
             'pink' => Color::Pink,
             'rose' => Color::Rose,
         ]);
+
+        TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
+            $component->optionsLimit(PHP_INT_MAX)
+                ->searchable();
+        });
     }
 }
