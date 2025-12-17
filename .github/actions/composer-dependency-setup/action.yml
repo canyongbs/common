@@ -14,7 +14,3 @@ runs:
           name: Install Dependencies
           run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
           shell: bash
-        - if: ${{ steps.cache-composer.outputs.cache-hit != 'true' }}
-          name: Install Dependencies
-          run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
-          shell: bash

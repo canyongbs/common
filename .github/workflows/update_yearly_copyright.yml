@@ -4,17 +4,11 @@ on:
     workflow_dispatch:
     schedule: # Run every year on January 1st
         - cron: '0 0 1 1 *' # UTC time
-    workflow_dispatch:
-    schedule: # Run every year on January 1st
-        - cron: '0 0 1 1 *' # UTC time
 
 jobs:
     update-copyright:
         runs-on: ubuntu-22.04
-    update-copyright:
-        runs-on: ubuntu-22.04
 
-        timeout-minutes: 10
         timeout-minutes: 10
 
         steps:
@@ -26,8 +20,6 @@ jobs:
             - name: Set up Ruby
               uses: ruby/setup-ruby@ac793fdd38cc468a4dd57246fa9d0e868aba9085 #1.270.0
 
-            - name: Run copyright script
-              run: ruby ./copyright.rb
             - name: Run copyright script
               run: ruby ./copyright.rb
 
