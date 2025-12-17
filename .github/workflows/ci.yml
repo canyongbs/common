@@ -29,8 +29,6 @@ jobs:
 
             - name: Run Ruby Script
               run: ruby ./copyright.rb
-            - name: Run Ruby Script
-              run: ruby ./copyright.rb
 
             - name: Commit changes
               if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
