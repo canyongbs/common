@@ -6,11 +6,19 @@ on:
             pat-token:
                 required: true
     workflow_dispatch:
+    workflow_call:
+        secrets:
+            pat-token:
+                required: true
+    workflow_dispatch:
 
 jobs:
     enforce-copyright:
         runs-on: ubuntu-22.04
+    enforce-copyright:
+        runs-on: ubuntu-22.04
 
+        timeout-minutes: 10
         timeout-minutes: 10
 
         steps:
@@ -29,6 +37,8 @@ jobs:
 
             - name: Run Ruby Script
               run: ruby ./copyright.rb
+            - name: Run Ruby Script
+              run: ruby ./copyright.rb
 
             - name: Commit changes
               if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
@@ -45,9 +55,13 @@ jobs:
 
     fix-code-style:
         runs-on: ubuntu-22.04
+    fix-code-style:
+        runs-on: ubuntu-22.04
 
         timeout-minutes: 10
+        timeout-minutes: 10
 
+        needs: [enforce-copyright]
         needs: [enforce-copyright]
 
         steps:
@@ -66,6 +80,8 @@ jobs:
               if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' }}
               uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #6.0.1
 
+            - name: Setup Dependencies
+              uses: ./.github/actions/composer-dependency-setup
             - name: Setup Dependencies
               uses: ./.github/actions/composer-dependency-setup
 
@@ -93,6 +109,8 @@ jobs:
 
             - name: Run Formatters
               run: composer format
+            - name: Run Formatters
+              run: composer format
 
             - name: Commit changes
               if: ${{ github.event_name != 'merge_group' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
@@ -109,9 +127,13 @@ jobs:
 
     lint:
         runs-on: ubuntu-22.04
+    lint:
+        runs-on: ubuntu-22.04
 
         timeout-minutes: 15
+        timeout-minutes: 15
 
+        needs: [enforce-copyright, fix-code-style]
         needs: [enforce-copyright, fix-code-style]
 
         steps:
@@ -128,6 +150,8 @@ jobs:
 
             - name: Setup Dependencies
               uses: ./.github/actions/composer-dependency-setup
+            - name: Setup Dependencies
+              uses: ./.github/actions/composer-dependency-setup
 
             - name: 'Restore result cache'
               uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb #5.0.1
@@ -137,6 +161,8 @@ jobs:
                   restore-keys: |
                       phpstan-result-cache-
 
+            - name: Linting
+              run: ./vendor/bin/phpstan analyse --configuration phpstan-ci.neon --no-progress
             - name: Linting
               run: ./vendor/bin/phpstan analyse --configuration phpstan-ci.neon --no-progress
 
@@ -149,9 +175,13 @@ jobs:
 
     test:
         runs-on: ubuntu-22.04
+    test:
+        runs-on: ubuntu-22.04
 
         timeout-minutes: 15
+        timeout-minutes: 15
 
+        needs: [enforce-copyright, fix-code-style]
         needs: [enforce-copyright, fix-code-style]
 
         steps:
@@ -168,12 +198,17 @@ jobs:
 
             - name: Setup Dependencies
               uses: ./.github/actions/composer-dependency-setup
+            - name: Setup Dependencies
+              uses: ./.github/actions/composer-dependency-setup
 
             - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f #6.1.0
               with:
                   node-version-file: '.nvmrc'
                   cache: 'npm'
             - run: npm install
+
+            - name: Execute tests
+              run: ./vendor/bin/pest --configuration phpunit.xml --parallel
 
             - name: Execute tests
               run: ./vendor/bin/pest --configuration phpunit.xml --parallel
