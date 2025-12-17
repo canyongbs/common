@@ -74,8 +74,7 @@ class CommonServiceProvider extends PackageServiceProvider
         ]);
 
         TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
-            $component->optionsLimit(PHP_INT_MAX)
-                ->searchable();
+            $component->searchable();
         });
     }
 }
