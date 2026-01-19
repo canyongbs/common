@@ -25,7 +25,7 @@ jobs:
               uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 #6.0.1
 
             - name: Set up Ruby
-              uses: ruby/setup-ruby@675dd7ba1b06c8786a1480d89c384f5620a42647 #1.281.0
+              uses: ruby/setup-ruby@80740b3b13bf9857e28854481ca95a84e78a2bdf #1.284.0
 
             - name: Run Ruby Script
               run: ruby ./copyright.rb
@@ -69,14 +69,14 @@ jobs:
             - name: Setup Dependencies
               uses: ./.github/actions/composer-dependency-setup
 
-            - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f #6.1.0
+            - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 #6.2.0
               with:
                   node-version-file: '.nvmrc'
                   cache: 'npm'
             - run: npm install
 
             - name: Cache PHP CS Fixer
-              uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb #5.0.1
+              uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 #5.0.2
               with:
                   path: .php-cs-fixer.cache
                   key: ${{ runner.OS }}-${{ github.repository }}-phpcsfixer-${{ github.run_id }}
@@ -84,7 +84,7 @@ jobs:
                       ${{ runner.OS }}-${{ github.repository }}-phpcsfixer-
 
             - name: Cache Prettier
-              uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb #5.0.1
+              uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 #5.0.2
               with:
                   path: ./node_modules/.cache/prettier/.prettier-cache
                   key: ${{ runner.OS }}-${{ github.repository }}-prettier-${{ github.run_id }}
@@ -130,7 +130,7 @@ jobs:
               uses: ./.github/actions/composer-dependency-setup
 
             - name: 'Restore result cache'
-              uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb #5.0.1
+              uses: actions/cache/restore@8b402f58fbc84540c8b491a91e594a4576fec3d7 #5.0.2
               with:
                   path: tmp
                   key: 'phpstan-result-cache-${{ github.run_id }}'
@@ -141,7 +141,7 @@ jobs:
               run: ./vendor/bin/phpstan analyse --configuration phpstan-ci.neon --no-progress
 
             - name: 'Save result cache'
-              uses: actions/cache/save@9255dc7a253b0ccc959486e2bca901246202afeb #5.0.1
+              uses: actions/cache/save@8b402f58fbc84540c8b491a91e594a4576fec3d7 #5.0.2
               if: ${{ !cancelled() }}
               with:
                   path: tmp
@@ -169,7 +169,7 @@ jobs:
             - name: Setup Dependencies
               uses: ./.github/actions/composer-dependency-setup
 
-            - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f #6.1.0
+            - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 #6.2.0
               with:
                   node-version-file: '.nvmrc'
                   cache: 'npm'
