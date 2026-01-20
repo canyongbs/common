@@ -5,7 +5,7 @@ decision-makers: Kevin Ullyott, Dan Harrin, Payal Baldaniya
 consulted: Kevin Ullyott, Dan Harrin, Payal Baldaniya
 ---
 
-# How to Ensure Case-insensitive String Comparision in Postgres
+# How to Ensure Case-insensitive String Comparison in Postgres
 
 ## Context and Problem Statement
 
