@@ -5,7 +5,7 @@ decision-makers: Kevin Ullyott, Dan Harrin, Payal Baldaniya
 consulted: Kevin Ullyott, Dan Harrin, Payal Baldaniya
 ---
 
-# How to Ensure Case-insensitive String Comparison in Postgres
+# How to Ensure Case-Insensitive String Comparison in Postgres
 
 ## Context and Problem Statement
 
@@ -17,13 +17,13 @@ Though there may be areas where this is managed ad hoc, there is a desire for th
 
 ## Considered Options
 
-- citext data type
+- `citext` Data Type
 - Functional (Expression) Index
 - Manual handling in code/queries
 
 ## Decision Outcome
 
-Chosen option: "citext data type", because it provides transparent case-insensitive comparison at the database level without requiring application-level handling, works seamlessly with existing queries and unique constraints, and is a well-supported PostgreSQL extension.
+Chosen option: "`citext` data type", because it provides transparent case-insensitive comparison at the database level without requiring application-level handling, works seamlessly with existing queries and unique constraints, and is a well-supported PostgreSQL extension.
 
 ### Consequences
 
@@ -44,7 +44,7 @@ Compliance with this ADR can be confirmed through:
 
 ## Pros and Cons of the Options
 
-### citext data type
+### `citext` Data Type
 
 The `citext` extension provides a case-insensitive text data type. Internally, it stores text as-is but performs case-insensitive comparisons using `LOWER()` transparently.
 
@@ -77,7 +77,7 @@ CREATE UNIQUE INDEX users_email_unique ON users (LOWER(email));
 - Bad, because Laravel's built-in unique validation rules don't automatically use the functional index
 - Bad, because it's easy to accidentally bypass the case-insensitive logic
 
-### Manual handling in code/queries
+### Manual Handling in Code/Queries
 
 Handle case-insensitivity entirely in application code by normalizing values before storage and using `LOWER()` or `ILIKE` in queries.
 
@@ -114,5 +114,5 @@ $user->email = strtolower($request->email);
 
 ### References
 
-- [PostgreSQL citext documentation](https://www.postgresql.org/docs/current/citext.html)
+- [PostgreSQL `citext` documentation](https://www.postgresql.org/docs/current/citext.html)
 - [PostgreSQL Functional Indexes](https://www.postgresql.org/docs/current/indexes-expressional.html)
