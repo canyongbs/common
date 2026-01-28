@@ -36,12 +36,11 @@
 
 namespace CanyonGBS\Common;
 
-use CanyonGBS\Common\Filament\Forms\Components\TimezoneSelect;
-use Filament\Forms\Components\Select;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentColor;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Tapp\FilamentTimezoneField\Forms\Components\TimezoneSelect;
 
 class CommonServiceProvider extends PackageServiceProvider
 {
@@ -74,7 +73,7 @@ class CommonServiceProvider extends PackageServiceProvider
             'rose' => Color::Rose,
         ]);
 
-        TimezoneSelect::configureUsing(function (Select $component) {
+        TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
             $component->searchable();
         });
     }
