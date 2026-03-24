@@ -52,6 +52,7 @@ namespace Illuminate\Database\Eloquent {
 
 namespace Illuminate\Database\Eloquent\Relations {
 
+    use Illuminate\Database\Eloquent\Collection;
     use Illuminate\Database\Eloquent\Model;
 
     /**
@@ -78,7 +79,7 @@ namespace Illuminate\Database\Eloquent\Relations {
      * @template TRelatedModel of Model
      * @template TDeclaringModel of Model
      *
-     * @extends Relation<TRelatedModel, TDeclaringModel, \Illuminate\Database\Eloquent\Collection<int, TRelatedModel>>
+     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
      */
     class BelongsToMany extends Relation {}
 
@@ -92,7 +93,7 @@ namespace Illuminate\Database\Eloquent\Relations {
      * @template TRelatedModel of Model
      * @template TDeclaringModel of Model
      *
-     * @extends Relation<TRelatedModel, TDeclaringModel, \Illuminate\Database\Eloquent\Collection<int, TRelatedModel>>
+     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
      */
     class HasMany extends Relation {}
 
@@ -120,7 +121,7 @@ namespace Illuminate\Database\Eloquent\Relations {
      * @template TRelatedModel of Model
      * @template TDeclaringModel of Model
      *
-     * @extends Relation<TRelatedModel, TDeclaringModel, \Illuminate\Database\Eloquent\Collection<int, TRelatedModel>>
+     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
      */
     class HasManyThrough extends Relation {}
 
@@ -162,7 +163,7 @@ namespace Illuminate\Database\Eloquent\Relations {
      * @template TRelatedModel of Model
      * @template TDeclaringModel of Model
      *
-     * @extends Relation<TRelatedModel, TDeclaringModel, \Illuminate\Database\Eloquent\Collection<int, TRelatedModel>>
+     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
      */
     class MorphMany extends Relation {}
 
@@ -176,7 +177,7 @@ namespace Illuminate\Database\Eloquent\Relations {
      * @template TRelatedModel of Model
      * @template TDeclaringModel of Model
      *
-     * @extends Relation<TRelatedModel, TDeclaringModel, \Illuminate\Database\Eloquent\Collection<int, TRelatedModel>>
+     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
      */
     class MorphToMany extends Relation {}
 
