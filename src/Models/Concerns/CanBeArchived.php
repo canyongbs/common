@@ -43,6 +43,7 @@ use Illuminate\Events\QueuedClosure;
 /**
  * @method static Builder<static> onlyArchived()
  * @method static Builder<static> withoutArchived()
+ * @method static Builder<static> withoutArchivedAndUnused()
  */
 trait CanBeArchived
 {

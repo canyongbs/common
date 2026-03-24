@@ -39,13 +39,14 @@ namespace CanyonGBS\Common\Models\Scopes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
+use BadMethodCallException;
 
 class ArchivingScope implements Scope
 {
     /**
      * @var array<string>
      */
-    protected array $extensions = ['Archive', 'Unarchive', 'WithoutArchived', 'OnlyArchived'];
+    protected array $extensions = ['Archive', 'Unarchive', 'WithoutArchived', 'OnlyArchived', 'WithoutArchivedAndUnused'];
 
     /**
      * @template TModel of Model
@@ -123,6 +124,31 @@ class ArchivingScope implements Scope
             $builder->whereNotNull(
                 method_exists($model, 'getQualifiedArchivedAtColumn') ? $model->getQualifiedArchivedAtColumn() : $model->qualifyColumn('archived_at'),
             );
+
+            return $builder;
+        });
+    }
+
+    /**
+     * @param Builder<*>  $builder
+     */
+    protected function addWithoutArchivedAndUnused(Builder $builder): void
+    {
+        $builder->macro('withoutArchivedAndUnused', function (Builder $builder) {
+            $model = $builder->getModel();
+
+            if (! method_exists($model, 'used')) {
+                throw new BadMethodCallException(sprintf(
+                    '%s must implement a used() method to use withoutArchivedAndUnused().',
+                    $model::class,
+                ));
+            }
+
+            $builder->where(function (Builder $query) use ($model) {
+                $query->whereNull(
+                    method_exists($model, 'getQualifiedArchivedAtColumn') ? $model->getQualifiedArchivedAtColumn() : $model->qualifyColumn('archived_at'),
+                )->orWhere(fn (Builder $query) => $model->used($query)); /** @phpstan-ignore method.notFound */
+            });
 
             return $builder;
         });

@@ -107,6 +107,46 @@ Project::query()->where('completed', true)->archive();
 Project::query()->onlyArchived()->unarchive();
 ```
 
+### Excluding archived and unused records
+
+Some archived records may still be "in use" -- for example, a project type that is archived but still assigned to active projects. The `withoutArchivedAndUnused()` scope excludes records that are both archived **and** unused, while keeping archived-but-still-used records visible.
+
+#### Defining `used()`
+
+Add a `used()` method to your model that accepts a `Builder` and adds constraints to scope it to records considered "in use":
+
+```php
+use Illuminate\Database\Eloquent\Builder;
+
+class ProjectType extends Model
+{
+    use CanBeArchived;
+
+    public function used(Builder $query): void
+    {
+        $query->whereHas('projects');
+    }
+}
+```
+
+The archiving scope passes a query builder to this method. The constraints you add determine which archived records are considered "in use" and should remain visible.
+
+#### Using the scope
+
+```php
+// Exclude records that are both archived and unused
+ProjectType::query()->withoutArchivedAndUnused()->get();
+```
+
+This returns:
+
+- All records that are **not archived**.
+- Archived records that are still **"used"** (matched by the `used()` query).
+
+It excludes:
+
+- Archived records that are **not "used"**.
+
 ---
 
 ## Model events
