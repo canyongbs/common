@@ -52,7 +52,6 @@ namespace Illuminate\Database\Eloquent {
 
 namespace Illuminate\Database\Eloquent\Relations {
 
-    use Illuminate\Database\Eloquent\Collection;
     use Illuminate\Database\Eloquent\Model;
 
     /**
@@ -64,134 +63,7 @@ namespace Illuminate\Database\Eloquent\Relations {
      *
      * @template TRelatedModel of Model
      * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, ?TRelatedModel>
+     * @template TResult
      */
-    class BelongsTo extends Relation {}
-
-    /**
-     * @method $this archive()
-     * @method $this unarchive()
-     * @method $this withoutArchived()
-     * @method $this onlyArchived()
-     * @method $this withoutArchivedAndUnused()
-     *
-     * @template TRelatedModel of Model
-     * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
-     */
-    class BelongsToMany extends Relation {}
-
-    /**
-     * @method $this archive()
-     * @method $this unarchive()
-     * @method $this withoutArchived()
-     * @method $this onlyArchived()
-     * @method $this withoutArchivedAndUnused()
-     *
-     * @template TRelatedModel of Model
-     * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
-     */
-    class HasMany extends Relation {}
-
-    /**
-     * @method $this archive()
-     * @method $this unarchive()
-     * @method $this withoutArchived()
-     * @method $this onlyArchived()
-     * @method $this withoutArchivedAndUnused()
-     *
-     * @template TRelatedModel of Model
-     * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, ?TRelatedModel>
-     */
-    class HasOne extends Relation {}
-
-    /**
-     * @method $this archive()
-     * @method $this unarchive()
-     * @method $this withoutArchived()
-     * @method $this onlyArchived()
-     * @method $this withoutArchivedAndUnused()
-     *
-     * @template TRelatedModel of Model
-     * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
-     */
-    class HasManyThrough extends Relation {}
-
-    /**
-     * @method $this archive()
-     * @method $this unarchive()
-     * @method $this withoutArchived()
-     * @method $this onlyArchived()
-     * @method $this withoutArchivedAndUnused()
-     *
-     * @template TRelatedModel of Model
-     * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, ?TRelatedModel>
-     */
-    class HasOneThrough extends Relation {}
-
-    /**
-     * @method $this archive()
-     * @method $this unarchive()
-     * @method $this withoutArchived()
-     * @method $this onlyArchived()
-     * @method $this withoutArchivedAndUnused()
-     *
-     * @template TRelatedModel of Model
-     * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, ?TRelatedModel>
-     */
-    class MorphOne extends Relation {}
-
-    /**
-     * @method $this archive()
-     * @method $this unarchive()
-     * @method $this withoutArchived()
-     * @method $this onlyArchived()
-     * @method $this withoutArchivedAndUnused()
-     *
-     * @template TRelatedModel of Model
-     * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
-     */
-    class MorphMany extends Relation {}
-
-    /**
-     * @method $this archive()
-     * @method $this unarchive()
-     * @method $this withoutArchived()
-     * @method $this onlyArchived()
-     * @method $this withoutArchivedAndUnused()
-     *
-     * @template TRelatedModel of Model
-     * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, Collection<int, TRelatedModel>>
-     */
-    class MorphToMany extends Relation {}
-
-    /**
-     * @method $this archive()
-     * @method $this unarchive()
-     * @method $this withoutArchived()
-     * @method $this onlyArchived()
-     * @method $this withoutArchivedAndUnused()
-     *
-     * @template TRelatedModel of Model
-     * @template TDeclaringModel of Model
-     *
-     * @extends Relation<TRelatedModel, TDeclaringModel, ?TRelatedModel>
-     */
-    class MorphTo extends Relation {}
+    abstract class Relation {}
 }
