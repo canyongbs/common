@@ -36,10 +36,10 @@
 
 namespace CanyonGBS\Common\Models\Scopes;
 
+use BadMethodCallException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
-use BadMethodCallException;
 
 class ArchivingScope implements Scope
 {
@@ -54,10 +54,7 @@ class ArchivingScope implements Scope
      * @param Builder<TModel> $builder
      * @param  TModel  $model
      */
-    public function apply(Builder $builder, Model $model): void
-    {
-        //
-    }
+    public function apply(Builder $builder, Model $model): void {}
 
     /**
      * @param Builder<*>  $builder
@@ -147,7 +144,7 @@ class ArchivingScope implements Scope
             $builder->where(function (Builder $query) use ($model) {
                 $query->whereNull(
                     method_exists($model, 'getQualifiedArchivedAtColumn') ? $model->getQualifiedArchivedAtColumn() : $model->qualifyColumn('archived_at'),
-                )->orWhere(fn (Builder $query) => $model->used($query)); /** @phpstan-ignore method.notFound */
+                )->orWhere(fn (Builder $query) => $model->used($query));
             });
 
             return $builder;

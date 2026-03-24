@@ -59,8 +59,8 @@ class HideDeletedExceptSelectedFromSelectOptions
             fn (Builder $query) => $query /** @phpstan-ignore method.notFound */
                 ->withoutTrashed()
                 ->orWhere(
-                    $component->getRelationship()->getQualifiedOwnerKeyName(),
-                    $record?->getAttributeValue($component->getRelationship()->getForeignKeyName()),
+                    $component->getRelationship()->getQualifiedOwnerKeyName(), /** @phpstan-ignore class.notFound */
+                    $record?->getAttributeValue($component->getRelationship()->getForeignKeyName()), /** @phpstan-ignore class.notFound */
                 ),
         );
     }

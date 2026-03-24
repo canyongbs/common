@@ -40,5 +40,8 @@ use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
 {
-    // You can still add common setup/teardown here if needed
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+    }
 }
