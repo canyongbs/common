@@ -34,14 +34,26 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Models;
 
-use Orchestra\Testbench\TestCase as Orchestra;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Workbench\Database\Factories\TaskFactory;
 
-abstract class TestCase extends Orchestra
+class Task extends Model
 {
-    protected function defineDatabaseMigrations(): void
+    use HasFactory;
+
+    protected $guarded = [];
+
+    public function project(): BelongsTo
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return $this->belongsTo(Project::class);
+    }
+
+    protected static function newFactory(): TaskFactory
+    {
+        return TaskFactory::new();
     }
 }

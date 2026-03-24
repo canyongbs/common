@@ -25,6 +25,12 @@
             "CanyonGBS\\Common\\Tests\\": "tests"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/"
+        }
+    },
     "scripts": {
         "php-cs-format": [
             "./vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix -v --config=./php-cs-fixer.php"

@@ -34,14 +34,22 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\Database\Factories;
 
-use Orchestra\Testbench\TestCase as Orchestra;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Workbench\App\Models\Task;
 
-abstract class TestCase extends Orchestra
+/** @extends Factory<Task> */
+class TaskFactory extends Factory
 {
-    protected function defineDatabaseMigrations(): void
+    protected $model = Task::class;
+
+    /** @return array<string, mixed> */
+    public function definition(): array
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return [
+            'project_id' => ProjectFactory::new(),
+            'name' => fake()->sentence(),
+        ];
     }
 }

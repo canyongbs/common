@@ -34,14 +34,38 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common\Filament\Support;
 
-use Orchestra\Testbench\TestCase as Orchestra;
+use Filament\Forms\Components\Select;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
-abstract class TestCase extends Orchestra
+/**
+ * This is used in the `modifyQueryUsing` argument of a `Select` `relationship()` method,
+ * usually for a `BelongsTo` relationship, to hide soft-deleted and archived records
+ * from the select options, while also ensuring that if the currently-selected
+ * record is soft-deleted or archived, it is still loaded and shown as an option.
+ */
+class HideDeletedAndArchivedExceptSelectedFromSelectOptions
 {
-    protected function defineDatabaseMigrations(): void
+    /**
+     * @param Builder<Model> $query
+     *
+     * @return Builder<Model>
+     */
+    public function __invoke(Builder $query, ?Model $record, Select $component): Builder
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return $query->where(
+            fn (Builder $query) => $query
+                ->where(
+                    fn (Builder $query) => $query /** @phpstan-ignore method.notFound */
+                        ->withoutTrashed()
+                        ->withoutArchived(),
+                )
+                ->orWhere(
+                    $component->getRelationship()->getQualifiedOwnerKeyName(), /** @phpstan-ignore class.notFound */
+                    $record?->getAttributeValue($component->getRelationship()->getForeignKeyName()), /** @phpstan-ignore class.notFound */
+                ),
+        );
     }
 }

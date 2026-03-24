@@ -34,14 +34,36 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Illuminate\Database\Eloquent {
 
-use Orchestra\Testbench\TestCase as Orchestra;
+    use Illuminate\Database\Eloquent\Model;
 
-abstract class TestCase extends Orchestra
-{
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
-    }
+    /**
+     * @method $this archive()
+     * @method $this unarchive()
+     * @method $this withoutArchived()
+     * @method $this onlyArchived()
+     * @method $this withoutArchivedAndUnused()
+     *
+     * @template TModel of Model
+     */
+    class Builder {}
+}
+
+namespace Illuminate\Database\Eloquent\Relations {
+
+    use Illuminate\Database\Eloquent\Model;
+
+    /**
+     * @method $this archive()
+     * @method $this unarchive()
+     * @method $this withoutArchived()
+     * @method $this onlyArchived()
+     * @method $this withoutArchivedAndUnused()
+     *
+     * @template TRelatedModel of Model
+     * @template TDeclaringModel of Model
+     * @template TResult
+     */
+    abstract class Relation {}
 }

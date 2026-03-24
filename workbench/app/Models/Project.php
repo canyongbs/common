@@ -34,14 +34,34 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Models;
 
-use Orchestra\Testbench\TestCase as Orchestra;
+use CanyonGBS\Common\Models\Concerns\CanBeArchived;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Workbench\Database\Factories\ProjectFactory;
 
-abstract class TestCase extends Orchestra
+class Project extends Model
 {
-    protected function defineDatabaseMigrations(): void
+    use CanBeArchived;
+    use HasFactory;
+
+    protected $guarded = [];
+
+    public function tasks(): HasMany
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return $this->hasMany(Task::class);
+    }
+
+    public function used(Builder $query): void
+    {
+        $query->whereHas('tasks');
+    }
+
+    protected static function newFactory(): ProjectFactory
+    {
+        return ProjectFactory::new();
     }
 }
