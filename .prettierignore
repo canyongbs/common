@@ -5,4 +5,5 @@
 resources/views/vendor/mail/**/*.blade.php
 resources/views/mail/**/*.blade.php
 resources/lang/**/*.php
+resources/js/dist/**
 **/vendor/
