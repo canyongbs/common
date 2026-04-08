@@ -73,12 +73,12 @@ class VideoEmbedExtension extends Node
                 'parseHTML' => fn ($DOMNode) => $DOMNode->getAttribute('data-video-type') ?: 'video',
             ],
             'width' => [
-                'default' => '100%',
-                'parseHTML' => fn ($DOMNode) => $DOMNode->getAttribute('data-video-width') ?: '100%',
+                'default' => null,
+                'parseHTML' => fn ($DOMNode) => $DOMNode->getAttribute('data-video-width') ?: null,
             ],
             'height' => [
-                'default' => '315',
-                'parseHTML' => fn ($DOMNode) => $DOMNode->getAttribute('data-video-height') ?: '315',
+                'default' => null,
+                'parseHTML' => fn ($DOMNode) => $DOMNode->getAttribute('data-video-height') ?: null,
             ],
         ];
     }
@@ -98,6 +98,7 @@ class VideoEmbedExtension extends Node
     /**
      * @param  object  $node
      * @param  array<string, mixed>  $HTMLAttributes
+     *
      * @return array<mixed>
      */
     public function renderHTML($node, array $HTMLAttributes = []): array
@@ -105,8 +106,8 @@ class VideoEmbedExtension extends Node
         $attrs = $node->attrs ?? [];
         $src = $attrs->src ?? '';
         $type = $attrs->type ?? 'video';
-        $width = $attrs->width ?? '100%';
-        $height = $attrs->height ?? '315';
+        $width = $attrs->width ?? null;
+        $height = $attrs->height ?? null;
 
         $wrapperAttrs = [
             'data-video-embed' => '',
@@ -117,30 +118,42 @@ class VideoEmbedExtension extends Node
         ];
 
         if ($type === 'youtube' || $type === 'vimeo') {
+            $style = $width
+                ? sprintf('width: %spx; height: %spx; max-width: 100%%;', $width, $height ?? round((int) $width * 9 / 16))
+                : 'position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%;';
+
+            $iframeStyle = $width
+                ? 'width: 100%; height: 100%;'
+                : 'position: absolute; top: 0; left: 0; width: 100%; height: 100%;';
+
             return [
                 'div',
                 HTML::mergeAttributes($this->options['HTMLAttributes'], $wrapperAttrs, $HTMLAttributes, [
-                    'style' => 'position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%;',
+                    'style' => $style,
                 ]),
                 [
                     'iframe',
                     [
                         'src' => $src,
                         'width' => '100%',
-                        'height' => $height,
+                        'height' => $height ?? '315',
                         'frameborder' => '0',
                         'allowfullscreen' => 'true',
                         'allow' => 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
-                        'style' => 'position: absolute; top: 0; left: 0; width: 100%; height: 100%;',
+                        'style' => $iframeStyle,
                     ],
                 ],
             ];
         }
 
+        $style = $width
+            ? sprintf('width: %spx; max-width: 100%%;', $width)
+            : 'max-width: 100%;';
+
         return [
             'div',
             HTML::mergeAttributes($this->options['HTMLAttributes'], $wrapperAttrs, $HTMLAttributes, [
-                'style' => 'max-width: 100%;',
+                'style' => $style,
             ]),
             [
                 'video',

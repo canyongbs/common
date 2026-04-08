@@ -1,9 +1,9 @@
-import * as esbuild from 'esbuild'
+import * as esbuild from 'esbuild';
 
 async function compile(options) {
-    const context = await esbuild.context(options)
-    await context.rebuild()
-    await context.dispose()
+    const context = await esbuild.context(options);
+    await context.rebuild();
+    await context.dispose();
 }
 
 compile({
@@ -16,8 +16,6 @@ compile({
     treeShaking: true,
     target: ['es2020'],
     minify: true,
-    entryPoints: [
-        './resources/js/filament/rich-content-plugins/video-embed.js',
-    ],
+    entryPoints: ['./resources/js/filament/rich-content-plugins/video-embed.js'],
     outdir: './resources/js/dist/filament/rich-content-plugins',
-})
+});

@@ -1,4 +1,4 @@
-import { Node, mergeAttributes } from '@tiptap/core'
+import { Node, ResizableNodeView } from '@tiptap/core';
 
 export default Node.create({
     name: 'videoEmbed',
@@ -6,6 +6,15 @@ export default Node.create({
     group: 'block',
 
     atom: true,
+
+    addOptions() {
+        return {
+            resize: {
+                enabled: true,
+                directions: ['bottom-left', 'bottom-right'],
+            },
+        };
+    },
 
     addAttributes() {
         return {
@@ -19,23 +28,20 @@ export default Node.create({
             },
             type: {
                 default: 'video',
-                parseHTML: (element) =>
-                    element.getAttribute('data-video-type') || 'video',
+                parseHTML: (element) => element.getAttribute('data-video-type') || 'video',
                 renderHTML: () => ({}),
             },
             width: {
-                default: '100%',
-                parseHTML: (element) =>
-                    element.getAttribute('data-video-width') || '100%',
+                default: null,
+                parseHTML: (element) => element.getAttribute('data-video-width') || null,
                 renderHTML: () => ({}),
             },
             height: {
-                default: '315',
-                parseHTML: (element) =>
-                    element.getAttribute('data-video-height') || '315',
+                default: null,
+                parseHTML: (element) => element.getAttribute('data-video-height') || null,
                 renderHTML: () => ({}),
             },
-        }
+        };
     },
 
     parseHTML() {
@@ -43,11 +49,11 @@ export default Node.create({
             {
                 tag: 'div[data-video-embed]',
             },
-        ]
+        ];
     },
 
     renderHTML({ node }) {
-        const { src, type, width, height } = node.attrs
+        const { src, type, width, height } = node.attrs;
 
         const wrapperAttrs = {
             'data-video-embed': '',
@@ -55,7 +61,7 @@ export default Node.create({
             'data-video-src': src,
             'data-video-width': width,
             'data-video-height': height,
-        }
+        };
 
         if (type === 'youtube' || type === 'vimeo') {
             return [
@@ -76,7 +82,7 @@ export default Node.create({
                         style: 'position: absolute; top: 0; left: 0; width: 100%; height: 100%;',
                     },
                 ],
-            ]
+            ];
         }
 
         return [
@@ -93,6 +99,88 @@ export default Node.create({
                     width: '100%',
                 },
             ],
-        ]
+        ];
     },
-})
+
+    addNodeView() {
+        const { resize } = this.options;
+
+        if (!resize?.enabled || typeof document === 'undefined') {
+            return null;
+        }
+
+        return ({ node, getPos, editor }) => {
+            const { src, type, width, height } = node.attrs;
+
+            let mediaElement;
+
+            if (type === 'youtube' || type === 'vimeo') {
+                mediaElement = document.createElement('iframe');
+                mediaElement.setAttribute('src', src);
+                mediaElement.setAttribute('frameborder', '0');
+                mediaElement.setAttribute('allowfullscreen', 'true');
+                mediaElement.setAttribute(
+                    'allow',
+                    'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+                );
+                mediaElement.style.width = '100%';
+                mediaElement.style.height = '100%';
+                mediaElement.style.display = 'block';
+                mediaElement.style.pointerEvents = 'none';
+            } else {
+                mediaElement = document.createElement('video');
+                mediaElement.setAttribute('src', src);
+                mediaElement.setAttribute('controls', 'true');
+                mediaElement.style.width = '100%';
+                mediaElement.style.display = 'block';
+                mediaElement.style.pointerEvents = 'none';
+            }
+
+            const container = document.createElement('div');
+            container.style.aspectRatio = '16 / 9';
+            container.appendChild(mediaElement);
+
+            if (width) {
+                container.style.width = /^\d+$/.test(String(width)) ? `${width}px` : width;
+            }
+
+            if (height) {
+                container.style.height = /^\d+$/.test(String(height)) ? `${height}px` : height;
+                container.style.aspectRatio = '';
+            }
+
+            const nodeView = new ResizableNodeView({
+                element: container,
+                editor,
+                node,
+                getPos,
+                onResize: (w, h) => {
+                    container.style.width = `${w}px`;
+                    container.style.height = `${h}px`;
+                    container.style.aspectRatio = '';
+                },
+                onCommit: (w, h) => {
+                    const pos = getPos();
+
+                    if (pos !== undefined) {
+                        this.editor
+                            .chain()
+                            .setNodeSelection(pos)
+                            .updateAttributes(this.name, {
+                                width: w,
+                                height: h,
+                            })
+                            .run();
+                    }
+                },
+                onUpdate: (updatedNode) => updatedNode.type === node.type,
+                options: {
+                    directions: resize.directions,
+                    preserveAspectRatio: true,
+                },
+            });
+
+            return nodeView;
+        };
+    },
+});

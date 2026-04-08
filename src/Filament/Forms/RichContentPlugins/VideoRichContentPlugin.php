@@ -37,6 +37,7 @@
 namespace CanyonGBS\Common\Filament\Forms\RichContentPlugins;
 
 use CanyonGBS\Common\Filament\Forms\RichContentPlugins\TipTapExtensions\VideoEmbedExtension;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\RichEditor\EditorCommand;
@@ -105,7 +106,7 @@ class VideoRichContentPlugin implements RichContentPlugin
                         ->helperText('Supports YouTube, Vimeo, or direct video file URLs (.mp4, .webm, .ogg, .mov)')
                         ->rules([
                             function () {
-                                return function (string $attribute, mixed $value, \Closure $fail) {
+                                return function (string $attribute, mixed $value, Closure $fail) {
                                     if (! is_string($value)) {
                                         $fail('The URL must be a string.');
 
@@ -131,8 +132,6 @@ class VideoRichContentPlugin implements RichContentPlugin
                                 'attrs' => [
                                     'src' => $embedUrl,
                                     'type' => $type,
-                                    'width' => '100%',
-                                    'height' => ($type === 'video') ? 'auto' : '315',
                                 ],
                             ]]),
                         ],

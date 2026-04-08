@@ -24,6 +24,14 @@ parameters:
 
     level: 6
 
+    ignoreErrors:
+        -
+            identifier: MeliorStan.methodNameNotCamelCase
+            path: src/Filament/Forms/RichContentPlugins/TipTapExtensions/*
+        -
+            identifier: MeliorStan.parameterNameNotCamelCase
+            path: src/Filament/Forms/RichContentPlugins/TipTapExtensions/*
+
     meliorstan:
         boolean_get_method_name:
             check_parameterized_methods: true
