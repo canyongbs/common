@@ -36,7 +36,9 @@
 
 namespace CanyonGBS\Common;
 
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -53,6 +55,11 @@ class CommonServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        FilamentAsset::register([
+            Js::make('rich-content-plugins/video-embed', __DIR__ . '/../resources/js/dist/filament/rich-content-plugins/video-embed.js')
+                ->loadedOnRequest(),
+        ], 'common');
+
         FilamentColor::register([
             'red' => Color::Red,
             'orange' => Color::Orange,
