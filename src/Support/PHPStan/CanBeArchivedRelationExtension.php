@@ -34,24 +34,26 @@
 </COPYRIGHT>
 */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace CanyonGBS\Common\Support\PHPStan;
 
+use function array_key_exists;
+use function array_map;
+use function array_merge;
+
 use CanyonGBS\Common\Models\Concerns\CanBeArchived;
 use Illuminate\Database\Eloquent\Relations\Relation;
+
+use function in_array;
+use function in_array;
+
 use Larastan\Larastan\Reflection\EloquentBuilderMethodReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\ThisType;
-
-use function in_array;
-use function array_key_exists;
-use function array_map;
-use function array_merge;
-use function in_array;
 
 /**
  * Recognizes CanBeArchived methods (withoutArchived, onlyArchived, etc.) on
