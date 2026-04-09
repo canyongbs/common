@@ -34,23 +34,25 @@
 </COPYRIGHT>
 */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace CanyonGBS\Common\Support\PHPStan;
 
+use function array_key_exists;
+use function array_map;
+use function array_merge;
+
 use CanyonGBS\Common\Models\Concerns\CanBeArchived;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+
+use function in_array;
+
 use Larastan\Larastan\Reflection\EloquentBuilderMethodReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateObjectType;
-
-use function array_key_exists;
-use function array_map;
-use function array_merge;
-use function in_array;
 
 class CanBeArchivedExtension implements MethodsClassReflectionExtension
 {
