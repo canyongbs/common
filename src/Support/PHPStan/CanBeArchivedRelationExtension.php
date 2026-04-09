@@ -46,7 +46,6 @@ use CanyonGBS\Common\Models\Concerns\CanBeArchived;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 use function in_array;
-use function in_array;
 
 use Larastan\Larastan\Reflection\EloquentBuilderMethodReflection;
 use PHPStan\Reflection\ClassReflection;
