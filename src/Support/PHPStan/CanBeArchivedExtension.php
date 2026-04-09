@@ -52,12 +52,12 @@ use function array_map;
 use function array_merge;
 use function in_array;
 
-final class CanBeArchivedExtension implements MethodsClassReflectionExtension
+class CanBeArchivedExtension implements MethodsClassReflectionExtension
 {
-    private const METHODS = ['withoutArchived', 'onlyArchived', 'withoutArchivedAndUnused', 'archive', 'unarchive'];
+    protected const METHODS = ['withoutArchived', 'onlyArchived', 'withoutArchivedAndUnused', 'archive', 'unarchive'];
 
     /** @var array<string, MethodReflection> */
-    private array $cache = [];
+    protected array $cache = [];
 
     public function hasMethod(ClassReflection $classReflection, string $methodName): bool
     {
@@ -81,7 +81,7 @@ final class CanBeArchivedExtension implements MethodsClassReflectionExtension
         return $this->cache[$classReflection->getCacheKey() . '-' . $methodName];
     }
 
-    private function findMethod(ClassReflection $classReflection, string $methodName): MethodReflection|null
+    protected function findMethod(ClassReflection $classReflection, string $methodName): MethodReflection|null
     {
         if (! $classReflection->is(EloquentBuilder::class)) {
             return null;

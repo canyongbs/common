@@ -7,6 +7,7 @@
     <testsuites>
         <testsuite name="Test Suite">
             <directory suffix=".php">./tests/</directory>
+            <exclude>./tests/PHPStan/Fixtures</exclude>
         </testsuite>
     </testsuites>
     <source>
