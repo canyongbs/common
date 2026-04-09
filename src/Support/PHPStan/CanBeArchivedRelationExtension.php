@@ -34,30 +34,32 @@
 </COPYRIGHT>
 */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace CanyonGBS\Common\Support\PHPStan;
 
-use function array_key_exists;
-
+use CanyonGBS\Common\Models\Concerns\CanBeArchived;
 use Illuminate\Database\Eloquent\Relations\Relation;
-
-use function in_array;
-
 use Larastan\Larastan\Reflection\EloquentBuilderMethodReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
+use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\ThisType;
+
+use function in_array;
+use function array_key_exists;
+use function array_map;
+use function array_merge;
+use function in_array;
 
 /**
  * Recognizes CanBeArchived methods (withoutArchived, onlyArchived, etc.) on
- * Eloquent Relation classes. Because PHPStan's MethodsClassReflectionExtension
- * receives the class definition (not a parameterized type), concrete generic
- * type arguments are not available — we cannot verify whether the related model
- * actually uses the CanBeArchived trait. This is the same limitation that
- * Larastan's built-in SoftDeletes support has on relations. We accept the
- * methods unconditionally on any Relation to avoid false positives.
+ * Eloquent Relation classes. When the relation has a concrete generic return
+ * type (e.g., `@return BelongsTo<Project, $this>`), the extension can verify
+ * whether the related model uses the CanBeArchived trait. When the concrete
+ * type is not available (missing docblock or unresolvable generics), the
+ * methods are not recognized.
  */
 class CanBeArchivedRelationExtension implements MethodsClassReflectionExtension
 {
@@ -95,6 +97,32 @@ class CanBeArchivedRelationExtension implements MethodsClassReflectionExtension
         }
 
         if (! in_array($methodName, self::METHODS, true)) {
+            return null;
+        }
+
+        $relatedModel = $classReflection->getActiveTemplateTypeMap()->getType('TRelatedModel');
+
+        if ($relatedModel === null) {
+            return null;
+        }
+
+        if ($relatedModel instanceof TemplateObjectType) {
+            $relatedModel = $relatedModel->getBound();
+        }
+
+        $reflections = $relatedModel->getObjectClassReflections();
+
+        if ($reflections === []) {
+            return null;
+        }
+
+        if (! array_key_exists(
+            CanBeArchived::class,
+            array_merge(...array_map(
+                static fn (ClassReflection $classRef) => $classRef->getTraits(true),
+                $reflections,
+            )),
+        )) {
             return null;
         }
 

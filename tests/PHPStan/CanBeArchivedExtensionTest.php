@@ -55,6 +55,15 @@ it('recognizes archive methods on a relation to a model with CanBeArchived', fun
     expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods on a relation.\nOutput: {$result['output']}");
 });
 
+it('reports errors for archive methods on a relation to a model without CanBeArchived', function () {
+    $result = runPhpStan('tests/PHPStan/Fixtures/NonArchivedRelationFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('withoutArchived');
+    expect($result['output'])->toContain('onlyArchived');
+    expect($result['output'])->toContain('withoutArchivedAndUnused');
+});
+
 /**
  * @return array{exitCode: int, output: string}
  */
