@@ -1,0 +1,5 @@
+services:
+    -
+        class: CanyonGBS\Common\Support\PHPStan\CanBeArchivedExtension
+        tags:
+            - phpstan.broker.methodsClassReflectionExtension
