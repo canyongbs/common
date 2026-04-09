@@ -74,7 +74,7 @@ function runPhpStan(string $filePath): array
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/phpstan-test.neon');
     $file = escapeshellarg($filePath);
 
-    $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=table --no-progress 2>&1";
+    $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
 
     exec($command, $outputLines, $exitCode);
 
