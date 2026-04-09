@@ -46,7 +46,6 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateObjectType;
-use PHPStan\Type\ObjectType;
 
 use function array_key_exists;
 use function array_map;
@@ -105,12 +104,7 @@ final class CanBeArchivedExtension implements MethodsClassReflectionExtension
         } while ($loopReflection !== null);
 
         if ($modelType === null) {
-            return new EloquentBuilderMethodReflection(
-                $methodName,
-                $classReflection,
-                [],
-                new ObjectType($classReflection->getName()),
-            );
+            return null;
         }
 
         if ($modelType instanceof TemplateObjectType) {
