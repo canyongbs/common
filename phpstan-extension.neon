@@ -3,3 +3,7 @@ services:
         class: CanyonGBS\Common\Support\PHPStan\CanBeArchivedExtension
         tags:
             - phpstan.broker.methodsClassReflectionExtension
+    -
+        class: CanyonGBS\Common\Support\PHPStan\CanBeArchivedRelationExtension
+        tags:
+            - phpstan.broker.methodsClassReflectionExtension

@@ -49,6 +49,12 @@ it('reports errors for archive methods on a builder for a model without CanBeArc
     expect($result['output'])->toContain('withoutArchivedAndUnused');
 });
 
+it('recognizes archive methods on a relation to a model with CanBeArchived', function () {
+    $result = runPhpStan('tests/PHPStan/Fixtures/CanBeArchivedRelationFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods on a relation.\nOutput: {$result['output']}");
+});
+
 /**
  * @return array{exitCode: int, output: string}
  */
