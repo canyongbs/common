@@ -36,9 +36,64 @@
 
 declare(strict_types = 1);
 
+use Workbench\App\Models\Category;
+use Workbench\App\Models\Comment;
+use Workbench\App\Models\Deployment;
 use Workbench\App\Models\Project;
+use Workbench\App\Models\Tag;
 
+// HasMany: Project->tasks() where Task LACKS CanBeArchived
 $project = new Project();
 $project->tasks()->withoutArchived();
 $project->tasks()->onlyArchived();
 $project->tasks()->withoutArchivedAndUnused();
+
+// HasOne: Project->latestTask() where Task LACKS CanBeArchived
+$project->latestTask()->withoutArchived();
+$project->latestTask()->onlyArchived();
+$project->latestTask()->withoutArchivedAndUnused();
+
+// MorphMany: Project->comments() where Comment LACKS CanBeArchived
+$project->comments()->withoutArchived();
+$project->comments()->onlyArchived();
+$project->comments()->withoutArchivedAndUnused();
+
+// BelongsTo: Deployment->task() where Task LACKS CanBeArchived
+$deployment = new Deployment();
+$deployment->task()->withoutArchived();
+$deployment->task()->onlyArchived();
+$deployment->task()->withoutArchivedAndUnused();
+
+// HasOneThrough: Category->latestReview() where Review LACKS CanBeArchived
+$category = new Category();
+$category->latestReview()->withoutArchived();
+$category->latestReview()->onlyArchived();
+$category->latestReview()->withoutArchivedAndUnused();
+
+// HasManyThrough: Category->reviews() where Review LACKS CanBeArchived
+$category->reviews()->withoutArchived();
+$category->reviews()->onlyArchived();
+$category->reviews()->withoutArchivedAndUnused();
+
+// BelongsToMany: Tag->tasks() where Task LACKS CanBeArchived
+$tag = new Tag();
+$tag->tasks()->withoutArchived();
+$tag->tasks()->onlyArchived();
+$tag->tasks()->withoutArchivedAndUnused();
+
+// MorphOne: Tag->comment() where Comment LACKS CanBeArchived
+$tag->comment()->withoutArchived();
+$tag->comment()->onlyArchived();
+$tag->comment()->withoutArchivedAndUnused();
+
+// MorphMany (negative using Tag->images is positive, so use separate):
+// MorphToMany: Tag->reviews() where Review LACKS CanBeArchived
+$tag->reviews()->withoutArchived();
+$tag->reviews()->onlyArchived();
+$tag->reviews()->withoutArchivedAndUnused();
+
+// MorphTo (mixed union): Comment->commentable() where MorphTo<Project|Task> — Task LACKS CanBeArchived
+$comment = new Comment();
+$comment->commentable()->withoutArchived();
+$comment->commentable()->onlyArchived();
+$comment->commentable()->withoutArchivedAndUnused();

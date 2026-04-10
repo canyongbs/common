@@ -36,9 +36,49 @@
 
 declare(strict_types = 1);
 
+use Workbench\App\Models\Image;
+use Workbench\App\Models\Project;
 use Workbench\App\Models\Task;
 
+// BelongsTo: Task->project() where Project HAS CanBeArchived
 $task = new Task();
 $task->project()->withoutArchived();
 $task->project()->onlyArchived();
 $task->project()->withoutArchivedAndUnused();
+
+// HasOne: Task->deployment() where Deployment HAS CanBeArchived
+$task->deployment()->withoutArchived();
+$task->deployment()->onlyArchived();
+$task->deployment()->withoutArchivedAndUnused();
+
+// BelongsToMany: Task->tags() where Tag HAS CanBeArchived
+$task->tags()->withoutArchived();
+$task->tags()->onlyArchived();
+$task->tags()->withoutArchivedAndUnused();
+
+// MorphOne: Project->image() where Image HAS CanBeArchived
+$project = new Project();
+$project->image()->withoutArchived();
+$project->image()->onlyArchived();
+$project->image()->withoutArchivedAndUnused();
+
+// MorphToMany: Project->tags() where Tag HAS CanBeArchived
+$project->tags()->withoutArchived();
+$project->tags()->onlyArchived();
+$project->tags()->withoutArchivedAndUnused();
+
+// HasOneThrough: Project->latestDeployment() where Deployment HAS CanBeArchived
+$project->latestDeployment()->withoutArchived();
+$project->latestDeployment()->onlyArchived();
+$project->latestDeployment()->withoutArchivedAndUnused();
+
+// HasManyThrough: Project->deployments() where Deployment HAS CanBeArchived
+$project->deployments()->withoutArchived();
+$project->deployments()->onlyArchived();
+$project->deployments()->withoutArchivedAndUnused();
+
+// MorphTo (all models in union have trait): Image->imageable() where MorphTo<Project|Image>
+$image = new Image();
+$image->imageable()->withoutArchived();
+$image->imageable()->onlyArchived();
+$image->imageable()->withoutArchivedAndUnused();

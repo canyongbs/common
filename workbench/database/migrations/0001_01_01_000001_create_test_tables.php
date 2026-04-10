@@ -54,10 +54,81 @@ return new class () extends Migration {
             $table->string('name');
             $table->timestamps();
         });
+
+        Schema::create('images', function (Blueprint $table) {
+            $table->id();
+            $table->morphs('imageable');
+            $table->string('url');
+            $table->timestamp('archived_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('comments', function (Blueprint $table) {
+            $table->id();
+            $table->morphs('commentable');
+            $table->text('body');
+            $table->timestamps();
+        });
+
+        Schema::create('tags', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamp('archived_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('tag_task', function (Blueprint $table) {
+            $table->foreignId('tag_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('task_id')->constrained()->cascadeOnDelete();
+            $table->primary(['tag_id', 'task_id']);
+        });
+
+        Schema::create('taggables', function (Blueprint $table) {
+            $table->foreignId('tag_id')->constrained()->cascadeOnDelete();
+            $table->morphs('taggable');
+        });
+
+        Schema::create('deployments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('task_id')->constrained()->cascadeOnDelete();
+            $table->string('commit_hash');
+            $table->timestamp('archived_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('articles', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('category_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
+            $table->timestamp('archived_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('reviews', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('article_id')->constrained()->cascadeOnDelete();
+            $table->text('body');
+            $table->timestamps();
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('reviews');
+        Schema::dropIfExists('articles');
+        Schema::dropIfExists('categories');
+        Schema::dropIfExists('deployments');
+        Schema::dropIfExists('taggables');
+        Schema::dropIfExists('tag_task');
+        Schema::dropIfExists('tags');
+        Schema::dropIfExists('comments');
+        Schema::dropIfExists('images');
         Schema::dropIfExists('tasks');
         Schema::dropIfExists('projects');
     }

@@ -17,7 +17,7 @@
       in the software, and you may not remove or obscure any functionality in the
       software that is protected by the license key.
     - You may not alter, remove, or obscure any licensing, copyright, or other notices
-      of the licensor in the software. Any use of the licensor’s trademarks is subject
+      of the licensor in the software. Any use of the licensor's trademarks is subject
       to applicable law.
     - Canyon GBS LLC respects the intellectual property rights of others and expects the
       same in return. Canyon GBS™ and Canyon GBS Common are registered trademarks of
@@ -40,21 +40,17 @@ use CanyonGBS\Common\Models\Concerns\CanBeArchived;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Workbench\App\Models\Comment;
-use Workbench\App\Models\Deployment;
 use Workbench\App\Models\Image;
-use Workbench\App\Models\Tag;
+use Workbench\App\Models\Review;
 use Workbench\App\Models\Task;
-use Workbench\Database\Factories\ProjectFactory;
+use Workbench\Database\Factories\TagFactory;
 
-class Project extends Model
+class Tag extends Model
 {
     use CanBeArchived;
     use HasFactory;
@@ -62,59 +58,35 @@ class Project extends Model
     protected $guarded = [];
 
     /**
-     * @return HasMany<Task, $this>
+     * @return BelongsToMany<Task, $this>
      */
-    public function tasks(): HasMany
+    public function tasks(): BelongsToMany
     {
-        return $this->hasMany(Task::class);
+        return $this->belongsToMany(Task::class);
     }
 
     /**
-     * @return HasOne<Task, $this>
+     * @return MorphOne<Comment, $this>
      */
-    public function latestTask(): HasOne
+    public function comment(): MorphOne
     {
-        return $this->hasOne(Task::class)->latestOfMany();
+        return $this->morphOne(Comment::class, 'commentable');
     }
 
     /**
-     * @return MorphOne<Image, $this>
+     * @return MorphMany<Image, $this>
      */
-    public function image(): MorphOne
+    public function images(): MorphMany
     {
-        return $this->morphOne(Image::class, 'imageable');
+        return $this->morphMany(Image::class, 'imageable');
     }
 
     /**
-     * @return MorphMany<Comment, $this>
+     * @return MorphToMany<Review, $this>
      */
-    public function comments(): MorphMany
+    public function reviews(): MorphToMany
     {
-        return $this->morphMany(Comment::class, 'commentable');
-    }
-
-    /**
-     * @return MorphToMany<Tag, $this>
-     */
-    public function tags(): MorphToMany
-    {
-        return $this->morphToMany(Tag::class, 'taggable');
-    }
-
-    /**
-     * @return HasManyThrough<Deployment, Task, $this>
-     */
-    public function deployments(): HasManyThrough
-    {
-        return $this->hasManyThrough(Deployment::class, Task::class);
-    }
-
-    /**
-     * @return HasOneThrough<Deployment, Task, $this>
-     */
-    public function latestDeployment(): HasOneThrough
-    {
-        return $this->hasOneThrough(Deployment::class, Task::class)->latestOfMany();
+        return $this->morphedByMany(Review::class, 'taggable');
     }
 
     public function used(Builder $query): void
@@ -122,8 +94,8 @@ class Project extends Model
         $query->whereHas('tasks');
     }
 
-    protected static function newFactory(): ProjectFactory
+    protected static function newFactory(): TagFactory
     {
-        return ProjectFactory::new();
+        return TagFactory::new();
     }
 }

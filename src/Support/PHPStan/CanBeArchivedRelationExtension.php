@@ -39,8 +39,6 @@ declare(strict_types = 1);
 namespace CanyonGBS\Common\Support\PHPStan;
 
 use function array_key_exists;
-use function array_map;
-use function array_merge;
 
 use CanyonGBS\Common\Models\Concerns\CanBeArchived;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -117,14 +115,10 @@ class CanBeArchivedRelationExtension implements MethodsClassReflectionExtension
             return null;
         }
 
-        if (! array_key_exists(
-            CanBeArchived::class,
-            array_merge(...array_map(
-                static fn (ClassReflection $classRef) => $classRef->getTraits(true),
-                $reflections,
-            )),
-        )) {
-            return null;
+        foreach ($reflections as $reflection) {
+            if (! array_key_exists(CanBeArchived::class, $reflection->getTraits(true))) {
+                return null;
+            }
         }
 
         return new EloquentBuilderMethodReflection(

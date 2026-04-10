@@ -17,7 +17,7 @@
       in the software, and you may not remove or obscure any functionality in the
       software that is protected by the license key.
     - You may not alter, remove, or obscure any licensing, copyright, or other notices
-      of the licensor in the software. Any use of the licensor’s trademarks is subject
+      of the licensor in the software. Any use of the licensor's trademarks is subject
       to applicable law.
     - Canyon GBS LLC respects the intellectual property rights of others and expects the
       same in return. Canyon GBS™ and Canyon GBS Common are registered trademarks of
@@ -36,48 +36,36 @@
 
 namespace Workbench\App\Models;
 
+use CanyonGBS\Common\Models\Concerns\CanBeArchived;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Workbench\App\Models\Deployment;
-use Workbench\App\Models\Project;
-use Workbench\App\Models\Tag;
-use Workbench\Database\Factories\TaskFactory;
+use Workbench\App\Models\Task;
+use Workbench\Database\Factories\DeploymentFactory;
 
-class Task extends Model
+class Deployment extends Model
 {
+    use CanBeArchived;
     use HasFactory;
 
     protected $guarded = [];
 
     /**
-     * @return BelongsTo<Project, $this>
+     * @return BelongsTo<Task, $this>
      */
-    public function project(): BelongsTo
+    public function task(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Task::class);
     }
 
-    /**
-     * @return HasOne<Deployment, $this>
-     */
-    public function deployment(): HasOne
+    public function used(Builder $query): void
     {
-        return $this->hasOne(Deployment::class);
+        $query->whereHas('task');
     }
 
-    /**
-     * @return BelongsToMany<Tag, $this>
-     */
-    public function tags(): BelongsToMany
+    protected static function newFactory(): DeploymentFactory
     {
-        return $this->belongsToMany(Tag::class);
-    }
-
-    protected static function newFactory(): TaskFactory
-    {
-        return TaskFactory::new();
+        return DeploymentFactory::new();
     }
 }

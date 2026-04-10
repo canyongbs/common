@@ -17,7 +17,7 @@
       in the software, and you may not remove or obscure any functionality in the
       software that is protected by the license key.
     - You may not alter, remove, or obscure any licensing, copyright, or other notices
-      of the licensor in the software. Any use of the licensor’s trademarks is subject
+      of the licensor in the software. Any use of the licensor's trademarks is subject
       to applicable law.
     - Canyon GBS LLC respects the intellectual property rights of others and expects the
       same in return. Canyon GBS™ and Canyon GBS Common are registered trademarks of
@@ -34,50 +34,22 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\App\Models;
+namespace Workbench\Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Workbench\App\Models\Deployment;
-use Workbench\App\Models\Project;
-use Workbench\App\Models\Tag;
-use Workbench\Database\Factories\TaskFactory;
 
-class Task extends Model
+/** @extends Factory<Deployment> */
+class DeploymentFactory extends Factory
 {
-    use HasFactory;
+    protected $model = Deployment::class;
 
-    protected $guarded = [];
-
-    /**
-     * @return BelongsTo<Project, $this>
-     */
-    public function project(): BelongsTo
+    /** @return array<string, mixed> */
+    public function definition(): array
     {
-        return $this->belongsTo(Project::class);
-    }
-
-    /**
-     * @return HasOne<Deployment, $this>
-     */
-    public function deployment(): HasOne
-    {
-        return $this->hasOne(Deployment::class);
-    }
-
-    /**
-     * @return BelongsToMany<Tag, $this>
-     */
-    public function tags(): BelongsToMany
-    {
-        return $this->belongsToMany(Tag::class);
-    }
-
-    protected static function newFactory(): TaskFactory
-    {
-        return TaskFactory::new();
+        return [
+            'task_id' => TaskFactory::new(),
+            'commit_hash' => fake()->sha1(),
+        ];
     }
 }

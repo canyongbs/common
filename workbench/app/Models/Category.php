@@ -17,7 +17,7 @@
       in the software, and you may not remove or obscure any functionality in the
       software that is protected by the license key.
     - You may not alter, remove, or obscure any licensing, copyright, or other notices
-      of the licensor in the software. Any use of the licensor’s trademarks is subject
+      of the licensor in the software. Any use of the licensor's trademarks is subject
       to applicable law.
     - Canyon GBS LLC respects the intellectual property rights of others and expects the
       same in return. Canyon GBS™ and Canyon GBS Common are registered trademarks of
@@ -38,46 +38,45 @@ namespace Workbench\App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Workbench\App\Models\Deployment;
-use Workbench\App\Models\Project;
-use Workbench\App\Models\Tag;
-use Workbench\Database\Factories\TaskFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Workbench\App\Models\Article;
+use Workbench\App\Models\Review;
+use Workbench\Database\Factories\CategoryFactory;
 
-class Task extends Model
+class Category extends Model
 {
     use HasFactory;
 
     protected $guarded = [];
 
     /**
-     * @return BelongsTo<Project, $this>
+     * @return HasMany<Article, $this>
      */
-    public function project(): BelongsTo
+    public function articles(): HasMany
     {
-        return $this->belongsTo(Project::class);
+        return $this->hasMany(Article::class);
     }
 
     /**
-     * @return HasOne<Deployment, $this>
+     * @return HasOneThrough<Review, Article, $this>
      */
-    public function deployment(): HasOne
+    public function latestReview(): HasOneThrough
     {
-        return $this->hasOne(Deployment::class);
+        return $this->hasOneThrough(Review::class, Article::class)->latestOfMany();
     }
 
     /**
-     * @return BelongsToMany<Tag, $this>
+     * @return HasManyThrough<Review, Article, $this>
      */
-    public function tags(): BelongsToMany
+    public function reviews(): HasManyThrough
     {
-        return $this->belongsToMany(Tag::class);
+        return $this->hasManyThrough(Review::class, Article::class);
     }
 
-    protected static function newFactory(): TaskFactory
+    protected static function newFactory(): CategoryFactory
     {
-        return TaskFactory::new();
+        return CategoryFactory::new();
     }
 }
