@@ -42,8 +42,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Workbench\App\Models\Category;
-use Workbench\App\Models\Review;
 use Workbench\Database\Factories\ArticleFactory;
 
 class Article extends Model

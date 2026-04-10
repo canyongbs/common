@@ -44,10 +44,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Workbench\App\Models\Comment;
-use Workbench\App\Models\Image;
-use Workbench\App\Models\Review;
-use Workbench\App\Models\Task;
 use Workbench\Database\Factories\TagFactory;
 
 class Tag extends Model

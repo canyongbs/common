@@ -47,11 +47,6 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Workbench\App\Models\Comment;
-use Workbench\App\Models\Deployment;
-use Workbench\App\Models\Image;
-use Workbench\App\Models\Tag;
-use Workbench\App\Models\Task;
 use Workbench\Database\Factories\ProjectFactory;
 
 class Project extends Model

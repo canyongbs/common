@@ -40,7 +40,6 @@ use CanyonGBS\Common\Models\Concerns\CanBeArchived;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Workbench\App\Models\Project;
 use Workbench\Database\Factories\ImageFactory;
 
 class Image extends Model

@@ -41,7 +41,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Workbench\App\Models\Task;
 use Workbench\Database\Factories\DeploymentFactory;
 
 class Deployment extends Model

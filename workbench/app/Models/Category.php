@@ -41,8 +41,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
-use Workbench\App\Models\Article;
-use Workbench\App\Models\Review;
 use Workbench\Database\Factories\CategoryFactory;
 
 class Category extends Model

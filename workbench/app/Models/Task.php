@@ -41,9 +41,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Workbench\App\Models\Deployment;
-use Workbench\App\Models\Project;
-use Workbench\App\Models\Tag;
 use Workbench\Database\Factories\TaskFactory;
 
 class Task extends Model

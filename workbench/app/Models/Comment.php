@@ -39,8 +39,6 @@ namespace Workbench\App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Workbench\App\Models\Project;
-use Workbench\App\Models\Task;
 use Workbench\Database\Factories\CommentFactory;
 
 class Comment extends Model
