@@ -34,10 +34,46 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+namespace Workbench\App\Models;
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
+use CanyonGBS\Common\Models\Concerns\CanBeArchived;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Workbench\Database\Factories\ArticleFactory;
+
+class Article extends Model
 {
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
+    use CanBeArchived;
+    use HasFactory;
+
+    protected $guarded = [];
+
+    /**
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @return HasMany<Review, $this>
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function used(Builder $query): void
+    {
+        $query->whereHas('reviews');
+    }
+
+    protected static function newFactory(): ArticleFactory
+    {
+        return ArticleFactory::new();
+    }
 }

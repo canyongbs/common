@@ -34,10 +34,22 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+namespace Workbench\Database\Factories;
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Workbench\App\Models\Deployment;
+
+/** @extends Factory<Deployment> */
+class DeploymentFactory extends Factory
 {
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
+    protected $model = Deployment::class;
+
+    /** @return array<string, mixed> */
+    public function definition(): array
+    {
+        return [
+            'task_id' => TaskFactory::new(),
+            'commit_hash' => fake()->sha1(),
+        ];
+    }
 }

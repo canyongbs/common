@@ -41,6 +41,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Workbench\Database\Factories\ProjectFactory;
 
 class Project extends Model
@@ -50,9 +56,60 @@ class Project extends Model
 
     protected $guarded = [];
 
+    /**
+     * @return HasMany<Task, $this>
+     */
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    /**
+     * @return HasOne<Task, $this>
+     */
+    public function latestTask(): HasOne
+    {
+        return $this->hasOne(Task::class)->latestOfMany();
+    }
+
+    /**
+     * @return MorphOne<Image, $this>
+     */
+    public function image(): MorphOne
+    {
+        return $this->morphOne(Image::class, 'imageable');
+    }
+
+    /**
+     * @return MorphMany<Comment, $this>
+     */
+    public function comments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    /**
+     * @return MorphToMany<Tag, $this>
+     */
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    /**
+     * @return HasManyThrough<Deployment, Task, $this>
+     */
+    public function deployments(): HasManyThrough
+    {
+        return $this->hasManyThrough(Deployment::class, Task::class);
+    }
+
+    /**
+     * @return HasOneThrough<Deployment, Task, $this>
+     */
+    public function latestDeployment(): HasOneThrough
+    {
+        return $this->hasOneThrough(Deployment::class, Task::class)->latestOfMany();
     }
 
     public function used(Builder $query): void

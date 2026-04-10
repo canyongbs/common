@@ -34,10 +34,22 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+namespace Workbench\Database\Factories;
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Workbench\App\Models\Review;
+
+/** @extends Factory<Review> */
+class ReviewFactory extends Factory
 {
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
+    protected $model = Review::class;
+
+    /** @return array<string, mixed> */
+    public function definition(): array
+    {
+        return [
+            'article_id' => ArticleFactory::new(),
+            'body' => fake()->paragraph(),
+        ];
+    }
 }

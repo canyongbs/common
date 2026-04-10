@@ -34,10 +34,23 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+namespace Workbench\Database\Factories;
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Workbench\App\Models\Image;
+
+/** @extends Factory<Image> */
+class ImageFactory extends Factory
 {
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
+    protected $model = Image::class;
+
+    /** @return array<string, mixed> */
+    public function definition(): array
+    {
+        return [
+            'url' => fake()->url(),
+            'imageable_id' => ProjectFactory::new(),
+            'imageable_type' => 'Workbench\App\Models\Project',
+        ];
+    }
 }

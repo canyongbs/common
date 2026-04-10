@@ -34,10 +34,23 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+namespace Workbench\Database\Factories;
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Workbench\App\Models\Comment;
+
+/** @extends Factory<Comment> */
+class CommentFactory extends Factory
 {
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
+    protected $model = Comment::class;
+
+    /** @return array<string, mixed> */
+    public function definition(): array
+    {
+        return [
+            'body' => fake()->paragraph(),
+            'commentable_id' => ProjectFactory::new(),
+            'commentable_type' => 'Workbench\App\Models\Project',
+        ];
+    }
 }

@@ -34,10 +34,21 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+namespace Workbench\Database\Factories;
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Workbench\App\Models\Tag;
+
+/** @extends Factory<Tag> */
+class TagFactory extends Factory
 {
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
+    protected $model = Tag::class;
+
+    /** @return array<string, mixed> */
+    public function definition(): array
+    {
+        return [
+            'name' => fake()->word(),
+        ];
+    }
 }

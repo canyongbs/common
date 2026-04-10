@@ -39,6 +39,8 @@ namespace Workbench\App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Workbench\Database\Factories\TaskFactory;
 
 class Task extends Model
@@ -47,9 +49,28 @@ class Task extends Model
 
     protected $guarded = [];
 
+    /**
+     * @return BelongsTo<Project, $this>
+     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return HasOne<Deployment, $this>
+     */
+    public function deployment(): HasOne
+    {
+        return $this->hasOne(Deployment::class);
+    }
+
+    /**
+     * @return BelongsToMany<Tag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
     }
 
     protected static function newFactory(): TaskFactory

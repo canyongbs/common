@@ -34,10 +34,31 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+namespace Workbench\App\Models;
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
+use CanyonGBS\Common\Models\Concerns\CanBeArchived;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Workbench\Database\Factories\ImageFactory;
+
+class Image extends Model
 {
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
+    use CanBeArchived;
+    use HasFactory;
+
+    protected $guarded = [];
+
+    /**
+     * @return MorphTo<Project|self, $this>
+     */
+    public function imageable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    protected static function newFactory(): ImageFactory
+    {
+        return ImageFactory::new();
+    }
 }

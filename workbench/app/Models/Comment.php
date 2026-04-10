@@ -34,10 +34,29 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+namespace Workbench\App\Models;
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Workbench\Database\Factories\CommentFactory;
+
+class Comment extends Model
 {
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
+    use HasFactory;
+
+    protected $guarded = [];
+
+    /**
+     * @return MorphTo<Project|Task, $this>
+     */
+    public function commentable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    protected static function newFactory(): CommentFactory
+    {
+        return CommentFactory::new();
+    }
 }

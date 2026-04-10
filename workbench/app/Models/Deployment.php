@@ -34,10 +34,37 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+namespace Workbench\App\Models;
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
+use CanyonGBS\Common\Models\Concerns\CanBeArchived;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Workbench\Database\Factories\DeploymentFactory;
+
+class Deployment extends Model
 {
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
+    use CanBeArchived;
+    use HasFactory;
+
+    protected $guarded = [];
+
+    /**
+     * @return BelongsTo<Task, $this>
+     */
+    public function task(): BelongsTo
+    {
+        return $this->belongsTo(Task::class);
+    }
+
+    public function used(Builder $query): void
+    {
+        $query->whereHas('task');
+    }
+
+    protected static function newFactory(): DeploymentFactory
+    {
+        return DeploymentFactory::new();
+    }
 }

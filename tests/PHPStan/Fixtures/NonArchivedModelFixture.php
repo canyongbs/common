@@ -34,10 +34,12 @@
 </COPYRIGHT>
 */
 
-use function PHPUnit\Framework\assertEquals;
+declare(strict_types = 1);
 
-function testMap(array $input, array $expectation, callable $getMapper, array $arguments = []): void
-{
-    $mapper = call_user_func_array($getMapper, $arguments);
-    assertEquals($expectation, $mapper->map($input));
-}
+use Workbench\App\Models\Task;
+
+$query = Task::query();
+
+$query->withoutArchived();
+$query->onlyArchived();
+$query->withoutArchivedAndUnused();
