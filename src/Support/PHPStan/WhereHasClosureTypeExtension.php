@@ -60,9 +60,9 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\VoidType;
 
 use function str_contains;
 
@@ -157,7 +157,7 @@ class WhereHasClosureTypeExtension implements MethodParameterClosureTypeExtensio
                     null,
                 ),
             ],
-            new MixedType(),
+            new VoidType(),
         );
     }
 
