@@ -7,3 +7,7 @@ services:
         class: CanyonGBS\Common\Support\PHPStan\CanBeArchivedRelationExtension
         tags:
             - phpstan.broker.methodsClassReflectionExtension
+    -
+        class: CanyonGBS\Common\Support\PHPStan\WhereHasClosureTypeExtension
+        tags:
+            - phpstan.methodParameterClosureTypeExtension
