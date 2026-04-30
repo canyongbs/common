@@ -4,9 +4,7 @@ namespace CanyonGBS\Common\Console\Commands;
 
 use CanyonGBS\Common\Console\Concerns\InteractsWithCleanupTasks;
 use Illuminate\Database\Console\Migrations\MigrateMakeCommand;
-use Illuminate\Database\Migrations\MigrationCreator;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Composer;
 use Illuminate\Support\Str;
 use InterNACHI\Modular\Console\Commands\Make\Modularize;
 
@@ -24,11 +22,6 @@ class MakeTmpMigration extends MigrateMakeCommand
         {--no-cleanup : Skip cleanup task creation}';
 
     protected $description = 'Create a new temporary migration file with optional cleanup task';
-
-    public function __construct(MigrationCreator $creator, Composer $composer)
-    {
-        parent::__construct($creator, $composer);
-    }
 
     public function handle()
     {

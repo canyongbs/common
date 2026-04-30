@@ -36,6 +36,7 @@
 
 namespace CanyonGBS\Common;
 
+use Illuminate\Contracts\Foundation\Application;
 use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
 use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
@@ -43,6 +44,7 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
+use Illuminate\Support\Composer;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Tapp\FilamentTimezoneField\Forms\Components\TimezoneSelect;
@@ -57,8 +59,16 @@ class CommonServiceProvider extends PackageServiceProvider
             ->hasCommands([
                 MakeCleanupTask::class,
                 MakeFeatureFlag::class,
-                MakeTmpMigration::class,
             ]);
+    }
+
+    public function packageRegistered(): void
+    {
+        $this->app->singleton(MakeTmpMigration::class, function (Application $app) {
+            return new MakeTmpMigration($app['migration.creator'], $app[Composer::class]);
+        });
+
+        $this->commands([MakeTmpMigration::class]);
     }
 
     public function packageBooted(): void
