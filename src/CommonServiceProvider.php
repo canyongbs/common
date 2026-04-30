@@ -36,6 +36,9 @@
 
 namespace CanyonGBS\Common;
 
+use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
+use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
+use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
@@ -50,7 +53,12 @@ class CommonServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('common')
-            ->hasViews();
+            ->hasViews()
+            ->hasCommands([
+                MakeCleanupTask::class,
+                MakeFeatureFlag::class,
+                MakeTmpMigration::class,
+            ]);
     }
 
     public function packageBooted(): void

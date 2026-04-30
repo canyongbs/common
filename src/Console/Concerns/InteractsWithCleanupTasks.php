@@ -1,0 +1,166 @@
+<?php
+
+namespace CanyonGBS\Common\Console\Concerns;
+
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
+
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
+
+trait InteractsWithCleanupTasks
+{
+    protected function cleanupTasksDirectory(): string
+    {
+        return $this->laravel->basePath('.cleanup-tasks');
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function getExistingCleanupTasks(): array
+    {
+        $filesystem = $this->laravel->make(Filesystem::class);
+        $directory = $this->cleanupTasksDirectory();
+
+        if (! $filesystem->isDirectory($directory)) {
+            return [];
+        }
+
+        return collect($filesystem->files($directory))
+            ->filter(fn ($file) => Str::endsWith($file->getFilename(), '.md'))
+            ->map(fn ($file) => $file->getFilename())
+            ->values()
+            ->all();
+    }
+
+    protected function createCleanupTask(string $name): string
+    {
+        $filesystem = $this->laravel->make(Filesystem::class);
+        $directory = $this->cleanupTasksDirectory();
+
+        if (! $filesystem->isDirectory($directory)) {
+            $filesystem->makeDirectory($directory, 0755, true);
+        }
+
+        $date = now()->format('Y_m_d');
+        $snakeName = Str::snake($name);
+        $filename = "{$date}_{$snakeName}.md";
+        $path = $directory . '/' . $filename;
+
+        $stub = $this->resolveCleanupTaskStub();
+        $title = Str::headline($name);
+
+        $content = str_replace(
+            ['{{ title }}', '{{ date }}'],
+            [$title, now()->format('Y-m-d')],
+            $stub,
+        );
+
+        $filesystem->put($path, $content);
+
+        return $path;
+    }
+
+    protected function promptForCleanupTask(string $suggestedName): ?string
+    {
+        $existing = $this->getExistingCleanupTasks();
+
+        $options = ['Create new cleanup task'];
+
+        if (count($existing) > 0) {
+            $options[] = 'Add to existing cleanup task';
+        }
+
+        $options[] = 'Skip';
+
+        $choice = select(
+            label: 'Cleanup task',
+            options: $options,
+            default: 'Create new cleanup task',
+        );
+
+        if ($choice === 'Skip') {
+            return null;
+        }
+
+        if ($choice === 'Create new cleanup task') {
+            $name = text(
+                label: 'Cleanup task name',
+                default: $suggestedName,
+                required: true,
+            );
+
+            $path = $this->createCleanupTask($name);
+            $this->components->info("Cleanup task created: {$path}");
+
+            return $path;
+        }
+
+        // Add to existing
+        $selected = select(
+            label: 'Select a cleanup task',
+            options: $existing,
+        );
+
+        return $this->cleanupTasksDirectory() . '/' . $selected;
+    }
+
+    protected function appendToCleanupSection(string $filePath, string $section, string $entry): void
+    {
+        $filesystem = $this->laravel->make(Filesystem::class);
+        $content = $filesystem->get($filePath);
+
+        $heading = "## {$section}";
+        $position = strpos($content, $heading);
+
+        if ($position === false) {
+            return;
+        }
+
+        // Find the end of the heading line
+        $afterHeading = strpos($content, "\n", $position);
+
+        if ($afterHeading === false) {
+            // Heading is at end of file, append after it
+            $content .= "\n\n- {$entry}";
+        } else {
+            // Insert the entry after the heading line
+            $before = substr($content, 0, $afterHeading + 1);
+            $after = substr($content, $afterHeading + 1);
+
+            // Check if there's already content in this section (look for next ## or end)
+            $nextSection = strpos($after, "\n## ");
+
+            if ($nextSection !== false) {
+                $sectionContent = substr($after, 0, $nextSection);
+                $remainder = substr($after, $nextSection);
+            } else {
+                $sectionContent = $after;
+                $remainder = '';
+            }
+
+            // Append entry at end of section content (before blank line to next section)
+            $trimmedSection = rtrim($sectionContent);
+
+            if ($trimmedSection === '') {
+                $content = $before . "\n- {$entry}\n" . $remainder;
+            } else {
+                $content = $before . $trimmedSection . "\n- {$entry}\n" . $remainder;
+            }
+        }
+
+        $filesystem->put($filePath, $content);
+    }
+
+    protected function resolveCleanupTaskStub(): string
+    {
+        $customPath = $this->laravel->basePath('stubs/cleanup-task.stub');
+
+        if (file_exists($customPath)) {
+            return file_get_contents($customPath);
+        }
+
+        return file_get_contents(__DIR__ . '/../../../stubs/cleanup-task.stub');
+    }
+}

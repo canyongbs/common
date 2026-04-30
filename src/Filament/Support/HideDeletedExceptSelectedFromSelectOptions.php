@@ -56,8 +56,8 @@ class HideDeletedExceptSelectedFromSelectOptions
     public function __invoke(Builder $query, ?Model $record, Select $component): Builder
     {
         return $query->where(
-            fn (Builder $query) => $query /** @phpstan-ignore method.notFound */
-                ->withoutTrashed()
+            fn (Builder $query) => $query
+                ->withoutTrashed() // @phpstan-ignore method.notFound
                 ->orWhere(
                     $component->getRelationship()->getQualifiedOwnerKeyName(), /** @phpstan-ignore class.notFound */
                     $record?->getAttributeValue($component->getRelationship()->getForeignKeyName()), /** @phpstan-ignore class.notFound */
