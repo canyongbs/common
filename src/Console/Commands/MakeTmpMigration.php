@@ -36,6 +36,7 @@
 
 namespace CanyonGBS\Common\Console\Commands;
 
+use Throwable;
 use CanyonGBS\Common\Console\Concerns\InteractsWithCleanupTasks;
 use Illuminate\Database\Console\Migrations\MigrateMakeCommand;
 use Illuminate\Filesystem\Filesystem;
@@ -57,7 +58,7 @@ class MakeTmpMigration extends MigrateMakeCommand
 
     protected $description = 'Create a new temporary migration file with optional cleanup task';
 
-    public function handle()
+    public function handle(): int
     {
         $originalName = trim($this->input->getArgument('name'));
 
@@ -79,8 +80,8 @@ class MakeTmpMigration extends MigrateMakeCommand
         // Create the migration file (parent outputs via components->info)
         try {
             parent::handle();
-        } catch (\Throwable $e) {
-            $this->components->error($e->getMessage());
+        } catch (Throwable $exception) {
+            $this->components->error($exception->getMessage());
 
             return static::FAILURE;
         }
@@ -97,6 +98,8 @@ class MakeTmpMigration extends MigrateMakeCommand
                 $this->components->info(sprintf('Cleanup task [%s] updated successfully.', $cleanupResult['path']));
             }
         }
+
+        return static::SUCCESS;
     }
 
     protected function getMigrationPath()

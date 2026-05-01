@@ -40,6 +40,7 @@ use CanyonGBS\Common\Console\Concerns\InteractsWithCleanupTasks;
 use Illuminate\Support\Str;
 use Laravel\Pennant\Commands\FeatureMakeCommand;
 use Symfony\Component\Console\Input\InputOption;
+use Throwable;
 
 class MakeFeatureFlag extends FeatureMakeCommand
 {
@@ -49,7 +50,7 @@ class MakeFeatureFlag extends FeatureMakeCommand
 
     protected $description = 'Create a new feature flag class with optional cleanup task';
 
-    public function handle()
+    public function handle(): ?bool
     {
         // Ensure the name ends with "Feature"
         $name = $this->getNameInput();
@@ -65,11 +66,17 @@ class MakeFeatureFlag extends FeatureMakeCommand
             $cleanupInput = $this->gatherCleanupTaskInput($this->getNameInput());
         }
 
-        // Now create the feature flag file (parent handles output suppression isn't needed — it outputs via components->info)
-        $result = parent::handle();
+        // Create the feature flag file
+        try {
+            $result = parent::handle();
+        } catch (Throwable $exception) {
+            $this->components->error($exception->getMessage());
+
+            $this->fail();
+        }
 
         if ($result === false) {
-            return false;
+            $this->fail();
         }
 
         // Execute cleanup task action and output results
