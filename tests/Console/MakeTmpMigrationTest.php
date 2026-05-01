@@ -35,6 +35,9 @@
 */
 
 use Carbon\Carbon;
+use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
+use Illuminate\Database\Migrations\MigrationCreator;
+use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
@@ -192,5 +195,54 @@ describe('cleanup integration', function () {
             ->expectsChoice('Select a cleanup task', '2026_04_30_existing.md', ['2026_04_30_existing.md'])
             ->expectsOutputToContain('updated successfully')
             ->assertSuccessful();
+    });
+});
+
+describe('migration creation failure', function () {
+    beforeEach(function () {
+        $mock = Mockery::mock(MigrationCreator::class);
+        $mock->shouldReceive('create')->andThrow(new \InvalidArgumentException('A migration with that name already exists.'));
+
+        $this->app->singleton(MakeTmpMigration::class, function () use ($mock) {
+            return new MakeTmpMigration($mock, $this->app->make(Composer::class));
+        });
+    });
+
+    it('does not create cleanup task when migration creation fails', function () {
+        $this->artisan('make:tmp-migration', ['name' => 'duplicate_test'])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'duplicate_test')
+            ->assertFailed();
+
+        // No cleanup task should have been created
+        $cleanupFiles = is_dir($this->cleanupDir) ? glob($this->cleanupDir . '/*.md') : [];
+
+        expect($cleanupFiles)->toBeEmpty();
+    });
+
+    it('does not update existing cleanup task when migration creation fails', function () {
+        File::makeDirectory($this->cleanupDir, 0755, true);
+        $existingFile = $this->cleanupDir . '/2026_04_30_existing_task.md';
+        $originalContent = "---\ntitle: Existing Task\ncreated: 2026-04-30\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n";
+        file_put_contents($existingFile, $originalContent);
+
+        $this->artisan('make:tmp-migration', ['name' => 'fail_update_test'])
+            ->expectsChoice('Cleanup task', 'Add to existing cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
+            ->expectsChoice('Select a cleanup task', '2026_04_30_existing_task.md', ['2026_04_30_existing_task.md'])
+            ->assertFailed();
+
+        // Existing cleanup task should be unchanged
+        $content = file_get_contents($existingFile);
+
+        expect($content)->toBe($originalContent);
+    });
+
+    it('does not prompt for cleanup task with --no-cleanup when migration fails', function () {
+        $this->artisan('make:tmp-migration', ['name' => 'no_cleanup_fail', '--no-cleanup' => true])
+            ->assertFailed();
+
+        $cleanupFiles = is_dir($this->cleanupDir) ? glob($this->cleanupDir . '/*.md') : [];
+
+        expect($cleanupFiles)->toBeEmpty();
     });
 });

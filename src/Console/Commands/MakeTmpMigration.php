@@ -77,7 +77,13 @@ class MakeTmpMigration extends MigrateMakeCommand
         }
 
         // Create the migration file (parent outputs via components->info)
-        parent::handle();
+        try {
+            parent::handle();
+        } catch (\Throwable $e) {
+            $this->components->error($e->getMessage());
+
+            return static::FAILURE;
+        }
 
         // Execute cleanup task action and output results
         if ($cleanupInput) {
