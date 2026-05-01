@@ -36,7 +36,6 @@
 
 namespace CanyonGBS\Common;
 
-use Illuminate\Contracts\Foundation\Application;
 use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
 use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
@@ -44,6 +43,7 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Composer;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
