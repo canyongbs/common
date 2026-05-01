@@ -62,7 +62,12 @@ trait InteractsWithCleanupTasks
         return $path;
     }
 
-    protected function promptForCleanupTask(string $suggestedName): ?string
+    /**
+     * Gather cleanup task input from the user without creating or modifying any files.
+     *
+     * @return array{action: string, name?: string, file?: string}|null
+     */
+    protected function gatherCleanupTaskInput(string $suggestedName): ?array
     {
         $existing = $this->getExistingCleanupTasks();
 
@@ -91,19 +96,37 @@ trait InteractsWithCleanupTasks
                 required: true,
             );
 
-            $path = $this->createCleanupTask($name);
-            $this->components->info("Cleanup task created: {$path}");
-
-            return $path;
+            return ['action' => 'create', 'name' => $name];
         }
 
-        // Add to existing
         $selected = select(
             label: 'Select a cleanup task',
             options: $existing,
         );
 
-        return $this->cleanupTasksDirectory() . '/' . $selected;
+        return ['action' => 'existing', 'file' => $selected];
+    }
+
+    /**
+     * Execute the cleanup task action (create or select existing) and append an entry.
+     *
+     * @param array{action: string, name?: string, file?: string} $input
+     *
+     * @return array{path: string, created: bool}
+     */
+    protected function executeCleanupTaskAction(array $input, string $section, string $entry): array
+    {
+        if ($input['action'] === 'create') {
+            $path = $this->createCleanupTask($input['name']);
+            $this->appendToCleanupSection($path, $section, $entry);
+
+            return ['path' => $path, 'created' => true];
+        }
+
+        $path = $this->cleanupTasksDirectory() . '/' . $input['file'];
+        $this->appendToCleanupSection($path, $section, $entry);
+
+        return ['path' => $path, 'created' => false];
     }
 
     protected function appendToCleanupSection(string $filePath, string $section, string $entry): void

@@ -24,7 +24,7 @@ class MakeCleanupTask extends Command
 
         $path = $this->createCleanupTask($name);
 
-        $this->components->info("Cleanup task created: {$path}");
+        $this->components->info(sprintf('Cleanup task [%s] created successfully.', $path));
 
         return self::SUCCESS;
     }

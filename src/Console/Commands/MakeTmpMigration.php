@@ -25,24 +25,36 @@ class MakeTmpMigration extends MigrateMakeCommand
 
     public function handle()
     {
-        // Prefix the migration name with tmp_
         $originalName = trim($this->input->getArgument('name'));
 
-        if (! Str::startsWith($originalName, 'tmp_')) {
-            $this->input->setArgument('name', 'tmp_' . $originalName);
-        }
+        // Strip tmp_ prefix if the user included it — we add it ourselves
+        $cleanName = Str::startsWith($originalName, 'tmp_')
+            ? Str::substr($originalName, 4)
+            : $originalName;
 
-        parent::handle();
+        $this->input->setArgument('name', 'tmp_' . $cleanName);
+
+        // Gather cleanup task input before creating any files
+        $cleanupInput = null;
 
         if (! $this->option('no-cleanup')) {
-            $suggestedName = Str::replace('tmp_', '', Str::snake($originalName));
+            $suggestedName = Str::snake($cleanName);
+            $cleanupInput = $this->gatherCleanupTaskInput($suggestedName);
+        }
 
-            $path = $this->promptForCleanupTask($suggestedName);
+        // Create the migration file (parent outputs via components->info)
+        parent::handle();
 
-            if ($path) {
-                $migrationFile = $this->getCreatedMigrationPath();
-                $relativePath = str_replace($this->laravel->basePath() . '/', '', $migrationFile);
-                $this->appendToCleanupSection($path, 'Temporary Migrations', $relativePath);
+        // Execute cleanup task action and output results
+        if ($cleanupInput) {
+            $migrationFile = $this->getCreatedMigrationPath();
+            $relativePath = str_replace($this->laravel->basePath() . '/', '', $migrationFile);
+            $cleanupResult = $this->executeCleanupTaskAction($cleanupInput, 'Temporary Migrations', $relativePath);
+
+            if ($cleanupResult['created']) {
+                $this->components->info(sprintf('Cleanup task [%s] created successfully.', $cleanupResult['path']));
+            } else {
+                $this->components->info(sprintf('Cleanup task [%s] updated successfully.', $cleanupResult['path']));
             }
         }
     }
