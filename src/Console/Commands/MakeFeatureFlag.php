@@ -72,11 +72,13 @@ class MakeFeatureFlag extends FeatureMakeCommand
         } catch (Throwable $exception) {
             $this->components->error($exception->getMessage());
 
-            $this->fail();
+            return false;
         }
 
         if ($result === false) {
-            $this->fail();
+            $this->components->error('Something went wrong when creating the feature flag.');
+
+            return false;
         }
 
         // Execute cleanup task action and output results
