@@ -50,6 +50,26 @@ trait InteractsWithCleanupTasks
     }
 
     /**
+     * Check if a cleanup task with the given name would conflict with an existing file.
+     *
+     * @param array{action: string, name?: string, file?: string}|null $input
+     */
+    protected function cleanupTaskWouldConflict(?array $input): bool
+    {
+        if ($input === null || $input['action'] !== 'create') {
+            return false;
+        }
+
+        $filesystem = $this->laravel->make(Filesystem::class);
+        $directory = $this->cleanupTasksDirectory();
+        $date = now()->format('Y_m_d');
+        $snakeName = Str::snake($input['name']);
+        $filename = "{$date}_{$snakeName}.md";
+
+        return $filesystem->exists($directory . '/' . $filename);
+    }
+
+    /**
      * @return array<int, string>
      */
     protected function getExistingCleanupTasks(): array

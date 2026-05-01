@@ -217,3 +217,49 @@ describe('failure handling', function () {
         expect($files)->toBeEmpty();
     });
 });
+
+describe('cleanup task conflict', function () {
+    it('fails when a cleanup task with the same name already exists for today', function () {
+        File::makeDirectory($this->cleanupDir, 0755, true);
+        file_put_contents(
+            $this->cleanupDir . '/2026_05_01_duplicate_name.md',
+            "---\ntitle: Duplicate Name\ncreated: 2026-05-01\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n",
+        );
+
+        $this->artisan('make:ff', ['name' => 'SomeFlag'])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'duplicate_name')
+            ->assertFailed();
+
+        // Feature flag should NOT have been created
+        expect(file_exists($this->featuresDir . '/SomeFlagFeature.php'))->toBeFalse();
+    });
+
+    it('does not overwrite existing cleanup task file', function () {
+        File::makeDirectory($this->cleanupDir, 0755, true);
+        $existingFile = $this->cleanupDir . '/2026_05_01_my_task.md';
+        $originalContent = "---\ntitle: My Task\ncreated: 2026-05-01\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n";
+        file_put_contents($existingFile, $originalContent);
+
+        $this->artisan('make:ff', ['name' => 'AnotherFlag'])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'my_task')
+            ->assertFailed();
+
+        // Original file should be unchanged
+        expect(file_get_contents($existingFile))->toBe($originalContent);
+    });
+
+    it('succeeds when no conflict exists', function () {
+        $this->artisan('make:ff', ['name' => 'UniqueFlag'])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'UniqueFlag')
+            ->assertSuccessful();
+
+        expect(file_exists($this->featuresDir . '/UniqueFlagFeature.php'))->toBeTrue();
+
+        $cleanupFiles = glob($this->cleanupDir . '/*.md');
+
+        expect($cleanupFiles)->toHaveCount(1);
+    });
+});

@@ -64,6 +64,12 @@ class MakeFeatureFlag extends FeatureMakeCommand
 
         if (! $this->option('no-cleanup')) {
             $cleanupInput = $this->gatherCleanupTaskInput($this->getNameInput());
+
+            if ($this->cleanupTaskWouldConflict($cleanupInput)) {
+                $this->components->error('A cleanup task with that name already exists.');
+
+                $this->fail();
+            }
         }
 
         // Create the feature flag file
@@ -72,13 +78,11 @@ class MakeFeatureFlag extends FeatureMakeCommand
         } catch (Throwable $exception) {
             $this->components->error($exception->getMessage());
 
-            return false;
+            $this->fail();
         }
 
         if ($result === false) {
-            $this->components->error('Something went wrong when creating the feature flag.');
-
-            return false;
+            $this->fail();
         }
 
         // Execute cleanup task action and output results

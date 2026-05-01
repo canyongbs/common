@@ -75,6 +75,12 @@ class MakeTmpMigration extends MigrateMakeCommand
         if (! $this->option('no-cleanup')) {
             $suggestedName = Str::snake($cleanName);
             $cleanupInput = $this->gatherCleanupTaskInput($suggestedName);
+
+            if ($this->cleanupTaskWouldConflict($cleanupInput)) {
+                $this->components->error('A cleanup task with that name already exists for today.');
+
+                return static::FAILURE;
+            }
         }
 
         // Create the migration file (parent outputs via components->info)

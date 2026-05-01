@@ -246,3 +246,51 @@ describe('migration creation failure', function () {
         expect($cleanupFiles)->toBeEmpty();
     });
 });
+
+describe('cleanup task conflict', function () {
+    it('fails when a cleanup task with the same name already exists for today', function () {
+        File::makeDirectory($this->cleanupDir, 0755, true);
+        file_put_contents(
+            $this->cleanupDir . '/2026_05_01_duplicate_name.md',
+            "---\ntitle: Duplicate Name\ncreated: 2026-05-01\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n",
+        );
+
+        $this->artisan('make:tmp-migration', ['name' => 'some_migration'])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'duplicate_name')
+            ->assertFailed();
+
+        // Migration should NOT have been created
+        $migrationFiles = glob($this->migrationsDir . '/*_tmp_some_migration.php');
+
+        expect($migrationFiles)->toBeEmpty();
+    });
+
+    it('does not overwrite existing cleanup task file', function () {
+        File::makeDirectory($this->cleanupDir, 0755, true);
+        $existingFile = $this->cleanupDir . '/2026_05_01_my_task.md';
+        $originalContent = "---\ntitle: My Task\ncreated: 2026-05-01\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n";
+        file_put_contents($existingFile, $originalContent);
+
+        $this->artisan('make:tmp-migration', ['name' => 'another_migration'])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'my_task')
+            ->assertFailed();
+
+        // Original file should be unchanged
+        expect(file_get_contents($existingFile))->toBe($originalContent);
+    });
+
+    it('succeeds when no conflict exists', function () {
+        $this->artisan('make:tmp-migration', ['name' => 'unique_migration'])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'unique_migration')
+            ->assertSuccessful();
+
+        $migrationFiles = glob($this->migrationsDir . '/*_tmp_unique_migration.php');
+        $cleanupFiles = glob($this->cleanupDir . '/*.md');
+
+        expect($migrationFiles)->toHaveCount(1)
+            ->and($cleanupFiles)->toHaveCount(1);
+    });
+});
