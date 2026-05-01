@@ -36,10 +36,18 @@
 
 namespace CanyonGBS\Common\Tests;
 
+use CanyonGBS\Common\CommonServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
 {
+    protected function getPackageProviders($app): array
+    {
+        return [
+            CommonServiceProvider::class,
+        ];
+    }
+
     protected function defineDatabaseMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
