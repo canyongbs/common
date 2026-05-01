@@ -39,13 +39,21 @@ use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
     $this->travelTo(Carbon::create(2026, 5, 1, 12, 0, 0));
+    $this->testDir = sys_get_temp_dir() . '/' . uniqid('common-ff-test-');
+    mkdir($this->testDir, 0755, true);
+
+    // Feature flag command needs composer.json for namespace resolution
+    file_put_contents($this->testDir . '/composer.json', json_encode([
+        'autoload' => ['psr-4' => ['App\\' => 'app/']],
+    ]));
+
+    $this->app->setBasePath($this->testDir);
     $this->cleanupDir = $this->app->basePath('.cleanup-tasks');
     $this->featuresDir = $this->app->basePath('app/Features');
 });
 
 afterEach(function () {
-    File::deleteDirectory($this->cleanupDir);
-    File::deleteDirectory($this->featuresDir);
+    File::deleteDirectory($this->testDir);
 });
 
 describe('name normalization', function () {

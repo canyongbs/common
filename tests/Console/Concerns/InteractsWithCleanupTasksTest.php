@@ -40,23 +40,14 @@ use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
     $this->travelTo(Carbon::create(2026, 5, 1, 12, 0, 0));
+    $this->testDir = sys_get_temp_dir() . '/' . uniqid('common-trait-test-');
+    mkdir($this->testDir, 0755, true);
+    $this->app->setBasePath($this->testDir);
     $this->cleanupDir = $this->app->basePath('.cleanup-tasks');
 });
 
 afterEach(function () {
-    File::deleteDirectory($this->cleanupDir);
-
-    $customStub = $this->app->basePath('stubs/cleanup-task.stub');
-
-    if (file_exists($customStub)) {
-        unlink($customStub);
-    }
-
-    $stubDir = $this->app->basePath('stubs');
-
-    if (is_dir($stubDir) && count(scandir($stubDir)) === 2) {
-        rmdir($stubDir);
-    }
+    File::deleteDirectory($this->testDir);
 });
 
 describe('getExistingCleanupTasks', function () {

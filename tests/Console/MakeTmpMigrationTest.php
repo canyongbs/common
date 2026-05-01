@@ -39,19 +39,15 @@ use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
     $this->travelTo(Carbon::create(2026, 5, 1, 12, 0, 0));
+    $this->testDir = sys_get_temp_dir() . '/' . uniqid('common-migration-test-');
+    mkdir($this->testDir, 0755, true);
+    $this->app->setBasePath($this->testDir);
     $this->cleanupDir = $this->app->basePath('.cleanup-tasks');
     $this->migrationsDir = $this->app->databasePath('migrations');
 });
 
 afterEach(function () {
-    File::deleteDirectory($this->cleanupDir);
-
-    // Clean up any tmp_ migration files we created
-    if (is_dir($this->migrationsDir)) {
-        foreach (glob($this->migrationsDir . '/*tmp_*.php') as $file) {
-            unlink($file);
-        }
-    }
+    File::deleteDirectory($this->testDir);
 });
 
 describe('name normalization', function () {

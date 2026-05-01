@@ -39,11 +39,14 @@ use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
     $this->travelTo(Carbon::create(2026, 5, 1, 12, 0, 0));
+    $this->testDir = sys_get_temp_dir() . '/' . uniqid('common-cleanup-test-');
+    mkdir($this->testDir, 0755, true);
+    $this->app->setBasePath($this->testDir);
     $this->cleanupDir = $this->app->basePath('.cleanup-tasks');
 });
 
 afterEach(function () {
-    File::deleteDirectory($this->cleanupDir);
+    File::deleteDirectory($this->testDir);
 });
 
 it('creates a cleanup task file with the given name argument', function () {
