@@ -34,8 +34,8 @@
 </COPYRIGHT>
 */
 
-use Carbon\Carbon;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
+use Carbon\Carbon;
 use Illuminate\Database\Migrations\MigrationCreator;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\File;
@@ -201,7 +201,7 @@ describe('cleanup integration', function () {
 describe('migration creation failure', function () {
     beforeEach(function () {
         $mock = Mockery::mock(MigrationCreator::class);
-        $mock->shouldReceive('create')->andThrow(new \InvalidArgumentException('A migration with that name already exists.'));
+        $mock->shouldReceive('create')->andThrow(new InvalidArgumentException('A migration with that name already exists.'));
 
         $this->app->singleton(MakeTmpMigration::class, function () use ($mock) {
             return new MakeTmpMigration($mock, $this->app->make(Composer::class));
