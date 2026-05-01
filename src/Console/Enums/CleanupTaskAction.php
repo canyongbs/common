@@ -17,7 +17,7 @@
       in the software, and you may not remove or obscure any functionality in the
       software that is protected by the license key.
     - You may not alter, remove, or obscure any licensing, copyright, or other notices
-      of the licensor in the software. Any use of the licensor’s trademarks is subject
+      of the licensor in the software. Any use of the licensor's trademarks is subject
       to applicable law.
     - Canyon GBS LLC respects the intellectual property rights of others and expects the
       same in return. Canyon GBS™ and Canyon GBS Common are registered trademarks of
@@ -34,39 +34,11 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Console\Commands;
+namespace CanyonGBS\Common\Console\Enums;
 
-use CanyonGBS\Common\Console\Concerns\InteractsWithCleanupTasks;
-use CanyonGBS\Common\Console\Enums\CleanupTaskAction;
-use Illuminate\Console\Command;
-
-use function Laravel\Prompts\text;
-
-class MakeCleanupTask extends Command
+enum CleanupTaskAction
 {
-    use InteractsWithCleanupTasks;
+    case Create;
 
-    protected $signature = 'make:cleanup {name? : The name for the cleanup task}';
-
-    protected $description = 'Create a new cleanup task file';
-
-    public function handle(): int
-    {
-        $name = $this->argument('name') ?? text(
-            label: 'What should the cleanup task be named?',
-            required: true,
-        );
-
-        if ($this->cleanupTaskWouldConflict(['action' => CleanupTaskAction::Create, 'name' => $name])) {
-            $this->components->error('A cleanup task with that name already exists for today.');
-
-            return self::FAILURE;
-        }
-
-        $path = $this->createCleanupTask($name);
-
-        $this->components->info(sprintf('Cleanup task [%s] created successfully.', $path));
-
-        return self::SUCCESS;
-    }
+    case AddToExisting;
 }

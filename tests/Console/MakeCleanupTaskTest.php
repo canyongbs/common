@@ -92,3 +92,16 @@ it('returns exit code 0', function () {
     $this->artisan('make:cleanup', ['name' => 'test'])
         ->assertExitCode(0);
 });
+
+it('fails when a cleanup task with the same name already exists for today', function () {
+    File::makeDirectory($this->cleanupDir, 0755, true);
+    $existingFile = $this->cleanupDir . '/2026_05_01_duplicate.md';
+    $originalContent = "---\ntitle: Duplicate\ncreated: 2026-05-01\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n";
+    file_put_contents($existingFile, $originalContent);
+
+    $this->artisan('make:cleanup', ['name' => 'duplicate'])
+        ->assertFailed();
+
+    // Original file should be unchanged
+    expect(file_get_contents($existingFile))->toBe($originalContent);
+});

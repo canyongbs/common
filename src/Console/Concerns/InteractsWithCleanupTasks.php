@@ -36,6 +36,7 @@
 
 namespace CanyonGBS\Common\Console\Concerns;
 
+use CanyonGBS\Common\Console\Enums\CleanupTaskAction;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 
@@ -52,11 +53,11 @@ trait InteractsWithCleanupTasks
     /**
      * Check if a cleanup task with the given name would conflict with an existing file.
      *
-     * @param array{action: string, name?: string, file?: string}|null $input
+     * @param array{action: CleanupTaskAction, name?: string, file?: string}|null $input
      */
     protected function cleanupTaskWouldConflict(?array $input): bool
     {
-        if ($input === null || $input['action'] !== 'create') {
+        if ($input === null || $input['action'] !== CleanupTaskAction::Create) {
             return false;
         }
 
@@ -119,7 +120,7 @@ trait InteractsWithCleanupTasks
     /**
      * Gather cleanup task input from the user without creating or modifying any files.
      *
-     * @return array{action: string, name?: string, file?: string}|null
+     * @return array{action: CleanupTaskAction, name?: string, file?: string}|null
      */
     protected function gatherCleanupTaskInput(string $suggestedName): ?array
     {
@@ -150,7 +151,7 @@ trait InteractsWithCleanupTasks
                 required: true,
             );
 
-            return ['action' => 'create', 'name' => $name];
+            return ['action' => CleanupTaskAction::Create, 'name' => $name];
         }
 
         $selected = select(
@@ -158,19 +159,19 @@ trait InteractsWithCleanupTasks
             options: $existing,
         );
 
-        return ['action' => 'existing', 'file' => $selected];
+        return ['action' => CleanupTaskAction::AddToExisting, 'file' => $selected];
     }
 
     /**
      * Execute the cleanup task action (create or select existing) and append an entry.
      *
-     * @param array{action: string, name?: string, file?: string} $input
+     * @param array{action: CleanupTaskAction, name?: string, file?: string} $input
      *
      * @return array{path: string, created: bool}
      */
     protected function executeCleanupTaskAction(array $input, string $section, string $entry): array
     {
-        if ($input['action'] === 'create') {
+        if ($input['action'] === CleanupTaskAction::Create) {
             $path = $this->createCleanupTask($input['name']);
             $this->appendToCleanupSection($path, $section, $entry);
 
