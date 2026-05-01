@@ -1,7 +1,7 @@
 <?php
 
-use Carbon\Carbon;
 use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
