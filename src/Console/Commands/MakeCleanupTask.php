@@ -34,34 +34,39 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Filament\Support;
+namespace CanyonGBS\Common\Console\Commands;
 
-use Filament\Forms\Components\Select;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use CanyonGBS\Common\Console\Concerns\InteractsWithCleanupTasks;
+use CanyonGBS\Common\Console\Enums\CleanupTaskAction;
+use Illuminate\Console\Command;
 
-/**
- * This is used in the `modifyQueryUsing` argument of a `Select` `relationship()` method,
- * usually for a `BelongsTo` relationship, to hide soft-deleted records from the select
- * options, while also ensuring that if the currently-selected record is soft-deleted,
- * it is still loaded and shown as an option.
- */
-class HideDeletedExceptSelectedFromSelectOptions
+use function Laravel\Prompts\text;
+
+class MakeCleanupTask extends Command
 {
-    /**
-     * @param Builder<Model> $query
-     *
-     * @return Builder<Model>
-     */
-    public function __invoke(Builder $query, ?Model $record, Select $component): Builder
+    use InteractsWithCleanupTasks;
+
+    protected $signature = 'make:cleanup {name? : The name for the cleanup task}';
+
+    protected $description = 'Create a new cleanup task file';
+
+    public function handle(): int
     {
-        return $query->where(
-            fn (Builder $query) => $query
-                ->withoutTrashed() // @phpstan-ignore method.notFound
-                ->orWhere(
-                    $component->getRelationship()->getQualifiedOwnerKeyName(), /** @phpstan-ignore class.notFound */
-                    $record?->getAttributeValue($component->getRelationship()->getForeignKeyName()), /** @phpstan-ignore class.notFound */
-                ),
+        $name = $this->argument('name') ?? text(
+            label: 'What should the cleanup task be named?',
+            required: true,
         );
+
+        if ($this->cleanupTaskWouldConflict(['action' => CleanupTaskAction::Create, 'name' => $name])) {
+            $this->components->error('A cleanup task with that name already exists for today.');
+
+            return self::FAILURE;
+        }
+
+        $path = $this->createCleanupTask($name);
+
+        $this->components->info(sprintf('Cleanup task [%s] created successfully.', $path));
+
+        return self::SUCCESS;
     }
 }

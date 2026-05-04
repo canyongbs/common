@@ -34,34 +34,11 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Filament\Support;
+namespace CanyonGBS\Common\Console\Enums;
 
-use Filament\Forms\Components\Select;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-
-/**
- * This is used in the `modifyQueryUsing` argument of a `Select` `relationship()` method,
- * usually for a `BelongsTo` relationship, to hide soft-deleted records from the select
- * options, while also ensuring that if the currently-selected record is soft-deleted,
- * it is still loaded and shown as an option.
- */
-class HideDeletedExceptSelectedFromSelectOptions
+enum CleanupTaskAction
 {
-    /**
-     * @param Builder<Model> $query
-     *
-     * @return Builder<Model>
-     */
-    public function __invoke(Builder $query, ?Model $record, Select $component): Builder
-    {
-        return $query->where(
-            fn (Builder $query) => $query
-                ->withoutTrashed() // @phpstan-ignore method.notFound
-                ->orWhere(
-                    $component->getRelationship()->getQualifiedOwnerKeyName(), /** @phpstan-ignore class.notFound */
-                    $record?->getAttributeValue($component->getRelationship()->getForeignKeyName()), /** @phpstan-ignore class.notFound */
-                ),
-        );
-    }
+    case Create;
+
+    case AddToExisting;
 }

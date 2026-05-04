@@ -58,8 +58,8 @@ class HideDeletedAndArchivedExceptSelectedFromSelectOptions
         return $query->where(
             fn (Builder $query) => $query
                 ->where(
-                    fn (Builder $query) => $query /** @phpstan-ignore method.notFound */
-                        ->withoutTrashed()
+                    fn (Builder $query) => $query
+                        ->withoutTrashed() // @phpstan-ignore method.notFound
                         ->withoutArchived(),
                 )
                 ->orWhere(
