@@ -40,7 +40,7 @@ use CanyonGBS\Common\Console\Concerns\InteractsWithCleanupTasks;
 use Illuminate\Database\Console\Migrations\MigrateMakeCommand;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
-use InterNACHI\Modular\Console\Commands\Make\Modularize;
+use InterNACHI\Modularize\ModularizeGeneratorCommand as Modularize;
 use Throwable;
 
 class MakeTmpMigration extends MigrateMakeCommand
