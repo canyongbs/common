@@ -40,13 +40,13 @@ use CanyonGBS\Common\Console\Concerns\InteractsWithCleanupTasks;
 use Illuminate\Database\Console\Migrations\MigrateMakeCommand;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
-use InterNACHI\Modularize\ModularizeGeneratorCommand as Modularize;
+use InterNACHI\Modularize\ModularizeGeneratorCommand;
 use Throwable;
 
 class MakeTmpMigration extends MigrateMakeCommand
 {
     use InteractsWithCleanupTasks;
-    use Modularize;
+    use ModularizeGeneratorCommand;
 
     protected $signature = 'make:tmp-migration {name : The name of the migration}
         {--create= : The table to be created}
