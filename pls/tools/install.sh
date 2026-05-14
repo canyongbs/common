@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# pls installer — inspired by Spin's install.sh (serversideup/spin)
+# pls installer
 #
 # This script should be run via curl:
 #   bash -c "$(curl -fsSL https://raw.githubusercontent.com/canyongbs/common/main/pls/tools/install.sh)"
