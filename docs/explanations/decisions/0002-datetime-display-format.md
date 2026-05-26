@@ -23,16 +23,16 @@ Chosen option: "Centralised format defaults in `FilamentServiceProvider`", becau
 
 The standardised formats are:
 
-| Context | Format string | Example output |
-|---------|--------------|----------------|
-| Date only | `M j, Y` | May 5, 2026 |
-| Time only | `g:i a` | 2:30 pm |
-| Time with seconds | `g:i:s a` | 2:30:00 pm |
-| DateTime | `M j, Y g:i a (T)` | May 5, 2026 2:30 pm (UTC) |
-| DateTime with seconds | `M j, Y g:i:s a (T)` | May 5, 2026 2:30:00 pm (UTC) |
+| Context                     | Format string                                      | Example output                                           |
+| --------------------------- | -------------------------------------------------- | -------------------------------------------------------- |
+| Date only                   | `M j, Y`                                           | May 5, 2026                                              |
+| Time only                   | `g:i a`                                            | 2:30 pm                                                  |
+| Time with seconds           | `g:i:s a`                                          | 2:30:00 pm                                               |
+| DateTime                    | `M j, Y g:i a (T)`                                 | May 5, 2026 2:30 pm (UTC)                                |
+| DateTime with seconds       | `M j, Y g:i:s a (T)`                               | May 5, 2026 2:30:00 pm (UTC)                             |
 | DateTime (tables/infolists) | Date on first line, time + timezone on second line | Rendered as HTML with `.fi-datetime-description` styling |
-| DateTimePicker display | `M j, Y g:i a` | May 5, 2026 2:30 pm |
-| DateTimePicker with seconds | `M j, Y g:i:s a` | May 5, 2026 2:30:00 pm |
+| DateTimePicker display      | `M j, Y g:i a`                                     | May 5, 2026 2:30 pm                                      |
+| DateTimePicker with seconds | `M j, Y g:i:s a`                                   | May 5, 2026 2:30:00 pm                                   |
 
 Key formatting rules:
 
