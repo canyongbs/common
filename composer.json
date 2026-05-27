@@ -4,7 +4,7 @@
     "license": "Elastic-2.0",
     "require": {
         "php": "8.4.*",
-        "filament/filament": "^4.9.1",
+        "filament/filament": "^4.11.6",
         "internachi/modular": "^2.0 || ^3.0",
         "internachi/modularize": "^1.1",
         "laravel/framework": "^11.0|^12.0",
