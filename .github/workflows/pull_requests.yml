@@ -69,7 +69,7 @@ jobs:
         needs: [enforce-copyright]
 
         steps:
-            - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
+            - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
               with:
                   php-version: '8.4'
                   coverage: none
@@ -142,7 +142,7 @@ jobs:
         needs: [enforce-copyright, fix-code-style]
 
         steps:
-            - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
+            - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
               with:
                   php-version: '8.4'
                   coverage: none
@@ -187,7 +187,7 @@ jobs:
         needs: [enforce-copyright, fix-code-style]
 
         steps:
-            - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
+            - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
               with:
                   php-version: '8.4'
                   coverage: none
