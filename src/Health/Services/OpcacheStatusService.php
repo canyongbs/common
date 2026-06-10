@@ -38,6 +38,7 @@ namespace CanyonGBS\Common\Health\Services;
 
 class OpcacheStatusService
 {
+    /** @return array<string, mixed>|false */
     public function getStatus(): array|false
     {
         if (! function_exists('opcache_get_status')) {
