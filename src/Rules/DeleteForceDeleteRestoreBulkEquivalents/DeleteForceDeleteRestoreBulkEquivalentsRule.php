@@ -42,7 +42,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use RuntimeException;
 
 /**
  * @implements Rule<Class_>
@@ -52,10 +51,10 @@ class DeleteForceDeleteRestoreBulkEquivalentsRule implements Rule
     public const string ERROR_MESSAGE_TEMPLATE = 'Policy "%s" defines "%s()" but is missing the corresponding bulk authorization method "%s()".';
 
     public const array BULK_EQUIVALENTS = [
-            'delete' => 'deleteAny',
-            'forceDelete' => 'forceDeleteAny',
-            'restore' => 'restoreAny',
-        ];
+        'delete' => 'deleteAny',
+        'forceDelete' => 'forceDeleteAny',
+        'restore' => 'restoreAny',
+    ];
 
     /**
      * @return class-string<Node>
@@ -67,7 +66,7 @@ class DeleteForceDeleteRestoreBulkEquivalentsRule implements Rule
 
     /**
      * @param Class_ $node
-     * 
+     *
      * @return array<RuleError>
      */
     public function processNode(Node $node, Scope $scope): array
@@ -92,7 +91,7 @@ class DeleteForceDeleteRestoreBulkEquivalentsRule implements Rule
 
         foreach (self::BULK_EQUIVALENTS as $single => $bulk) {
             if (isset($methods[$single]) && ! isset($methods[$bulk])) {
-                $errors[] =  RuleErrorBuilder::message(
+                $errors[] = RuleErrorBuilder::message(
                     sprintf(
                         self::ERROR_MESSAGE_TEMPLATE,
                         $className,
