@@ -11,3 +11,7 @@ services:
         class: CanyonGBS\Common\Support\PHPStan\WhereHasClosureTypeExtension
         tags:
             - phpstan.methodParameterClosureTypeExtension
+    -
+        class: CanyonGBS\Common\Rules\DeleteForceDeleteRestoreBulkEquivalents\DeleteForceDeleteRestoreBulkEquivalentsRule
+        tags:
+            - phpstan.rules.rule
