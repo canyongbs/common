@@ -46,23 +46,3 @@ it('does trigger for policies that do not have both delete, force delete, restor
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.deleteForceDeleteRestoreBulkEquivalents');
 });
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnFixture(string $filePath): array
-{
-    $basePath = dirname(__DIR__, 2);
-    $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
-    $configPath = escapeshellarg($basePath . '/tests/PHPStan/phpstan-test.neon');
-    $file = escapeshellarg($filePath);
-
-    $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
-    exec($command, $outputLines, $exitCode);
-
-    return [
-        'exitCode' => $exitCode,
-        'output' => implode("\n", $outputLines),
-    ];
-}
