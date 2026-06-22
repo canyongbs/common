@@ -36,9 +36,11 @@
 
 namespace CanyonGBS\Common;
 
+use CanyonGBS\Common\Console\Commands\CreatePermissionMigration;
 use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
 use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
+use CanyonGBS\Common\Database\Migrations\PermissionMigrationCreator;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
@@ -68,7 +70,18 @@ class CommonServiceProvider extends PackageServiceProvider
             return new MakeTmpMigration($app['migration.creator'], $app[Composer::class]);
         });
 
-        $this->commands([MakeTmpMigration::class]);
+        $this->app->singleton(PermissionMigrationCreator::class, function (Application $app) {
+            return new PermissionMigrationCreator($app['files'], $app->basePath('stubs'));
+        });
+
+        $this->app->singleton(CreatePermissionMigration::class, function (Application $app) {
+            return new CreatePermissionMigration($app[PermissionMigrationCreator::class], $app[Composer::class]);
+        });
+
+        $this->commands([
+            MakeTmpMigration::class,
+            CreatePermissionMigration::class,
+        ]);
     }
 
     public function packageBooted(): void
