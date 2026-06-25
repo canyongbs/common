@@ -33,6 +33,7 @@
 
 </COPYRIGHT>
 */
+
 namespace CanyonGBS\Common\Exceptions;
 
 use Exception;

@@ -34,7 +34,6 @@
 </COPYRIGHT>
 */
 
-
 namespace CanyonGBS\Common\Support;
 
 use CanyonGBS\Common\Exceptions\CloudflareIpRangesUnavailableException;
