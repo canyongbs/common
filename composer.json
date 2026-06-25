@@ -23,7 +23,8 @@
         "pestphp/pest-plugin-laravel": "^3.2",
         "friendsofphp/php-cs-fixer": "^3.75",
         "orrison/meliorstan": "^0.3.2",
-        "larastan/larastan": "^3.0"
+        "larastan/larastan": "^3.0",
+        "rector/rector": "^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -59,11 +60,19 @@
         "clear-prettier-cache": [
             "rm -f ./node_modules/.cache/prettier/.prettier-cache"
         ],
+        "rector": [
+            "./vendor/bin/rector process"
+        ],
+        "rector-dryrun": [
+            "./vendor/bin/rector process --dry-run"
+        ],
         "format-dryrun": [
+            "@rector-dryrun",
             "@php-cs-format-dryrun",
             "@prettier-format-dryrun"
         ],
         "format": [
+            "@rector",
             "@php-cs-format",
             "@prettier-format"
         ],

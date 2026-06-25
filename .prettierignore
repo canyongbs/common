@@ -7,3 +7,4 @@ resources/views/mail/**/*.blade.php
 resources/lang/**/*.php
 resources/js/dist/**
 **/vendor/
+**/*.php.inc
