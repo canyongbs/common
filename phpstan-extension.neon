@@ -27,6 +27,10 @@ services:
         tags:
             - phpstan.rules.rule
     -
+        class: CanyonGBS\Common\Rules\ModelHasFillableAndNoGuarded\ModelHasFillableAndNoGuardedRule
+        tags:
+            - phpstan.rules.rule
+    -
         class: CanyonGBS\Common\Rules\NoBlueprintAfterGrouping\NoBlueprintAfterGroupingRule
         tags:
             - phpstan.rules.rule
