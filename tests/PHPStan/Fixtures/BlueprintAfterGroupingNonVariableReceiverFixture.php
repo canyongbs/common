@@ -40,8 +40,7 @@ class AddsColumnsViaProperty
 {
     public function __construct(
         private Blueprint $table,
-    ) {
-    }
+    ) {}
 
     public function handle(): void
     {
