@@ -49,6 +49,4 @@ use Attribute;
  * class it is declared on and is never inherited by subclasses.
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-class NotAudited
-{
-}
+class NotAudited {}
