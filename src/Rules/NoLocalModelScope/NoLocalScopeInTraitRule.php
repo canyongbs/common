@@ -37,73 +37,59 @@
 namespace CanyonGBS\Common\Rules\NoLocalModelScope;
 
 use PhpParser\Node;
+use PhpParser\Node\Stmt\Trait_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * Forbids defining Eloquent local scopes on models (a subclass of
- * Illuminate\Database\Eloquent\Model).
+ * Forbids defining Eloquent local scopes inside traits.
+ *
+ * A local scope defined in a trait would otherwise be smuggled onto a model by importing
+ * the trait, bypassing NoLocalModelScopeRule (which only inspects the methods declared
+ * directly on the model). The scope is reported once, at its definition in the trait,
+ * regardless of how many models use it.
  *
  * Local scopes are reported in both of their forms:
  *
  * - methods using the "scope" prefix convention (e.g. "scopeActive");
  * - methods annotated with the Illuminate\Database\Eloquent\Attributes\Scope attribute.
  *
- * Local scopes rely on magic methods, which static analysis tools struggle to reason
- * about. Tappable scopes should be used instead.
- *
- * Only methods declared directly on the class are inspected, so framework trait scopes
- * (e.g. "scopeWithoutTrashed") and scopes inherited from a parent are not reported on
- * every subclass. Local scopes defined inside a trait are reported separately by
- * NoLocalScopeInTraitRule, at the trait's own definition.
- *
- * @implements Rule<InClassNode>
+ * @implements Rule<Trait_>
  */
-class NoLocalModelScopeRule implements Rule
+class NoLocalScopeInTraitRule implements Rule
 {
     use DetectsLocalScopes;
-
-    public const string MODEL_CLASS = 'Illuminate\Database\Eloquent\Model';
-
-    public const string SCOPE_ATTRIBUTE_CLASS = 'Illuminate\Database\Eloquent\Attributes\Scope';
-
-    public const string ERROR_MESSAGE = 'Eloquent local scopes are not allowed. The "%s" method on "%s" defines a local scope, which relies on magic methods that static analysis cannot reason about. Use a tappable scope instead. See https://seankegel.com/elevate-your-laravel-eloquent-queries-with-tappable-scopes.';
 
     /**
      * @return class-string<Node>
      */
     public function getNodeType(): string
     {
-        return InClassNode::class;
+        return Trait_::class;
     }
 
     /**
-     * @param InClassNode $node
+     * @param Trait_ $node
      *
      * @return array<RuleError>
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        $classReflection = $node->getClassReflection();
-
-        if (! $classReflection->isSubclassOf(self::MODEL_CLASS)) {
-            return [];
-        }
+        $traitName = $node->namespacedName?->toString() ?? $node->name?->toString() ?? '';
 
         $errors = [];
 
-        foreach ($node->getOriginalNode()->getMethods() as $method) {
+        foreach ($node->getMethods() as $method) {
             if (! $this->isLocalScope($method)) {
                 continue;
             }
 
             $errors[] = RuleErrorBuilder::message(sprintf(
-                self::ERROR_MESSAGE,
+                NoLocalModelScopeRule::ERROR_MESSAGE,
                 $method->name->toString(),
-                $classReflection->getName(),
+                $traitName,
             ))
                 ->identifier('Common.noLocalModelScope')
                 ->line($method->getStartLine())
