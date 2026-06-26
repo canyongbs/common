@@ -34,22 +34,11 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\Database\Factories;
+use Illuminate\Database\Schema\Blueprint;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Workbench\App\Models\Article;
-
-/** @extends Factory<Article> */
-class ArticleFactory extends Factory
+function addColumnsViaGrouping(Blueprint $table): void
 {
-    protected $model = Article::class;
-
-    /** @return array<string, mixed> */
-    public function definition(): array
-    {
-        return [
-            'category_id' => CategoryFactory::new(),
-            'name' => $this->faker->sentence(),
-        ];
-    }
+    $table->after('first_name', function (Blueprint $table): void {
+        $table->string('middle_name');
+    });
 }

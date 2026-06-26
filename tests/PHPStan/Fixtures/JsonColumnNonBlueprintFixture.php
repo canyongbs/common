@@ -34,22 +34,15 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\Database\Factories;
-
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Workbench\App\Models\Article;
-
-/** @extends Factory<Article> */
-class ArticleFactory extends Factory
+class JsonResponder
 {
-    protected $model = Article::class;
-
-    /** @return array<string, mixed> */
-    public function definition(): array
+    public function json(string $value): string
     {
-        return [
-            'category_id' => CategoryFactory::new(),
-            'name' => $this->faker->sentence(),
-        ];
+        return $value;
     }
+}
+
+function respondWithJson(JsonResponder $responder): string
+{
+    return $responder->json('data');
 }

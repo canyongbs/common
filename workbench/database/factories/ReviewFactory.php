@@ -49,7 +49,7 @@ class ReviewFactory extends Factory
     {
         return [
             'article_id' => ArticleFactory::new(),
-            'body' => fake()->paragraph(),
+            'body' => $this->faker->paragraph(),
         ];
     }
 }

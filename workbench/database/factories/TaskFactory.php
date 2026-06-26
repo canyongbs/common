@@ -49,7 +49,7 @@ class TaskFactory extends Factory
     {
         return [
             'project_id' => ProjectFactory::new(),
-            'name' => fake()->sentence(),
+            'name' => $this->faker->sentence(),
         ];
     }
 }

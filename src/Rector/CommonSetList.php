@@ -34,22 +34,16 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\Database\Factories;
+namespace CanyonGBS\Common\Rector;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Workbench\App\Models\Article;
-
-/** @extends Factory<Article> */
-class ArticleFactory extends Factory
+final class CommonSetList
 {
-    protected $model = Article::class;
-
-    /** @return array<string, mixed> */
-    public function definition(): array
-    {
-        return [
-            'category_id' => CategoryFactory::new(),
-            'name' => $this->faker->sentence(),
-        ];
-    }
+    /**
+     * The complete set of Rector rules shared across Canyon GBS applications.
+     *
+     * Register this set in a consuming application's "rector.php" to opt into
+     * every rule defined by this package. New rules added in future releases
+     * are pulled in automatically when the package is updated.
+     */
+    public const string COMMON = __DIR__ . '/../../rector/sets/common.php';
 }

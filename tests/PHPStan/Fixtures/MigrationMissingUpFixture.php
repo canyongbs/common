@@ -34,22 +34,9 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\Database\Factories;
+use Illuminate\Database\Migrations\Migration;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Workbench\App\Models\Article;
-
-/** @extends Factory<Article> */
-class ArticleFactory extends Factory
+class MigrationMissingUpFixture extends Migration
 {
-    protected $model = Article::class;
-
-    /** @return array<string, mixed> */
-    public function definition(): array
-    {
-        return [
-            'category_id' => CategoryFactory::new(),
-            'name' => $this->faker->sentence(),
-        ];
-    }
+    public function down(): void {}
 }

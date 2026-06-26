@@ -34,22 +34,18 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\Database\Factories;
+use Illuminate\Database\Schema\Blueprint;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Workbench\App\Models\Article;
-
-/** @extends Factory<Article> */
-class ArticleFactory extends Factory
+class AddsColumnsViaProperty
 {
-    protected $model = Article::class;
+    public function __construct(
+        private Blueprint $table,
+    ) {}
 
-    /** @return array<string, mixed> */
-    public function definition(): array
+    public function handle(): void
     {
-        return [
-            'category_id' => CategoryFactory::new(),
-            'name' => $this->faker->sentence(),
-        ];
+        $this->table->after('first_name', function (Blueprint $table): void {
+            $table->string('middle_name');
+        });
     }
 }

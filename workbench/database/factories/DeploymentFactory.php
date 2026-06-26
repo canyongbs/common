@@ -49,7 +49,7 @@ class DeploymentFactory extends Factory
     {
         return [
             'task_id' => TaskFactory::new(),
-            'commit_hash' => fake()->sha1(),
+            'commit_hash' => $this->faker->sha1(),
         ];
     }
 }

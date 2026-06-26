@@ -34,22 +34,29 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\Database\Factories;
+namespace CanyonGBS\Common\Tests\Rector\UseFakerPropertyInFactoryRector;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Workbench\App\Models\Article;
+use Iterator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Rector\Testing\PHPUnit\AbstractRectorTestCase;
 
-/** @extends Factory<Article> */
-class ArticleFactory extends Factory
+final class UseFakerPropertyInFactoryRectorTest extends AbstractRectorTestCase
 {
-    protected $model = Article::class;
-
-    /** @return array<string, mixed> */
-    public function definition(): array
+    #[DataProvider('provideData')]
+    public function test(string $filePath): void
     {
-        return [
-            'category_id' => CategoryFactory::new(),
-            'name' => $this->faker->sentence(),
-        ];
+        $this->doTestFile($filePath);
+    }
+
+    public static function provideData(): Iterator
+    {
+        foreach (glob(__DIR__ . '/Fixtures/*.php.inc') as $filePath) {
+            yield basename($filePath, '.php.inc') => [$filePath];
+        }
+    }
+
+    public function provideConfigFilePath(): string
+    {
+        return __DIR__ . '/config/configured_rule.php';
     }
 }

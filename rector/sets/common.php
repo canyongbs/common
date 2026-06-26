@@ -34,22 +34,13 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\Database\Factories;
+use CanyonGBS\Common\Rector\FlattenAfterColumnGroupingRector;
+use CanyonGBS\Common\Rector\RemoveAfterColumnModifierRector;
+use CanyonGBS\Common\Rector\UseFakerPropertyInFactoryRector;
+use Rector\Config\RectorConfig;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Workbench\App\Models\Article;
-
-/** @extends Factory<Article> */
-class ArticleFactory extends Factory
-{
-    protected $model = Article::class;
-
-    /** @return array<string, mixed> */
-    public function definition(): array
-    {
-        return [
-            'category_id' => CategoryFactory::new(),
-            'name' => $this->faker->sentence(),
-        ];
-    }
-}
+return static function (RectorConfig $rectorConfig): void {
+    $rectorConfig->rule(RemoveAfterColumnModifierRector::class);
+    $rectorConfig->rule(FlattenAfterColumnGroupingRector::class);
+    $rectorConfig->rule(UseFakerPropertyInFactoryRector::class);
+};
