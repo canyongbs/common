@@ -34,71 +34,41 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Parser\Mapper;
+it('reports calls to the global strtolower() function', function () {
+    $result = runPhpStanOnNoStrtolowerFixture('tests/PHPStan/Fixtures/StrtolowerFixture.php');
 
-use CanyonGBS\Common\Parser\Part\AbstractPart;
-use Illuminate\Support\Str;
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.noStrtolower');
+});
 
-abstract class AbstractMapper
+it('does not report Str::lower() or mb_strtolower() calls', function () {
+    $result = runPhpStanOnNoStrtolowerFixture('tests/PHPStan/Fixtures/StrLowerFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report Str::lower() or mb_strtolower() calls.\nOutput: {$result['output']}");
+});
+
+it('allows strtolower() calls silenced with a specific inline ignore', function () {
+    $result = runPhpStanOnNoStrtolowerFixture('tests/PHPStan/Fixtures/StrtolowerIgnoredFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should respect the inline ignore for strtolower() calls.\nOutput: {$result['output']}");
+});
+
+/**
+ * @return array{exitCode: int, output: string}
+ */
+function runPhpStanOnNoStrtolowerFixture(string $filePath): array
 {
-    /**
-     * @param array<int, string|AbstractPart> $parts
-     *
-     * @return array<int, string|AbstractPart>
-     */
-    abstract public function map(array $parts);
+    $basePath = dirname(__DIR__, 2);
+    $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
+    $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/no-strtolower.neon');
+    $file = escapeshellarg($filePath);
 
-    /**
-     * Checks if there are still unmapped parts left before the given position.
-     *
-     * @param array<int, mixed> $parts
-     * @param int $index
-     *
-     * @return bool
-     */
-    protected function hasUnmappedPartsBefore(array $parts, $index): bool
-    {
-        foreach ($parts as $key => $part) {
-            if ($key === $index) {
-                break;
-            }
+    $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
 
-            if (! ($part instanceof AbstractPart)) {
-                return true;
-            }
-        }
+    exec($command, $outputLines, $exitCode);
 
-        return false;
-    }
-
-    /**
-     * @param class-string $type
-     * @param array<int, object> $parts
-     *
-     * @return int|false
-     */
-    protected function findFirstMapped(string $type, array $parts)
-    {
-        $total = count($parts);
-
-        for ($idx = 0; $idx < $total; $idx++) {
-            if ($parts[$idx] instanceof $type) {
-                return $idx;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * get the registry lookup key for the given word
-     *
-     * @param string $word the word
-     *
-     * @return string the key
-     */
-    protected function getKey($word): string
-    {
-        return Str::lower(str_replace('.', '', $word));
-    }
+    return [
+        'exitCode' => $exitCode,
+        'output' => implode("\n", $outputLines),
+    ];
 }

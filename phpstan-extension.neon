@@ -42,6 +42,10 @@ services:
         class: CanyonGBS\Common\Rules\NoJsonColumnInMigration\NoJsonColumnInMigrationRule
         tags:
             - phpstan.rules.rule
+    -
+        class: CanyonGBS\Common\Rules\NoStrtolower\NoStrtolowerRule
+        tags:
+            - phpstan.rules.rule
 
 parameters:
     featureFlagBaseClasses:

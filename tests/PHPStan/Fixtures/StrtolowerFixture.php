@@ -34,71 +34,7 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Parser\Mapper;
-
-use CanyonGBS\Common\Parser\Part\AbstractPart;
-use Illuminate\Support\Str;
-
-abstract class AbstractMapper
+function toLowerWithStrtolower(string $value): string
 {
-    /**
-     * @param array<int, string|AbstractPart> $parts
-     *
-     * @return array<int, string|AbstractPart>
-     */
-    abstract public function map(array $parts);
-
-    /**
-     * Checks if there are still unmapped parts left before the given position.
-     *
-     * @param array<int, mixed> $parts
-     * @param int $index
-     *
-     * @return bool
-     */
-    protected function hasUnmappedPartsBefore(array $parts, $index): bool
-    {
-        foreach ($parts as $key => $part) {
-            if ($key === $index) {
-                break;
-            }
-
-            if (! ($part instanceof AbstractPart)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param class-string $type
-     * @param array<int, object> $parts
-     *
-     * @return int|false
-     */
-    protected function findFirstMapped(string $type, array $parts)
-    {
-        $total = count($parts);
-
-        for ($idx = 0; $idx < $total; $idx++) {
-            if ($parts[$idx] instanceof $type) {
-                return $idx;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * get the registry lookup key for the given word
-     *
-     * @param string $word the word
-     *
-     * @return string the key
-     */
-    protected function getKey($word): string
-    {
-        return Str::lower(str_replace('.', '', $word));
-    }
+    return strtolower($value);
 }

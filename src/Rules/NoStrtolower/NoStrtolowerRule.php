@@ -34,71 +34,55 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Parser\Mapper;
+namespace CanyonGBS\Common\Rules\NoStrtolower;
 
-use CanyonGBS\Common\Parser\Part\AbstractPart;
-use Illuminate\Support\Str;
+use PhpParser\Node;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
+use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
+use PHPStan\Rules\RuleErrorBuilder;
 
-abstract class AbstractMapper
+/**
+ * Flags calls to the global strtolower() function. strtolower() is not multibyte-safe and can
+ * corrupt non-ASCII strings. Use Laravel's Str::lower() instead, or mb_strtolower() when a
+ * framework-free alternative is required. If you specifically need strtolower(), the rule can be
+ * silenced with a specific inline ignore.
+ *
+ * @implements Rule<FuncCall>
+ */
+class NoStrtolowerRule implements Rule
 {
-    /**
-     * @param array<int, string|AbstractPart> $parts
-     *
-     * @return array<int, string|AbstractPart>
-     */
-    abstract public function map(array $parts);
+    public const string ERROR_MESSAGE = 'Avoid strtolower() as it is not multibyte-safe. Use Laravel\'s Str::lower() instead, or mb_strtolower() if a framework-free alternative is required. If you are certain you specifically need strtolower(), add an inline ignore for this rule (// @phpstan-ignore Common.noStrtolower).';
 
     /**
-     * Checks if there are still unmapped parts left before the given position.
-     *
-     * @param array<int, mixed> $parts
-     * @param int $index
-     *
-     * @return bool
+     * @return class-string<Node>
      */
-    protected function hasUnmappedPartsBefore(array $parts, $index): bool
+    public function getNodeType(): string
     {
-        foreach ($parts as $key => $part) {
-            if ($key === $index) {
-                break;
-            }
-
-            if (! ($part instanceof AbstractPart)) {
-                return true;
-            }
-        }
-
-        return false;
+        return FuncCall::class;
     }
 
     /**
-     * @param class-string $type
-     * @param array<int, object> $parts
+     * @param FuncCall $node
      *
-     * @return int|false
+     * @return array<RuleError>
      */
-    protected function findFirstMapped(string $type, array $parts)
+    public function processNode(Node $node, Scope $scope): array
     {
-        $total = count($parts);
-
-        for ($idx = 0; $idx < $total; $idx++) {
-            if ($parts[$idx] instanceof $type) {
-                return $idx;
-            }
+        if (! $node->name instanceof Name) {
+            return [];
         }
 
-        return false;
-    }
+        if ($node->name->toLowerString() !== 'strtolower') {
+            return [];
+        }
 
-    /**
-     * get the registry lookup key for the given word
-     *
-     * @param string $word the word
-     *
-     * @return string the key
-     */
-    protected function getKey($word): string
-    {
-        return Str::lower(str_replace('.', '', $word));
+        return [
+            RuleErrorBuilder::message(self::ERROR_MESSAGE)
+                ->identifier('Common.noStrtolower')
+                ->build(),
+        ];
     }
 }
