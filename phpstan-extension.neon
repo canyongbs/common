@@ -54,6 +54,10 @@ services:
         class: CanyonGBS\Common\Rules\NoStrtolower\NoStrtolowerRule
         tags:
             - phpstan.rules.rule
+    -
+        class: CanyonGBS\Common\Rules\ShouldBeUniqueJobMustDefineUniqueFor\ShouldBeUniqueJobMustDefineUniqueForRule
+        tags:
+            - phpstan.rules.rule
 
 parameters:
     featureFlagBaseClasses:
