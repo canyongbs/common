@@ -175,6 +175,7 @@ $finder = Finder::create()
     )
     ->name('*.php')
     ->notName('*.blade.php')
+    ->notPath('#tests/.+/Fixtures/#')
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);
 

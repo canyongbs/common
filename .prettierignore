@@ -8,3 +8,4 @@ resources/lang/**/*.php
 resources/js/dist/**
 **/vendor/
 **/*.php.inc
+tests/**/Fixtures/

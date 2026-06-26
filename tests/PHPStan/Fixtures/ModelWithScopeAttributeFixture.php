@@ -34,19 +34,15 @@
 </COPYRIGHT>
 */
 
-use CanyonGBS\Common\Rector\CommonSetList;
-use Rector\Config\RectorConfig;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
-return RectorConfig::configure()
-    ->withPaths([
-        __DIR__ . '/src',
-        __DIR__ . '/tests',
-        __DIR__ . '/workbench',
-    ])
-    ->withSkip([
-        __DIR__ . '/tests/*/Fixtures/*',
-        __DIR__ . '/tests/*/*/Fixtures/*',
-    ])
-    ->withSets([
-        CommonSetList::COMMON,
-    ]);
+class ModelWithScopeAttributeFixture extends Model
+{
+    #[Scope]
+    public function active(Builder $query): void
+    {
+        $query->where('active', true);
+    }
+}

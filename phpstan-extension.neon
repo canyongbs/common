@@ -35,6 +35,10 @@ services:
         tags:
             - phpstan.rules.rule
     -
+        class: CanyonGBS\Common\Rules\NoLocalModelScope\NoLocalModelScopeRule
+        tags:
+            - phpstan.rules.rule
+    -
         class: CanyonGBS\Common\Rules\NoJsonColumnInMigration\NoJsonColumnInMigrationRule
         tags:
             - phpstan.rules.rule

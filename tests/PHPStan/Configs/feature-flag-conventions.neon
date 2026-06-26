@@ -1,0 +1,16 @@
+parameters:
+    level: 6
+    scanFiles:
+        - ../Fixtures/FeatureFlag/AbstractFeatureFlagStub.php
+        - ../Fixtures/FeatureFlag/LandlordAbstractFeatureFlagStub.php
+
+services:
+    -
+        class: CanyonGBS\Common\Rules\FeatureFlagConventions\FeatureFlagConventionsRule
+        arguments:
+            baseClasses:
+                - App\Support\AbstractFeatureFlag
+                - App\Support\LandlordAbstractFeatureFlag
+            featuresNamespace: App\Features
+        tags:
+            - phpstan.rules.rule

@@ -1,0 +1,8 @@
+parameters:
+    level: 6
+
+services:
+    -
+        class: CanyonGBS\Common\Rules\MigrationHasUpAndDownMethods\MigrationHasUpAndDownMethodsRule
+        tags:
+            - phpstan.rules.rule

@@ -34,19 +34,12 @@
 </COPYRIGHT>
 */
 
-use CanyonGBS\Common\Rector\CommonSetList;
-use Rector\Config\RectorConfig;
+use Illuminate\Database\Eloquent\Model;
 
-return RectorConfig::configure()
-    ->withPaths([
-        __DIR__ . '/src',
-        __DIR__ . '/tests',
-        __DIR__ . '/workbench',
-    ])
-    ->withSkip([
-        __DIR__ . '/tests/*/Fixtures/*',
-        __DIR__ . '/tests/*/*/Fixtures/*',
-    ])
-    ->withSets([
-        CommonSetList::COMMON,
-    ]);
+class ModelWithoutLocalScopeFixture extends Model
+{
+    public function isActive(): bool
+    {
+        return (bool) $this->getAttribute('active');
+    }
+}

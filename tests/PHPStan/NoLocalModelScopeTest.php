@@ -34,33 +34,49 @@
 </COPYRIGHT>
 */
 
-it('reports Blueprint after() groupings that cannot be automatically flattened', function () {
-    $result = runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintAfterGroupingNonVariableReceiverFixture.php');
+it('reports models that define a local scope using the "scope" prefix convention', function () {
+    $result = runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/ModelWithLocalScopeFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.blueprintAfterGrouping');
+    expect($result['output'])->toContain('Common.noLocalModelScope');
+    expect($result['output'])->toContain('tappable scope');
 });
 
-it('does not report Blueprint after() groupings that can be automatically flattened', function () {
-    $result = runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintAfterGroupingFlattenableFixture.php');
+it('reports models that define a local scope using the #[Scope] attribute', function () {
+    $result = runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/ModelWithScopeAttributeFixture.php');
 
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report flattenable Blueprint after() groupings.\nOutput: {$result['output']}");
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.noLocalModelScope');
+    expect($result['output'])->toContain('tappable scope');
 });
 
-it('does not report the Blueprint after() column modifier', function () {
-    $result = runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintColumnModifierAfterFixture.php');
+it('reports abstract models that define a local scope', function () {
+    $result = runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/AbstractModelWithLocalScopeFixture.php');
 
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report the Blueprint after() column modifier.\nOutput: {$result['output']}");
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.noLocalModelScope');
+});
+
+it('does not report models that do not define a local scope', function () {
+    $result = runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/ModelWithoutLocalScopeFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report models that do not define a local scope.\nOutput: {$result['output']}");
+});
+
+it('does not report non-model classes that define a method using the "scope" prefix', function () {
+    $result = runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/NonModelClassWithScopeMethodFixture.php');
+
+    expect($result['output'])->not->toContain('Common.noLocalModelScope');
 });
 
 /**
  * @return array{exitCode: int, output: string}
  */
-function runPhpStanOnBlueprintAfterGroupingFixture(string $filePath): array
+function runPhpStanOnNoLocalModelScopeFixture(string $filePath): array
 {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
-    $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/no-blueprint-after-grouping.neon');
+    $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/no-local-model-scope.neon');
     $file = escapeshellarg($filePath);
 
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";

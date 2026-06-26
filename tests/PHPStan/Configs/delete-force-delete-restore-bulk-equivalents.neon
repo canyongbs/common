@@ -1,0 +1,8 @@
+parameters:
+    level: 6
+
+services:
+    -
+        class: CanyonGBS\Common\Rules\DeleteForceDeleteRestoreBulkEquivalents\DeleteForceDeleteRestoreBulkEquivalentsRule
+        tags:
+            - phpstan.rules.rule
