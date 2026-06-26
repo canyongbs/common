@@ -34,19 +34,19 @@
 </COPYRIGHT>
 */
 
-use CanyonGBS\Common\Rector\CommonSetList;
-use Rector\Config\RectorConfig;
+use Illuminate\Database\Schema\Blueprint;
 
-return RectorConfig::configure()
-    ->withPaths([
-        __DIR__ . '/src',
-        __DIR__ . '/tests',
-        __DIR__ . '/workbench',
-    ])
-    ->withSkip([
-        __DIR__ . '/tests/Rector/*/Fixtures',
-        __DIR__ . '/tests/PHPStan/Fixtures',
-    ])
-    ->withSets([
-        CommonSetList::COMMON,
-    ]);
+class AddsColumnsViaProperty
+{
+    public function __construct(
+        private Blueprint $table,
+    ) {
+    }
+
+    public function handle(): void
+    {
+        $this->table->after('first_name', function (Blueprint $table): void {
+            $table->string('middle_name');
+        });
+    }
+}

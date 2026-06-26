@@ -34,9 +34,11 @@
 </COPYRIGHT>
 */
 
+use CanyonGBS\Common\Rector\FlattenAfterColumnGroupingRector;
 use CanyonGBS\Common\Rector\RemoveAfterColumnModifierRector;
 use Rector\Config\RectorConfig;
 
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->rule(RemoveAfterColumnModifierRector::class);
+    $rectorConfig->rule(FlattenAfterColumnGroupingRector::class);
 };

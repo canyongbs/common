@@ -15,3 +15,7 @@ services:
         class: CanyonGBS\Common\Rules\DeleteForceDeleteRestoreBulkEquivalents\DeleteForceDeleteRestoreBulkEquivalentsRule
         tags:
             - phpstan.rules.rule
+    -
+        class: CanyonGBS\Common\Rules\NoBlueprintAfterGrouping\NoBlueprintAfterGroupingRule
+        tags:
+            - phpstan.rules.rule

@@ -34,19 +34,9 @@
 </COPYRIGHT>
 */
 
-use CanyonGBS\Common\Rector\CommonSetList;
-use Rector\Config\RectorConfig;
+use Illuminate\Database\Schema\Blueprint;
 
-return RectorConfig::configure()
-    ->withPaths([
-        __DIR__ . '/src',
-        __DIR__ . '/tests',
-        __DIR__ . '/workbench',
-    ])
-    ->withSkip([
-        __DIR__ . '/tests/Rector/*/Fixtures',
-        __DIR__ . '/tests/PHPStan/Fixtures',
-    ])
-    ->withSets([
-        CommonSetList::COMMON,
-    ]);
+function addColumnViaModifier(Blueprint $table): void
+{
+    $table->string('middle_name')->after('first_name');
+}

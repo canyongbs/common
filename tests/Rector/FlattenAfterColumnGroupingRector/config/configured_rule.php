@@ -34,19 +34,10 @@
 </COPYRIGHT>
 */
 
-use CanyonGBS\Common\Rector\CommonSetList;
+use CanyonGBS\Common\Rector\FlattenAfterColumnGroupingRector;
 use Rector\Config\RectorConfig;
 
 return RectorConfig::configure()
-    ->withPaths([
-        __DIR__ . '/src',
-        __DIR__ . '/tests',
-        __DIR__ . '/workbench',
-    ])
-    ->withSkip([
-        __DIR__ . '/tests/Rector/*/Fixtures',
-        __DIR__ . '/tests/PHPStan/Fixtures',
-    ])
-    ->withSets([
-        CommonSetList::COMMON,
+    ->withRules([
+        FlattenAfterColumnGroupingRector::class,
     ]);

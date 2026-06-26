@@ -34,19 +34,29 @@
 </COPYRIGHT>
 */
 
-use CanyonGBS\Common\Rector\CommonSetList;
-use Rector\Config\RectorConfig;
+namespace CanyonGBS\Common\Tests\Rector\FlattenAfterColumnGroupingRector;
 
-return RectorConfig::configure()
-    ->withPaths([
-        __DIR__ . '/src',
-        __DIR__ . '/tests',
-        __DIR__ . '/workbench',
-    ])
-    ->withSkip([
-        __DIR__ . '/tests/Rector/*/Fixtures',
-        __DIR__ . '/tests/PHPStan/Fixtures',
-    ])
-    ->withSets([
-        CommonSetList::COMMON,
-    ]);
+use Iterator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Rector\Testing\PHPUnit\AbstractRectorTestCase;
+
+final class FlattenAfterColumnGroupingRectorTest extends AbstractRectorTestCase
+{
+    #[DataProvider('provideData')]
+    public function test(string $filePath): void
+    {
+        $this->doTestFile($filePath);
+    }
+
+    public static function provideData(): Iterator
+    {
+        foreach (glob(__DIR__ . '/Fixtures/*.php.inc') as $filePath) {
+            yield basename($filePath, '.php.inc') => [$filePath];
+        }
+    }
+
+    public function provideConfigFilePath(): string
+    {
+        return __DIR__ . '/config/configured_rule.php';
+    }
+}
