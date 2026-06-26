@@ -48,7 +48,7 @@ class CommentFactory extends Factory
     public function definition(): array
     {
         return [
-            'body' => fake()->paragraph(),
+            'body' => $this->faker->paragraph(),
             'commentable_id' => ProjectFactory::new(),
             'commentable_type' => 'Workbench\App\Models\Project',
         ];

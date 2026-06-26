@@ -48,7 +48,7 @@ class ImageFactory extends Factory
     public function definition(): array
     {
         return [
-            'url' => fake()->url(),
+            'url' => $this->faker->url(),
             'imageable_id' => ProjectFactory::new(),
             'imageable_type' => 'Workbench\App\Models\Project',
         ];
