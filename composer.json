@@ -3,7 +3,7 @@
     "type": "package",
     "license": "Elastic-2.0",
     "require": {
-        "filament/filament": "^4.11.6",
+        "filament/filament": "^4.11.6 || ^5.0",
         "internachi/modular": "^2.0 || ^3.0",
         "internachi/modularize": "^1.1",
         "laravel/framework": "^11.0|^12.0|^13.0",
