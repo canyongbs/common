@@ -16,6 +16,13 @@ services:
         tags:
             - phpstan.rules.rule
     -
+        class: CanyonGBS\Common\Rules\FeatureFlagConventions\FeatureFlagConventionsRule
+        arguments:
+            baseClasses: %featureFlagBaseClasses%
+            featuresNamespace: %featuresNamespace%
+        tags:
+            - phpstan.rules.rule
+    -
         class: CanyonGBS\Common\Rules\MigrationHasUpAndDownMethods\MigrationHasUpAndDownMethodsRule
         tags:
             - phpstan.rules.rule
@@ -27,3 +34,13 @@ services:
         class: CanyonGBS\Common\Rules\NoJsonColumnInMigration\NoJsonColumnInMigrationRule
         tags:
             - phpstan.rules.rule
+
+parameters:
+    featureFlagBaseClasses:
+        - App\Support\AbstractFeatureFlag
+        - App\Support\LandlordAbstractFeatureFlag
+    featuresNamespace: App\Features
+
+parametersSchema:
+    featureFlagBaseClasses: listOf(string())
+    featuresNamespace: string()

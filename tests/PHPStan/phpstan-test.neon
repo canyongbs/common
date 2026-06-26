@@ -3,3 +3,6 @@ includes:
 
 parameters:
     level: 6
+    scanFiles:
+        - Fixtures/FeatureFlag/AbstractFeatureFlagStub.php
+        - Fixtures/FeatureFlag/LandlordAbstractFeatureFlagStub.php
