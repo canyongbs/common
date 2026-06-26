@@ -38,6 +38,4 @@ namespace App\Other;
 
 use App\Support\AbstractFeatureFlag;
 
-class RogueFlag extends AbstractFeatureFlag
-{
-}
+class RogueFlag extends AbstractFeatureFlag {}

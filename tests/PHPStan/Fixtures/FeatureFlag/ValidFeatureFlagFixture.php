@@ -38,6 +38,4 @@ namespace App\Features;
 
 use App\Support\AbstractFeatureFlag;
 
-class ExampleFeature extends AbstractFeatureFlag
-{
-}
+class ExampleFeature extends AbstractFeatureFlag {}

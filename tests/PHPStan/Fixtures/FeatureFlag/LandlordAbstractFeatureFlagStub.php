@@ -36,6 +36,4 @@
 
 namespace App\Support;
 
-abstract class LandlordAbstractFeatureFlag
-{
-}
+abstract class LandlordAbstractFeatureFlag {}

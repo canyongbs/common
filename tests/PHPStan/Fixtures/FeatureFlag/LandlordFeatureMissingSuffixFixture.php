@@ -38,6 +38,4 @@ namespace App\Features;
 
 use App\Support\LandlordAbstractFeatureFlag;
 
-class LandlordBrokenName extends LandlordAbstractFeatureFlag
-{
-}
+class LandlordBrokenName extends LandlordAbstractFeatureFlag {}

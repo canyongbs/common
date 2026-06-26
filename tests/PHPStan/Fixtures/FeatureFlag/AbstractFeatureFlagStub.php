@@ -36,6 +36,4 @@
 
 namespace App\Support;
 
-abstract class AbstractFeatureFlag
-{
-}
+abstract class AbstractFeatureFlag {}

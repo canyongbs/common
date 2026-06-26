@@ -67,8 +67,7 @@ class FeatureFlagConventionsRule implements Rule
     public function __construct(
         private array $baseClasses,
         private string $featuresNamespace,
-    ) {
-    }
+    ) {}
 
     /**
      * @return class-string<Node>

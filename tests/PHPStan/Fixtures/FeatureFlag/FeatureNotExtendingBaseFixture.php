@@ -36,6 +36,4 @@
 
 namespace App\Features;
 
-class OrphanFeature
-{
-}
+class OrphanFeature {}

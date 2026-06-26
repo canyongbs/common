@@ -38,6 +38,4 @@ namespace App\Features;
 
 use App\Support\AbstractFeatureFlag;
 
-class MissingSuffixFlag extends AbstractFeatureFlag
-{
-}
+class MissingSuffixFlag extends AbstractFeatureFlag {}
