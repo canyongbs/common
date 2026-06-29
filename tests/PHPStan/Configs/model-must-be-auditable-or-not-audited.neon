@@ -1,0 +1,10 @@
+parameters:
+    level: 6
+    scanFiles:
+        - ../Fixtures/Auditing/AuditableStub.php
+
+services:
+    -
+        class: CanyonGBS\Common\Rules\ModelMustBeAuditableOrNotAudited\ModelMustBeAuditableOrNotAuditedRule
+        tags:
+            - phpstan.rules.rule

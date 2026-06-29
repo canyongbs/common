@@ -47,6 +47,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 use Tiptap\Core\Extension;
 
 class VideoRichContentPlugin implements RichContentPlugin
@@ -144,7 +145,7 @@ class VideoRichContentPlugin implements RichContentPlugin
     public static function detectVideoType(string $url): ?string
     {
         $host = parse_url($url, PHP_URL_HOST);
-        $host = $host ? strtolower($host) : '';
+        $host = $host ? Str::lower($host) : '';
 
         if (preg_match('/(?:youtube\.com|youtu\.be)$/i', $host)) {
             return 'youtube';
@@ -155,7 +156,7 @@ class VideoRichContentPlugin implements RichContentPlugin
         }
 
         $path = parse_url($url, PHP_URL_PATH) ?? '';
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $extension = Str::lower(pathinfo($path, PATHINFO_EXTENSION));
 
         if (in_array($extension, ['mp4', 'webm', 'ogg', 'mov'])) {
             return 'video';

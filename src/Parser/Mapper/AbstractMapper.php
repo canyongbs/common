@@ -37,6 +37,7 @@
 namespace CanyonGBS\Common\Parser\Mapper;
 
 use CanyonGBS\Common\Parser\Part\AbstractPart;
+use Illuminate\Support\Str;
 
 abstract class AbstractMapper
 {
@@ -98,6 +99,6 @@ abstract class AbstractMapper
      */
     protected function getKey($word): string
     {
-        return strtolower(str_replace('.', '', $word));
+        return Str::lower(str_replace('.', '', $word));
     }
 }

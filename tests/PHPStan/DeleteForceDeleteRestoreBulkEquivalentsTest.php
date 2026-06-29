@@ -54,7 +54,7 @@ function runPhpStanOnPolicyFixture(string $filePath): array
 {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
-    $configPath = escapeshellarg($basePath . '/tests/PHPStan/phpstan-test.neon');
+    $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/delete-force-delete-restore-bulk-equivalents.neon');
     $file = escapeshellarg($filePath);
 
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";

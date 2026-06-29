@@ -44,8 +44,8 @@ return RectorConfig::configure()
         __DIR__ . '/workbench',
     ])
     ->withSkip([
-        __DIR__ . '/tests/Rector/*/Fixtures',
-        __DIR__ . '/tests/PHPStan/Fixtures',
+        __DIR__ . '/tests/*/Fixtures/*',
+        __DIR__ . '/tests/*/*/Fixtures/*',
     ])
     ->withSets([
         CommonSetList::COMMON,

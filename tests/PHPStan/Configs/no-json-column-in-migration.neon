@@ -1,0 +1,8 @@
+parameters:
+    level: 6
+
+services:
+    -
+        class: CanyonGBS\Common\Rules\NoJsonColumnInMigration\NoJsonColumnInMigrationRule
+        tags:
+            - phpstan.rules.rule
