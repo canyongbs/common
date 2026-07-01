@@ -62,6 +62,7 @@ return new class () extends Migration {
             $table->uuid('id')->primary();
             $table->foreignUuid('role_id')->constrained('roles')->cascadeOnDelete();
             $table->uuidMorphs('model');
+            $table->timestamps();
 
             $table->unique(['role_id', 'model_id', 'model_type'], 'role_assignments_role_model_type_unique');
         });

@@ -59,7 +59,7 @@ trait HasRoles
             'role_assignments',
             'model_id',
             'role_id',
-        )->using(RoleAssignment::class)->where('roles.guard_name', $this->getRolesGuardName());
+        )->using(RoleAssignment::class)->withTimestamps()->where('roles.guard_name', $this->getRolesGuardName());
     }
 
     public function assignRole(string | Role ...$roles): static
