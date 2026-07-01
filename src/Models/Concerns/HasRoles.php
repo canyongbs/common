@@ -54,7 +54,7 @@ trait HasRoles
     public function roles(): MorphToMany
     {
         return $this->morphToMany(
-            $this->getRoleClass(),
+            Role::class,
             'model',
             'role_assignments',
             'model_id',
@@ -86,14 +86,6 @@ trait HasRoles
         return $this->roles->contains(fn (Role $role): bool => in_array($role->getAttribute('name'), $names, true));
     }
 
-    /**
-     * @return class-string<Role>
-     */
-    public function getRoleClass(): string
-    {
-        return Role::class;
-    }
-
     public function getRolesGuardName(): string
     {
         foreach (config('auth.guards') as $name => $guard) {
@@ -123,9 +115,7 @@ trait HasRoles
             return $role;
         }
 
-        $class = $this->getRoleClass();
-
-        return $class::query()
+        return Role::query()
             ->where('name', $role)
             ->where('guard_name', $this->getRolesGuardName())
             ->firstOrFail();

@@ -42,17 +42,17 @@ use Illuminate\Database\Eloquent\Model;
 class PermissionResolver
 {
     /**
-     * @var array<string, array<int, string>>
+     * @var array<string, array<string, true>>
      */
     protected array $cache = [];
 
     public function has(Model $user, string $ability): bool
     {
-        return in_array($ability, $this->permissionsFor($user), true);
+        return array_key_exists($ability, $this->permissionsFor($user));
     }
 
     /**
-     * @return array<int, string>
+     * @return array<string, true>
      */
     public function permissionsFor(Model $user): array
     {
@@ -70,16 +70,19 @@ class PermissionResolver
     }
 
     /**
-     * @return array<int, string>
+     * @return array<string, true>
      */
     protected function query(Model $user): array
     {
-        return RolePermission::query()
-            ->join('role_assignments', 'role_assignments.role_id', '=', 'role_permissions.role_id')
-            ->where('role_assignments.model_type', $user->getMorphClass())
-            ->where('role_assignments.model_id', $user->getKey())
-            ->distinct()
-            ->pluck('role_permissions.permission')
-            ->all();
+        return array_fill_keys(
+            RolePermission::query()
+                ->join('role_assignments', 'role_assignments.role_id', '=', 'role_permissions.role_id')
+                ->where('role_assignments.model_type', $user->getMorphClass())
+                ->where('role_assignments.model_id', $user->getKey())
+                ->distinct()
+                ->pluck('role_permissions.permission')
+                ->all(),
+            true,
+        );
     }
 }

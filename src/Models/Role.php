@@ -41,8 +41,6 @@ use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use RuntimeException;
 
 class Role extends Model
 {
@@ -65,40 +63,6 @@ class Role extends Model
     public function rolePermissions(): HasMany
     {
         return $this->hasMany(RolePermission::class);
-    }
-
-    /**
-     * @return MorphToMany<Model, $this, RoleAssignment>
-     */
-    public function users(): MorphToMany
-    {
-        $guard = $this->getAttribute('guard_name') ?? config('auth.defaults.guard');
-
-        /** @var class-string<Model> $userModel */
-        $userModel = static::getModelForGuard($guard);
-
-        return $this->morphedByMany(
-            $userModel,
-            'model',
-            'role_assignments',
-            'role_id',
-            'model_id',
-        )->using(RoleAssignment::class);
-    }
-
-    public static function getModelForGuard(string $guard): string
-    {
-        $provider = config("auth.guards.{$guard}.provider");
-
-        $model = $provider
-            ? config("auth.providers.{$provider}.model")
-            : null;
-
-        if (! is_string($model)) {
-            throw new RuntimeException("Unable to resolve a model for the [{$guard}] guard.");
-        }
-
-        return $model;
     }
 
     protected static function newFactory(): RoleFactory
