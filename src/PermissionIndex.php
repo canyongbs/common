@@ -34,28 +34,30 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use CanyonGBS\Common\Contracts\Permission;
 
-abstract class TestCase extends Orchestra
+class PermissionIndex
 {
-    protected function getPackageProviders($app): array
+    /**
+     * @var array<class-string<Permission>>
+     */
+    protected array $enums = [];
+
+    /**
+     * @param array<class-string<Permission>> $enums
+     */
+    public function register(array $enums): void
     {
-        return [
-            CommonServiceProvider::class,
-        ];
+        $this->enums = array_values(array_unique([...$this->enums, ...$enums]));
     }
 
-    protected function defineEnvironment($app): void
+    /**
+     * @return array<class-string<Permission>>
+     */
+    public function all(): array
     {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return $this->enums;
     }
 }

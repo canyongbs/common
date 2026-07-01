@@ -34,28 +34,68 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common\Models;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use RuntimeException;
 
-abstract class TestCase extends Orchestra
+class Role extends Model
 {
-    protected function getPackageProviders($app): array
+    use HasUuids;
+
+    protected $table = 'roles';
+
+    protected $fillable = [
+        'name',
+        'guard_name',
+        'description',
+    ];
+
+    /**
+     * @return HasMany<RolePermission, $this>
+     */
+    public function rolePermissions(): HasMany
     {
-        return [
-            CommonServiceProvider::class,
-        ];
+        return $this->hasMany(RolePermission::class);
     }
 
-    protected function defineEnvironment($app): void
+    /**
+     * @return MorphToMany<Model, $this, ModelHasRole>
+     */
+    public function users(): MorphToMany
     {
-        $app['config']->set('auth.providers.users.model', User::class);
+        $guard = $this->getAttribute('guard_name') ?? config('auth.defaults.guard');
+
+        /** @var class-string<Model> $userModel */
+        $userModel = static::getModelForGuard($guard);
+
+        return $this->morphedByMany(
+            $userModel,
+            'model',
+            'model_has_roles',
+            'role_id',
+            'model_id',
+        )->using(ModelHasRole::class);
     }
 
-    protected function defineDatabaseMigrations(): void
+    /**
+     * Resolve the Eloquent model backing the given authentication guard.
+     */
+    public static function getModelForGuard(string $guard): string
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        $provider = config("auth.guards.{$guard}.provider");
+
+        $model = $provider
+            ? config("auth.providers.{$provider}.model")
+            : null;
+
+        if (! is_string($model)) {
+            throw new RuntimeException("Unable to resolve a model for the [{$guard}] guard.");
+        }
+
+        return $model;
     }
 }

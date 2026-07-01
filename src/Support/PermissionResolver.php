@@ -34,28 +34,54 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common\Support;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use CanyonGBS\Common\Models\RolePermission;
+use Illuminate\Database\Eloquent\Model;
 
-abstract class TestCase extends Orchestra
+class PermissionResolver
 {
-    protected function getPackageProviders($app): array
+    /**
+     * The memoized ability sets, keyed by the model's morph class and key.
+     *
+     * @var array<string, array<int, string>>
+     */
+    protected array $cache = [];
+
+    public function has(Model $user, string $ability): bool
     {
-        return [
-            CommonServiceProvider::class,
-        ];
+        return in_array($ability, $this->permissionsFor($user), true);
     }
 
-    protected function defineEnvironment($app): void
+    /**
+     * @return array<int, string>
+     */
+    public function permissionsFor(Model $user): array
     {
-        $app['config']->set('auth.providers.users.model', User::class);
+        return $this->cache[$this->cacheKey($user)] ??= $this->query($user);
     }
 
-    protected function defineDatabaseMigrations(): void
+    public function flush(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        $this->cache = [];
+    }
+
+    protected function cacheKey(Model $user): string
+    {
+        return $user->getMorphClass() . ':' . $user->getKey();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function query(Model $user): array
+    {
+        return RolePermission::query()
+            ->join('model_has_roles', 'model_has_roles.role_id', '=', 'role_permissions.role_id')
+            ->where('model_has_roles.model_type', $user->getMorphClass())
+            ->where('model_has_roles.model_id', $user->getKey())
+            ->distinct()
+            ->pluck('role_permissions.permission')
+            ->all();
     }
 }

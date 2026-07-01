@@ -41,12 +41,15 @@ use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
 use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
 use CanyonGBS\Common\Database\Migrations\PermissionMigrationCreator;
+use CanyonGBS\Common\Support\PermissionResolver;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Composer;
+use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Tapp\FilamentTimezoneField\Forms\Components\TimezoneSelect;
@@ -58,6 +61,11 @@ class CommonServiceProvider extends PackageServiceProvider
         $package
             ->name('common')
             ->hasViews()
+            ->hasMigrations([
+                'create_roles_table',
+                'create_model_has_roles_table',
+                'create_role_permissions_table',
+            ])
             ->hasCommands([
                 MakeCleanupTask::class,
                 MakeFeatureFlag::class,
@@ -66,6 +74,10 @@ class CommonServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->app->singleton(PermissionIndex::class);
+
+        $this->app->scoped(PermissionResolver::class);
+
         $this->app->singleton(MakeTmpMigration::class, function (Application $app) {
             return new MakeTmpMigration($app['migration.creator'], $app[Composer::class]);
         });
@@ -113,6 +125,14 @@ class CommonServiceProvider extends PackageServiceProvider
 
         TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
             $component->searchable();
+        });
+
+        Gate::before(function (mixed $user, string $ability) {
+            if (! $user instanceof Model) {
+                return null;
+            }
+
+            return app(PermissionResolver::class)->has($user, $ability) ? true : null;
         });
     }
 }

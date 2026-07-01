@@ -34,28 +34,28 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
-
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
+use CanyonGBS\Common\Models\Role;
+use Workbench\App\Enums\ArticlePermission;
 use Workbench\App\Models\User;
 
-abstract class TestCase extends Orchestra
-{
-    protected function getPackageProviders($app): array
-    {
-        return [
-            CommonServiceProvider::class,
-        ];
-    }
+it('grants abilities held through a role via the gate', function () {
+    $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
+    $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
+    $role->rolePermissions()->create(['permission' => ArticlePermission::View->value]);
 
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
-    }
-}
+    $user->roles()->attach($role);
+
+    expect($user->can(ArticlePermission::View))->toBeTrue();
+});
+
+it('denies abilities that are not held', function () {
+    $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
+
+    $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
+    $role->rolePermissions()->create(['permission' => ArticlePermission::View->value]);
+
+    $user->roles()->attach($role);
+
+    expect($user->can(ArticlePermission::Delete))->toBeFalse();
+});
