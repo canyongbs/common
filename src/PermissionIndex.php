@@ -63,6 +63,14 @@ class PermissionIndex
     }
 
     /**
+     * @return array<class-string<Permission>>
+     */
+    public function all(): array
+    {
+        return $this->enums;
+    }
+
+    /**
      * Register the `Gate::before` hook that resolves abilities through roles.
      *
      * This only runs the first time permissions are registered, so applications
@@ -83,13 +91,5 @@ class PermissionIndex
 
             return app(PermissionResolver::class)->has($user, $ability) ? true : null;
         });
-    }
-
-    /**
-     * @return array<class-string<Permission>>
-     */
-    public function all(): array
-    {
-        return $this->enums;
     }
 }
