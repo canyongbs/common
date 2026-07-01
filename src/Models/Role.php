@@ -36,7 +36,9 @@
 
 namespace CanyonGBS\Common\Models;
 
+use CanyonGBS\Common\Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -44,6 +46,9 @@ use RuntimeException;
 
 class Role extends Model
 {
+    /** @use HasFactory<RoleFactory> */
+    use HasFactory;
+
     use HasUuids;
 
     protected $table = 'roles';
@@ -94,5 +99,10 @@ class Role extends Model
         }
 
         return $model;
+    }
+
+    protected static function newFactory(): RoleFactory
+    {
+        return RoleFactory::new();
     }
 }
