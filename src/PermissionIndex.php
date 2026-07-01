@@ -37,9 +37,14 @@
 namespace CanyonGBS\Common;
 
 use CanyonGBS\Common\Contracts\Permission;
+use CanyonGBS\Common\Support\PermissionResolver;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 
 class PermissionIndex
 {
+    protected bool $gateRegistered = false;
+
     /**
      * @var array<class-string<Permission>>
      */
@@ -51,6 +56,33 @@ class PermissionIndex
     public function register(array $enums): void
     {
         $this->enums = array_values(array_unique([...$this->enums, ...$enums]));
+
+        if ($this->enums !== []) {
+            $this->registerGate();
+        }
+    }
+
+    /**
+     * Register the `Gate::before` hook that resolves abilities through roles.
+     *
+     * This only runs the first time permissions are registered, so applications
+     * that do not use the roles system never install the hook.
+     */
+    protected function registerGate(): void
+    {
+        if ($this->gateRegistered) {
+            return;
+        }
+
+        $this->gateRegistered = true;
+
+        Gate::before(function (mixed $user, string $ability) {
+            if (! $user instanceof Model) {
+                return null;
+            }
+
+            return app(PermissionResolver::class)->has($user, $ability) ? true : null;
+        });
     }
 
     /**

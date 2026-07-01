@@ -34,11 +34,14 @@
 </COPYRIGHT>
 */
 
+use CanyonGBS\Common\Facades\PermissionIndex;
 use CanyonGBS\Common\Models\Role;
 use Workbench\App\Enums\ArticlePermission;
 use Workbench\App\Models\User;
 
 it('grants abilities held through a role via the gate', function () {
+    PermissionIndex::register([ArticlePermission::class]);
+
     $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
     $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
@@ -50,6 +53,8 @@ it('grants abilities held through a role via the gate', function () {
 });
 
 it('denies abilities that are not held', function () {
+    PermissionIndex::register([ArticlePermission::class]);
+
     $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
     $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
@@ -58,4 +63,15 @@ it('denies abilities that are not held', function () {
     $user->roles()->attach($role);
 
     expect($user->can(ArticlePermission::Delete))->toBeFalse();
+});
+
+it('does not resolve abilities through roles when no permissions are registered', function () {
+    $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
+
+    $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
+    $role->rolePermissions()->create(['permission' => ArticlePermission::View->value]);
+
+    $user->roles()->attach($role);
+
+    expect($user->can(ArticlePermission::View))->toBeFalse();
 });

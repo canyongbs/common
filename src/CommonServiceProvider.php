@@ -47,9 +47,7 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Composer;
-use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Tapp\FilamentTimezoneField\Forms\Components\TimezoneSelect;
@@ -125,14 +123,6 @@ class CommonServiceProvider extends PackageServiceProvider
 
         TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
             $component->searchable();
-        });
-
-        Gate::before(function (mixed $user, string $ability) {
-            if (! $user instanceof Model) {
-                return null;
-            }
-
-            return app(PermissionResolver::class)->has($user, $ability) ? true : null;
         });
     }
 }
