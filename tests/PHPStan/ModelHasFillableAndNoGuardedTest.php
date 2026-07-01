@@ -70,8 +70,20 @@ it('does not report models that inherit a $fillable property from an abstract pa
     expect($result['exitCode'])->toBe(0, "PHPStan should not report models that inherit a \$fillable property from an abstract parent.\nOutput: {$result['output']}");
 });
 
-it('reports models that inherit a $guarded property from an abstract parent', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelInheritingGuardedFromAbstractParentFixture.php');
+it('does not report models that extend Pivot and define a $fillable property', function () {
+    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelExtendingPivotFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report models that extend Pivot and define a \$fillable property.\nOutput: {$result['output']}");
+});
+
+it('does not require a $fillable property for models that inherit a $guarded property from Pivot', function () {
+    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelExtendingPivotWithoutFillableFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not require a \$fillable property for models that inherit a \$guarded property from Pivot.\nOutput: {$result['output']}");
+});
+
+it('reports abstract models that define a $guarded property', function () {
+    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/AbstractModelWithGuardedFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.modelHasGuarded');

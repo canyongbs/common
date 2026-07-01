@@ -34,21 +34,6 @@
 </COPYRIGHT>
 */
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-abstract class AbstractModelWithGuardedFixture extends Model
-{
-    /**
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-    ];
-
-    /**
-     * @var list<string>
-     */
-    protected $guarded = [];
-}
-
-class ModelInheritingGuardedFromAbstractParentFixture extends AbstractModelWithGuardedFixture {}
+class ModelExtendingPivotWithoutFillableFixture extends Pivot {}
