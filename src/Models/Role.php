@@ -81,9 +81,6 @@ class Role extends Model
         )->using(RoleAssignment::class);
     }
 
-    /**
-     * Resolve the Eloquent model backing the given authentication guard.
-     */
     public static function getModelForGuard(string $guard): string
     {
         $provider = config("auth.guards.{$guard}.provider");

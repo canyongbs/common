@@ -87,8 +87,6 @@ trait HasRoles
     }
 
     /**
-     * The role model class used by this authenticatable.
-     *
      * @return class-string<Role>
      */
     public function getRoleClass(): string
@@ -96,9 +94,6 @@ trait HasRoles
         return Role::class;
     }
 
-    /**
-     * Resolve the authentication guard backing this model.
-     */
     public function getRolesGuardName(): string
     {
         foreach (config('auth.guards') as $name => $guard) {

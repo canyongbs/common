@@ -98,8 +98,6 @@ class RolePermissionsMatrix extends Field
     }
 
     /**
-     * The available permissions, keyed by group label and then by operation.
-     *
      * @return array<string, array<string, string>>
      */
     public function getAvailablePermissions(): array
@@ -129,8 +127,6 @@ class RolePermissionsMatrix extends Field
     }
 
     /**
-     * The permission group descriptions, keyed by group label.
-     *
      * @return array<string, string>
      */
     public function getDescriptions(): array
@@ -150,8 +146,6 @@ class RolePermissionsMatrix extends Field
     }
 
     /**
-     * The ordered operation columns, keyed by operation with a humanized label.
-     *
      * @return array<string, string>
      */
     public function getOperations(): array

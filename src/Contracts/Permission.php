@@ -38,13 +38,7 @@ namespace CanyonGBS\Common\Contracts;
 
 interface Permission
 {
-    /**
-     * The human-readable label for the permission group (the enum).
-     */
     public static function getGroupLabel(): string;
 
-    /**
-     * The optional description shown in the permissions matrix.
-     */
     public static function getGroupDescription(): ?string;
 }

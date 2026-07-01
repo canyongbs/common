@@ -70,12 +70,6 @@ class PermissionIndex
         return $this->enums;
     }
 
-    /**
-     * Register the `Gate::before` hook that resolves abilities through roles.
-     *
-     * This only runs the first time permissions are registered, so applications
-     * that do not use the roles system never install the hook.
-     */
     protected function registerGate(): void
     {
         if ($this->gateRegistered) {

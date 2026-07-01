@@ -102,8 +102,6 @@ class PermissionsMatrix extends Field
     }
 
     /**
-     * The ordered operation columns, keyed by operation with a humanized label.
-     *
      * @return array<string, string>
      */
     public function getOperations(): array

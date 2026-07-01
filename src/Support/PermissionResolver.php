@@ -42,8 +42,6 @@ use Illuminate\Database\Eloquent\Model;
 class PermissionResolver
 {
     /**
-     * The memoized ability sets, keyed by the model's morph class and key.
-     *
      * @var array<string, array<int, string>>
      */
     protected array $cache = [];
