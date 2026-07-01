@@ -50,10 +50,15 @@ use PHPStan\Rules\RuleErrorBuilder;
  * mass-assignment protection explicit and consistent across the codebase.
  *
  * A "$fillable" property may be inherited from a parent model (abstract or concrete);
- * only the framework's default declarations on the base model are ignored. A "$guarded"
- * property declared anywhere in the user-defined hierarchy is reported.
+ * only the framework's default declarations on the base model are ignored. A model that
+ * inherits a "$guarded" property from a parent is exempt from the "$fillable" requirement.
  *
- * Abstract models are skipped.
+ * A "$guarded" property is only reported when it is declared directly on the analyzed
+ * class; a "$guarded" property inherited from a parent is not reported (the parent is
+ * reported when it is analyzed itself). This includes abstract models: an abstract model
+ * that declares its own "$guarded" property is reported.
+ *
+ * Abstract models are exempt from the "$fillable" requirement.
  *
  * @implements Rule<InClassNode>
  */
@@ -93,25 +98,27 @@ class ModelHasFillableAndNoGuardedRule implements Rule
     {
         $classReflection = $node->getClassReflection();
 
-        if ($classReflection->isAbstract()) {
-            return [];
-        }
-
         if (! $classReflection->isSubclassOf(self::MODEL_CLASS)) {
             return [];
         }
 
         $errors = [];
 
-        if (! $this->isPropertyDefinedByUser($classReflection, 'fillable', $scope)) {
+        $guardedDeclaringClass = $this->userDefinedPropertyDeclaringClass($classReflection, 'guarded', $scope);
+        $hasOwnGuarded = $guardedDeclaringClass === $classReflection->getName();
+        $hasInheritedGuarded = $guardedDeclaringClass !== null && ! $hasOwnGuarded;
+
+        if (
+            ! $classReflection->isAbstract()
+            && ! $hasInheritedGuarded
+            && ! $this->isPropertyDefinedByUser($classReflection, 'fillable', $scope)
+        ) {
             $errors[] = RuleErrorBuilder::message(self::MISSING_FILLABLE_ERROR_MESSAGE)
                 ->identifier('Common.modelMissingFillable')
                 ->build();
         }
 
-        $guardedDeclaringClass = $this->userDefinedPropertyDeclaringClass($classReflection, 'guarded', $scope);
-
-        if ($guardedDeclaringClass !== null) {
+        if ($hasOwnGuarded) {
             $errors[] = RuleErrorBuilder::message(sprintf(
                 self::HAS_GUARDED_ERROR_MESSAGE,
                 $guardedDeclaringClass,
