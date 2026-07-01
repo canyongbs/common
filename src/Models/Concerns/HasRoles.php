@@ -36,8 +36,8 @@
 
 namespace CanyonGBS\Common\Models\Concerns;
 
-use CanyonGBS\Common\Models\ModelHasRole;
 use CanyonGBS\Common\Models\Role;
+use CanyonGBS\Common\Models\RoleAssignment;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
 
@@ -49,17 +49,17 @@ use Illuminate\Support\Collection;
 trait HasRoles
 {
     /**
-     * @return MorphToMany<Role, $this, ModelHasRole>
+     * @return MorphToMany<Role, $this, RoleAssignment>
      */
     public function roles(): MorphToMany
     {
         return $this->morphToMany(
             $this->getRoleClass(),
             'model',
-            'model_has_roles',
+            'role_assignments',
             'model_id',
             'role_id',
-        )->using(ModelHasRole::class)->where('roles.guard_name', $this->getRolesGuardName());
+        )->using(RoleAssignment::class)->where('roles.guard_name', $this->getRolesGuardName());
     }
 
     public function assignRole(string | Role ...$roles): static

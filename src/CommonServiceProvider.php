@@ -61,7 +61,7 @@ class CommonServiceProvider extends PackageServiceProvider
             ->hasViews()
             ->hasMigrations([
                 'create_roles_table',
-                'create_model_has_roles_table',
+                'create_role_assignments_table',
                 'create_role_permissions_table',
             ])
             ->hasCommands([

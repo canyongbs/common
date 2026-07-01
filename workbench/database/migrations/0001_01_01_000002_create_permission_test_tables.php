@@ -58,12 +58,12 @@ return new class () extends Migration {
             $table->unique(['name', 'guard_name']);
         });
 
-        Schema::create('model_has_roles', function (Blueprint $table) {
+        Schema::create('role_assignments', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('role_id')->constrained('roles')->cascadeOnDelete();
             $table->uuidMorphs('model');
 
-            $table->unique(['role_id', 'model_id', 'model_type'], 'model_has_roles_role_model_type_unique');
+            $table->unique(['role_id', 'model_id', 'model_type'], 'role_assignments_role_model_type_unique');
         });
 
         Schema::create('role_permissions', function (Blueprint $table) {
@@ -78,7 +78,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('role_permissions');
-        Schema::dropIfExists('model_has_roles');
+        Schema::dropIfExists('role_assignments');
         Schema::dropIfExists('roles');
         Schema::dropIfExists('users');
     }

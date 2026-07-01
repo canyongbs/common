@@ -77,9 +77,9 @@ class PermissionResolver
     protected function query(Model $user): array
     {
         return RolePermission::query()
-            ->join('model_has_roles', 'model_has_roles.role_id', '=', 'role_permissions.role_id')
-            ->where('model_has_roles.model_type', $user->getMorphClass())
-            ->where('model_has_roles.model_id', $user->getKey())
+            ->join('role_assignments', 'role_assignments.role_id', '=', 'role_permissions.role_id')
+            ->where('role_assignments.model_type', $user->getMorphClass())
+            ->where('role_assignments.model_id', $user->getKey())
             ->distinct()
             ->pluck('role_permissions.permission')
             ->all();

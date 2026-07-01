@@ -63,7 +63,7 @@ class Role extends Model
     }
 
     /**
-     * @return MorphToMany<Model, $this, ModelHasRole>
+     * @return MorphToMany<Model, $this, RoleAssignment>
      */
     public function users(): MorphToMany
     {
@@ -75,10 +75,10 @@ class Role extends Model
         return $this->morphedByMany(
             $userModel,
             'model',
-            'model_has_roles',
+            'role_assignments',
             'role_id',
             'model_id',
-        )->using(ModelHasRole::class);
+        )->using(RoleAssignment::class);
     }
 
     /**
