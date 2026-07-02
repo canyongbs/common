@@ -34,28 +34,30 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common\Models;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-abstract class TestCase extends Orchestra
+class RolePermission extends Model
 {
-    protected function getPackageProviders($app): array
-    {
-        return [
-            CommonServiceProvider::class,
-        ];
-    }
+    use HasUuids;
 
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
+    public $timestamps = false;
 
-    protected function defineDatabaseMigrations(): void
+    protected $table = 'role_permissions';
+
+    protected $fillable = [
+        'role_id',
+        'permission',
+    ];
+
+    /**
+     * @return BelongsTo<Role, $this>
+     */
+    public function role(): BelongsTo
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return $this->belongsTo(Role::class);
     }
 }

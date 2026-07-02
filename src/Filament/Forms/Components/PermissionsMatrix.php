@@ -96,6 +96,42 @@ class PermissionsMatrix extends Field
         return $this->evaluate($this->guard);
     }
 
+    public function getWireKey(): string
+    {
+        return "{$this->getKey()}.{$this->getGuard()}";
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getOperations(): array
+    {
+        return [
+            'view-any' => 'View',
+            'create' => 'Create',
+            'update' => 'Update',
+            'delete' => 'Delete',
+            'import' => 'Import',
+            'force-delete' => 'Force Delete',
+            'restore' => 'Restore',
+        ];
+    }
+
+    public function getMasterOperation(): string
+    {
+        return 'view-any';
+    }
+
+    /**
+     * Operations that are automatically selected alongside the master operation.
+     *
+     * @return array<string>
+     */
+    public function getBundledOperations(): array
+    {
+        return ['view'];
+    }
+
     /**
      * @return array<string, array<string, string>>
      */

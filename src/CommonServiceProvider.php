@@ -41,6 +41,7 @@ use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
 use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
 use CanyonGBS\Common\Database\Migrations\PermissionMigrationCreator;
+use CanyonGBS\Common\Support\PermissionResolver;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
@@ -58,6 +59,11 @@ class CommonServiceProvider extends PackageServiceProvider
         $package
             ->name('common')
             ->hasViews()
+            ->hasMigrations([
+                'create_roles_table',
+                'create_role_assignments_table',
+                'create_role_permissions_table',
+            ])
             ->hasCommands([
                 MakeCleanupTask::class,
                 MakeFeatureFlag::class,
@@ -66,6 +72,10 @@ class CommonServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->app->singleton(PermissionIndex::class);
+
+        $this->app->scoped(PermissionResolver::class);
+
         $this->app->singleton(MakeTmpMigration::class, function (Application $app) {
             return new MakeTmpMigration($app['migration.creator'], $app[Composer::class]);
         });

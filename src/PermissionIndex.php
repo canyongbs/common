@@ -34,28 +34,56 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use CanyonGBS\Common\Contracts\Permission;
+use CanyonGBS\Common\Support\PermissionResolver;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 
-abstract class TestCase extends Orchestra
+class PermissionIndex
 {
-    protected function getPackageProviders($app): array
+    protected bool $gateRegistered = false;
+
+    /**
+     * @var array<class-string<Permission>>
+     */
+    protected array $enums = [];
+
+    /**
+     * @param array<class-string<Permission>> $enums
+     */
+    public function register(array $enums): void
     {
-        return [
-            CommonServiceProvider::class,
-        ];
+        $this->enums = array_values(array_unique([...$this->enums, ...$enums]));
+
+        if ($this->enums !== []) {
+            $this->registerGate();
+        }
     }
 
-    protected function defineEnvironment($app): void
+    /**
+     * @return array<class-string<Permission>>
+     */
+    public function all(): array
     {
-        $app['config']->set('auth.providers.users.model', User::class);
+        return $this->enums;
     }
 
-    protected function defineDatabaseMigrations(): void
+    protected function registerGate(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        if ($this->gateRegistered) {
+            return;
+        }
+
+        $this->gateRegistered = true;
+
+        Gate::before(function (mixed $user, string $ability) {
+            if (! $user instanceof Model) {
+                return null;
+            }
+
+            return app(PermissionResolver::class)->has($user, $ability) ? true : null;
+        });
     }
 }
