@@ -32,9 +32,16 @@
 </COPYRIGHT>
 -->
 <script setup>
-    import LoadingSpinner from '../../LoadingSpinner.vue';
+    import LoadingSpinner from '../LoadingSpinner.vue';
+
+    defineProps({
+        label: {
+            type: String,
+            default: 'Searching...',
+        },
+    });
 </script>
 
 <template>
-    <LoadingSpinner label="Searching Resource Hub..." />
+    <LoadingSpinner :label="label" />
 </template>

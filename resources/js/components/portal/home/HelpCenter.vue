@@ -32,12 +32,12 @@
 </COPYRIGHT>
 -->
 <script setup>
-    import CategoryCard from './CategoryCard.vue';
+    import CategoryCard from '../CategoryCard.vue';
     import Subheading from '../Subheading.vue';
 
     defineProps({
         categories: {
-            type: Object,
+            type: Array,
             required: true,
         },
     });
@@ -51,7 +51,7 @@
             <CategoryCard
                 v-for="category in categories"
                 :key="category.id"
-                :to="{ name: 'view-category', params: { categoryId: category.id } }"
+                :to="category.to"
                 :icon="category.icon"
                 :name="category.name"
                 :description="category.description"
