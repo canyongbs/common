@@ -11,7 +11,8 @@
         "laravel/prompts": "^0.3",
         "php": "8.4.*|8.5.*",
         "spatie/laravel-health": "^1.40",
-        "tapp/filament-timezone-field": "^3.0"
+        "tapp/filament-timezone-field": "^3.0",
+        "tpetry/laravel-postgresql-enhanced": "^3.5.1"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1",
