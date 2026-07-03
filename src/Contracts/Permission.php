@@ -34,28 +34,11 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common\Contracts;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
-
-abstract class TestCase extends Orchestra
+interface Permission
 {
-    protected function getPackageProviders($app): array
-    {
-        return [
-            CommonServiceProvider::class,
-        ];
-    }
+    public static function getGroupLabel(): string;
 
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
-    }
+    public static function getGroupDescription(): ?string;
 }

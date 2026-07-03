@@ -34,28 +34,22 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common\Facades;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use CanyonGBS\Common\Contracts\Permission;
+use CanyonGBS\Common\PermissionIndex as PermissionIndexManager;
+use Illuminate\Support\Facades\Facade;
 
-abstract class TestCase extends Orchestra
+/**
+ * @method static void register(array<class-string<Permission>> $enums)
+ * @method static array<class-string<Permission>> all()
+ *
+ * @see PermissionIndexManager
+ */
+class PermissionIndex extends Facade
 {
-    protected function getPackageProviders($app): array
+    protected static function getFacadeAccessor(): string
     {
-        return [
-            CommonServiceProvider::class,
-        ];
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return PermissionIndexManager::class;
     }
 }

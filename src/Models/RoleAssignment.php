@@ -34,17 +34,14 @@
 </COPYRIGHT>
 */
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace CanyonGBS\Common\Models;
 
-return new class () extends Migration {
-    public function up(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('middle_name')->after('first_name');
-        });
-    }
-};
+use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids;
+use Illuminate\Database\Eloquent\Relations\MorphPivot;
 
-?>
+class RoleAssignment extends MorphPivot
+{
+    use HasUuids;
+
+    protected $table = 'role_assignments';
+}
