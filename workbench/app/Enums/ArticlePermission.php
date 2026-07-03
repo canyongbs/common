@@ -34,28 +34,29 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Enums;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use CanyonGBS\Common\Contracts\Permission;
 
-abstract class TestCase extends Orchestra
+enum ArticlePermission: string implements Permission
 {
-    protected function getPackageProviders($app): array
+    case View = 'articles.view';
+
+    case Create = 'articles.create';
+
+    case Update = 'articles.update';
+
+    case Delete = 'articles.delete';
+
+    case ForceDelete = 'articles.force_delete';
+
+    public static function getGroupLabel(): string
     {
-        return [
-            CommonServiceProvider::class,
-        ];
+        return 'Articles';
     }
 
-    protected function defineEnvironment($app): void
+    public static function getGroupDescription(): ?string
     {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return 'Manage articles across the workbench application.';
     }
 }

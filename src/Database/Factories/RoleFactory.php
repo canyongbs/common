@@ -34,28 +34,26 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common\Database\Factories;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use CanyonGBS\Common\Models\Role;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-abstract class TestCase extends Orchestra
+/**
+ * @extends Factory<Role>
+ */
+class RoleFactory extends Factory
 {
-    protected function getPackageProviders($app): array
+    protected $model = Role::class;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function definition(): array
     {
         return [
-            CommonServiceProvider::class,
+            'name' => $this->faker->unique()->words(2, true),
+            'guard_name' => 'web',
         ];
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
     }
 }

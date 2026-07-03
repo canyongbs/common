@@ -34,28 +34,55 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common\Support;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use CanyonGBS\Common\Models\RolePermission;
+use Illuminate\Database\Eloquent\Model;
 
-abstract class TestCase extends Orchestra
+class PermissionResolver
 {
-    protected function getPackageProviders($app): array
+    /**
+     * @var array<string, array<string, true>>
+     */
+    protected array $cache = [];
+
+    public function has(Model $user, string $ability): bool
     {
-        return [
-            CommonServiceProvider::class,
-        ];
+        return array_key_exists($ability, $this->permissionsFor($user));
     }
 
-    protected function defineEnvironment($app): void
+    /**
+     * @return array<string, true>
+     */
+    public function permissionsFor(Model $user): array
     {
-        $app['config']->set('auth.providers.users.model', User::class);
+        return $this->cache[$this->cacheKey($user)] ??= $this->query($user);
     }
 
-    protected function defineDatabaseMigrations(): void
+    public function flush(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        $this->cache = [];
+    }
+
+    protected function cacheKey(Model $user): string
+    {
+        return $user->getMorphClass() . ':' . $user->getKey();
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    protected function query(Model $user): array
+    {
+        return array_fill_keys(
+            RolePermission::query()
+                ->join('role_assignments', 'role_assignments.role_id', '=', 'role_permissions.role_id')
+                ->where('role_assignments.model_type', $user->getMorphClass())
+                ->where('role_assignments.model_id', $user->getKey())
+                ->distinct()
+                ->pluck('role_permissions.permission')
+                ->all(),
+            true,
+        );
     }
 }
