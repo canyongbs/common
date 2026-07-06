@@ -50,7 +50,7 @@
         <div class="grid gap-3 md:grid-cols-2">
             <CategoryCard
                 v-for="category in categories"
-                :key="category.id"
+                :key="category.key"
                 :to="category.to"
                 :icon="category.icon"
                 :name="category.name"
