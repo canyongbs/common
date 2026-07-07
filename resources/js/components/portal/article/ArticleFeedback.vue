@@ -15,7 +15,7 @@
       in the software, and you may not remove or obscure any functionality in the
       software that is protected by the license key.
     - You may not alter, remove, or obscure any licensing, copyright, or other notices
-      of the licensor in the software. Any use of the licensor's trademarks is subject
+      of the licensor in the software. Any use of the licensor’s trademarks is subject
       to applicable law.
     - Canyon GBS LLC respects the intellectual property rights of others and expects the
       same in return. Canyon GBS™ and Canyon GBS Common are registered trademarks of
@@ -49,7 +49,9 @@
 </script>
 
 <template>
-    <div class="max-w-5xl mx-auto w-full flex flex-wrap items-center gap-4 border border-gray-200 rounded-lg p-4 bg-white">
+    <div
+        class="max-w-5xl mx-auto w-full flex flex-wrap items-center gap-4 border border-gray-200 rounded-lg p-4 bg-white"
+    >
         <span class="text-sm font-medium text-gray-700">Was this content helpful?</span>
 
         <div class="flex items-center gap-2">
