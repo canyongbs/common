@@ -103,11 +103,7 @@
         </div>
 
         <ResourceList v-if="categories.length > 0" heading="Categories">
-            <ResourceListItem
-                v-for="category in categories"
-                :key="category.key"
-                :to="category.to"
-            >
+            <ResourceListItem v-for="category in categories" :key="category.key" :to="category.to">
                 <template #primary>{{ category.name }}</template>
             </ResourceListItem>
         </ResourceList>
