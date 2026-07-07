@@ -1,4 +1,6 @@
-<!--
+<?php
+
+/*
 <COPYRIGHT>
 
     Copyright © 2016-2026, Canyon GBS LLC. All rights reserved.
@@ -30,11 +32,28 @@
     https://www.canyongbs.com or contact us via email at legal@canyongbs.com.
 
 </COPYRIGHT>
--->
-<script setup>
-    import LoadingSpinner from '../../LoadingSpinner.vue';
-</script>
+*/
 
-<template>
-    <LoadingSpinner label="Searching Resource Hub..." />
-</template>
+namespace CanyonGBS\Common\Database\Factories;
+
+use CanyonGBS\Common\Models\Role;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<Role>
+ */
+class RoleFactory extends Factory
+{
+    protected $model = Role::class;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'name' => $this->faker->unique()->words(2, true),
+            'guard_name' => 'web',
+        ];
+    }
+}

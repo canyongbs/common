@@ -1,6 +1,4 @@
-<?php
-
-/*
+<!--
 <COPYRIGHT>
 
     Copyright © 2016-2026, Canyon GBS LLC. All rights reserved.
@@ -32,30 +30,16 @@
     https://www.canyongbs.com or contact us via email at legal@canyongbs.com.
 
 </COPYRIGHT>
-*/
+-->
+<script setup>
+    defineProps({
+        title: {
+            type: String,
+            required: true,
+        },
+    });
+</script>
 
-namespace CanyonGBS\Common\Tests;
-
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
-
-abstract class TestCase extends Orchestra
-{
-    protected function getPackageProviders($app): array
-    {
-        return [
-            CommonServiceProvider::class,
-        ];
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
-    }
-}
+<template>
+    <h2 class="text-2xl font-bold tracking-tight text-gray-950">{{ title }}</h2>
+</template>

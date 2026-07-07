@@ -32,7 +32,7 @@
 </COPYRIGHT>
 -->
 <script setup>
-    import CategoryCard from '../home/CategoryCard.vue';
+    import CategoryCard from '../CategoryCard.vue';
 
     defineProps({
         subCategories: {

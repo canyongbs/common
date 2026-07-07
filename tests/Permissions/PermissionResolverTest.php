@@ -34,28 +34,46 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
-
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
+use CanyonGBS\Common\Models\Role;
+use CanyonGBS\Common\Support\PermissionResolver;
+use Illuminate\Support\Facades\DB;
 use Workbench\App\Models\User;
 
-abstract class TestCase extends Orchestra
-{
-    protected function getPackageProviders($app): array
-    {
-        return [
-            CommonServiceProvider::class,
-        ];
-    }
+it('resolves a user\'s permissions with a single query and memoizes the result', function () {
+    $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
+    $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
+    $role->rolePermissions()->create(['permission' => 'articles.view']);
+    $role->rolePermissions()->create(['permission' => 'articles.update']);
 
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
-    }
-}
+    $user->roles()->attach($role);
+
+    $resolver = app(PermissionResolver::class);
+
+    DB::enableQueryLog();
+
+    expect($resolver->has($user, 'articles.view'))->toBeTrue();
+    expect($resolver->has($user, 'articles.update'))->toBeTrue();
+    expect($resolver->has($user, 'articles.delete'))->toBeFalse();
+
+    expect(DB::getQueryLog())->toHaveCount(1);
+});
+
+it('re-queries the permission set after being flushed', function () {
+    $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
+
+    $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
+    $user->roles()->attach($role);
+
+    $resolver = app(PermissionResolver::class);
+
+    expect($resolver->has($user, 'articles.view'))->toBeFalse();
+
+    $role->rolePermissions()->create(['permission' => 'articles.view']);
+
+    expect($resolver->has($user, 'articles.view'))->toBeFalse();
+
+    $resolver->flush();
+
+    expect($resolver->has($user, 'articles.view'))->toBeTrue();
+});

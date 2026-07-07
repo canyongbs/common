@@ -33,7 +33,7 @@
 -->
 <script setup>
     import { DocumentTextIcon, FolderIcon } from '@heroicons/vue/24/outline';
-    import SearchLoading from '../home/SearchLoading.vue';
+    import SearchLoading from '../SearchLoading.vue';
     import Subheading from '../Subheading.vue';
     import Article from './Article.vue';
     import ResourceList from '../ResourceList.vue';
