@@ -36,7 +36,7 @@
 
     defineProps({
         subCategories: {
-            type: Object,
+            type: Array,
             required: true,
         },
     });
@@ -46,14 +46,8 @@
     <div class="grid gap-3 md:grid-cols-2">
         <CategoryCard
             v-for="subCategory in subCategories"
-            :key="subCategory.id"
-            :to="{
-                name: 'view-subcategory',
-                params: {
-                    parentCategoryId: subCategory.parentCategory.id,
-                    categoryId: subCategory.id,
-                },
-            }"
+            :key="subCategory.key"
+            :to="subCategory.to"
             :icon="subCategory.icon"
             :name="subCategory.name"
             :description="subCategory.description"

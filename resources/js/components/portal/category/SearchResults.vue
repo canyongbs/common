@@ -44,23 +44,31 @@
             type: String,
             required: true,
         },
-        searchResults: {
-            type: Object,
+        articles: {
+            type: Array,
+            required: true,
+        },
+        categories: {
+            type: Array,
             required: true,
         },
         loadingResults: {
             type: Boolean,
             required: true,
         },
+        label: {
+            type: String,
+            default: 'Searching...',
+        },
     });
 </script>
 
 <template>
     <div v-if="loadingResults">
-        <SearchLoading />
+        <SearchLoading :label="label" />
     </div>
 
-    <div v-if="!loadingResults && searchResults?.data" class="flex flex-col gap-6">
+    <div v-if="!loadingResults" class="flex flex-col gap-6">
         <Subheading>
             Search results<template v-if="searchQuery">
                 for <span class="text-gray-500">&ldquo;{{ searchQuery }}&rdquo;</span></template
@@ -68,10 +76,15 @@
         </Subheading>
 
         <div class="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5">
-            <div v-if="searchResults.data.articles.length > 0">
+            <div v-if="articles.length > 0">
                 <ul role="list" class="divide-y">
-                    <li v-for="article in searchResults.data.articles" :key="article.id">
-                        <Article :article="article" />
+                    <li v-for="article in articles" :key="article.key">
+                        <Article
+                            :to="article.to"
+                            :name="article.name"
+                            :tags="article.tags"
+                            :featured="article.featured"
+                        />
                     </li>
                 </ul>
             </div>
@@ -89,11 +102,11 @@
             </section>
         </div>
 
-        <ResourceList v-if="searchResults.data.categories.length > 0" heading="Categories">
+        <ResourceList v-if="categories.length > 0" heading="Categories">
             <ResourceListItem
-                v-for="category in searchResults.data.categories"
-                :key="category.id"
-                :to="{ name: 'view-category', params: { categoryId: category.id } }"
+                v-for="category in categories"
+                :key="category.key"
+                :to="category.to"
             >
                 <template #primary>{{ category.name }}</template>
             </ResourceListItem>
