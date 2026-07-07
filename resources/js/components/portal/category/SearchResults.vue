@@ -86,7 +86,12 @@
             <div v-if="articles.length > 0">
                 <ul role="list" class="divide-y">
                     <li v-for="article in articles" :key="article.key">
-                        <Article :to="article.to" :name="article.name" :tags="article.tags" :featured="article.featured" />
+                        <Article
+                            :to="article.to"
+                            :name="article.name"
+                            :tags="article.tags"
+                            :featured="article.featured"
+                        />
                     </li>
                 </ul>
             </div>
