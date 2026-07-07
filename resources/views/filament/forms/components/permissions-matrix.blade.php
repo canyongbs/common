@@ -35,6 +35,8 @@
     use Illuminate\Support\Js;
 
     $isDisabled = $isDisabled();
+    $operations = $getOperations();
+    $masterOperation = $getMasterOperation();
 @endphp
 
 <div
@@ -45,6 +47,10 @@
         availablePermissions: @js($getAvailablePermissions()),
 
         descriptions: @js($getDescriptions()),
+
+        masterOperation: @js($masterOperation),
+
+        bundledOperations: @js($getBundledOperations()),
 
         visiblePermissionGroups: [],
 
@@ -68,6 +74,16 @@
             this.visiblePermissionGroups = this.visiblePermissionGroups.filter(
                 (visibleGroup) => visibleGroup !== group,
             )
+        },
+
+        bundleMaster: function (group) {
+            this.bundledOperations.forEach((operation) => {
+                const permission = this.availablePermissions[group][operation]
+
+                if (permission && ! this.state.includes(permission)) {
+                    this.state.push(permission)
+                }
+            })
         },
 
         deselectPermissionsInGroup: function (group) {
@@ -106,7 +122,7 @@
                 })
         },
     }"
-    wire:key="{{ $getKey() }}.{{ $getGuard() }}"
+    wire:key="{{ $getWireKey() }}"
 >
     @if (! $isDisabled)
         <div class="flex items-center justify-end">
@@ -141,8 +157,8 @@
                 Permissions
             </div>
 
-            <div class="hidden divide-x divide-gray-950/5 text-xs xl:grid xl:grid-cols-7 xl:gap-0 dark:divide-white/10">
-                @foreach (['View', 'Create', 'Update', 'Delete', 'Import', 'Force Delete', 'Restore'] as $operationLabel)
+            <div class="hidden divide-x divide-gray-950/5 text-xs xl:flex dark:divide-white/10">
+                @foreach ($operations as $operation => $operationLabel)
                     <div
                         class="flex flex-col items-center justify-center p-2 font-semibold text-gray-950 xl:w-24 dark:text-white"
                     >
@@ -211,27 +227,25 @@
                 </div>
 
                 <div
-                    class="grid grid-cols-2 gap-1 divide-gray-950/5 px-3 py-2 text-sm md:grid-cols-4 xl:grid-cols-7 xl:gap-0 xl:divide-x xl:px-0 xl:py-0 dark:divide-white/10"
+                    class="grid grid-cols-2 gap-1 divide-gray-950/5 px-3 py-2 text-sm md:grid-cols-4 xl:flex xl:gap-0 xl:divide-x xl:px-0 xl:py-0 dark:divide-white/10"
                 >
-                    @foreach (['view-any' => 'View', 'create' => 'Create', 'update' => 'Update', 'delete' => 'Delete', 'import' => 'Import', 'force-delete' => 'Force Delete', 'restore' => 'Restore'] as $operation => $operationLabel)
+                    @foreach ($operations as $operation => $operationLabel)
                         <label
                             class="flex items-center gap-2 xl:flex xl:w-24 xl:justify-center xl:px-3 xl:py-2"
-                            @if ($operation !== 'view-any') x-bind:class="{
-                                'opacity-50': ! state.includes(availablePermissions[group]['view-any']),
+                            @if ($operation !== $masterOperation) x-bind:class="{
+                                'opacity-50': ! state.includes(availablePermissions[group][masterOperation]),
                                 'hidden': ! Object.keys(availablePermissions[group]).includes(@js($operation)),
                             }" @endif
                         >
                             <x-filament::input.checkbox
                                 x-model="state"
                                 :data-column="$loop->index"
-                                :x-bind:value="'availablePermissions[group]['.Js::from($operation).']'"
-                                :x-bind:disabled="(($operation === 'view-any') || $isDisabled) ? null:
-                                    '! state.includes(availablePermissions[group][\'view-any\'])'"
-                                :x-on:change="(($operation === 'view-any') && (! $isDisabled)) ? '$event.target.checked ? (availablePermissions[group].view ? state.push(availablePermissions[group].view) : null) : deselectPermissionsInGroup(group)' : null"
+                                :x-bind:value="'availablePermissions[group][' . Js::from($operation) . ']'"
+                                :x-bind:disabled="(($operation === $masterOperation) || $isDisabled) ? null :
+                                    '! state.includes(availablePermissions[group][masterOperation])'"
+                                :x-on:change="(($operation === $masterOperation) && (! $isDisabled)) ? '$event.target.checked ? bundleMaster(group) : deselectPermissionsInGroup(group)' : null"
                                 :disabled="$isDisabled"
-                                :x-show="'Object.keys(availablePermissions[group]).includes(' .
-                                    Js::from($operation) .
-                                ')'"
+                                :x-show="'Object.keys(availablePermissions[group]).includes(' . Js::from($operation) . ')'"
                             />
 
                             <span class="xl:sr-only">

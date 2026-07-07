@@ -34,28 +34,30 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
-
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
+use CanyonGBS\Common\Models\Role;
 use Workbench\App\Models\User;
 
-abstract class TestCase extends Orchestra
-{
-    protected function getPackageProviders($app): array
-    {
-        return [
-            CommonServiceProvider::class,
-        ];
-    }
+it('assigns and checks roles', function () {
+    $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
+    Role::create(['name' => 'Editor', 'guard_name' => 'web']);
+    Role::create(['name' => 'Admin', 'guard_name' => 'web']);
 
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
-    }
-}
+    $user->assignRole('Editor');
+
+    expect($user->hasRole('Editor'))->toBeTrue();
+    expect($user->hasRole('Admin'))->toBeFalse();
+    expect($user->hasAnyRole(['Admin', 'Editor']))->toBeTrue();
+});
+
+it('only exposes roles matching the model\'s guard', function () {
+    $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
+
+    $webRole = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
+    $apiRole = Role::create(['name' => 'Editor', 'guard_name' => 'api']);
+
+    $user->roles()->attach($webRole);
+    $user->roles()->attach($apiRole);
+
+    expect($user->roles()->pluck('roles.id')->all())->toBe([$webRole->getKey()]);
+});

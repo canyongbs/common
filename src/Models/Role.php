@@ -34,28 +34,39 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace CanyonGBS\Common\Models;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
+use CanyonGBS\Common\Database\Factories\RoleFactory;
+use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-abstract class TestCase extends Orchestra
+class Role extends Model
 {
-    protected function getPackageProviders($app): array
+    /** @use HasFactory<RoleFactory> */
+    use HasFactory;
+
+    use HasUuids;
+
+    protected $table = 'roles';
+
+    protected $fillable = [
+        'name',
+        'guard_name',
+        'description',
+    ];
+
+    /**
+     * @return HasMany<RolePermission, $this>
+     */
+    public function rolePermissions(): HasMany
     {
-        return [
-            CommonServiceProvider::class,
-        ];
+        return $this->hasMany(RolePermission::class);
     }
 
-    protected function defineEnvironment($app): void
+    protected static function newFactory(): RoleFactory
     {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return RoleFactory::new();
     }
 }

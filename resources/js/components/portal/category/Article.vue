@@ -32,7 +32,7 @@
 </COPYRIGHT>
 -->
 <script setup>
-    import { ChevronRightIcon } from '@heroicons/vue/20/solid/index.js';
+    import { ChevronRightIcon } from '@heroicons/vue/20/solid';
     import Tags from '../Tags.vue';
 
     defineProps({

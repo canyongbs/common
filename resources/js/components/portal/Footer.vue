@@ -1,6 +1,4 @@
-<?php
-
-/*
+<!--
 <COPYRIGHT>
 
     Copyright © 2016-2026, Canyon GBS LLC. All rights reserved.
@@ -32,30 +30,32 @@
     https://www.canyongbs.com or contact us via email at legal@canyongbs.com.
 
 </COPYRIGHT>
-*/
+-->
+<script setup>
+    defineProps({
+        logo: {
+            type: String,
+            required: true,
+        },
+        appName: {
+            type: String,
+            required: true,
+        },
+    });
+</script>
 
-namespace CanyonGBS\Common\Tests;
+<template>
+    <div class="bg-white border-t border-gray-200 flex w-full flex-col py-4">
+        <div class="flex w-full justify-center">
+            <img class="block h-7" :src="logo" :alt="appName + ' Logo'" />
+        </div>
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
-
-abstract class TestCase extends Orchestra
-{
-    protected function getPackageProviders($app): array
-    {
-        return [
-            CommonServiceProvider::class,
-        ];
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
-    }
-}
+        <div class="flex w-full justify-center pb-4 pt-2">
+            <span class="w-11/12 text-center text-xs lg:w-3/4 xl:w-7/12">
+                &copy; 2016-{{ new Date().getFullYear() }} Canyon GBS Inc. All Rights Reserved. Canyon GBS&reg; and
+                {{ appName }}&reg; are trademarks of Canyon GBS Inc. For more information or inquiries, please visit our
+                website at <a class="text-blue-600 underline" href="https://canyongbs.com/">https://canyongbs.com</a>.
+            </span>
+        </div>
+    </div>
+</template>
