@@ -33,10 +33,17 @@
 -->
 <script setup>
     import LoadingSpinner from '../LoadingSpinner.vue';
+
+    defineProps({
+        label: {
+            type: String,
+            default: 'Loading...',
+        },
+    });
 </script>
 
 <template>
     <div class="h-screen flex items-center justify-center">
-        <LoadingSpinner label="Loading Resource Hub..." />
+        <LoadingSpinner :label="label" />
     </div>
 </template>
