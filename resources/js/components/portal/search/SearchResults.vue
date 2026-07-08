@@ -155,10 +155,7 @@
             </ResourceListItem>
         </ResourceList>
 
-        <section
-            v-else
-            class="rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 px-6 py-4 flex items-start gap-x-4"
-        >
+        <section v-else class="rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 px-6 py-4 flex items-start gap-x-4">
             <div class="flex size-12 items-center justify-center rounded-full bg-gray-100">
                 <FolderIcon class="size-6 text-gray-400" />
             </div>
