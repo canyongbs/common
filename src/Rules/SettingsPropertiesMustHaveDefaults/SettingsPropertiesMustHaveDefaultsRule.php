@@ -79,10 +79,7 @@ class SettingsPropertiesMustHaveDefaultsRule implements Rule
             return [];
         }
 
-        if (
-            ! $classReflection->isSubclassOf('Spatie\LaravelSettings\Settings')
-            && $classReflection->getName() !== 'Spatie\LaravelSettings\Settings'
-        ) {
+        if (! $classReflection->isSubclassOf('Spatie\LaravelSettings\Settings')) {
             return [];
         }
 
