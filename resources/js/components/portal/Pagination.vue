@@ -56,6 +56,10 @@
             type: Number,
             required: true,
         },
+        loadingPage: {
+            type: Number,
+            default: null,
+        },
     });
 
     const emit = defineEmits(['fetchNextPage', 'fetchPreviousPage', 'fetchPage']);
@@ -144,10 +148,11 @@
                 <button
                     v-else
                     type="button"
+                    :disabled="loadingPage !== null"
                     :aria-label="`Go to page ${element}`"
                     @click="emit('fetchPage', element)"
                     class="relative flex overflow-hidden p-2 transition duration-75 outline-none enabled:hover:bg-gray-50 enabled:focus-visible:z-10 enabled:focus-visible:ring-2 enabled:focus-visible:ring-brand-600"
-                    :class="element === currentPage && 'bg-gray-50'"
+                    :class="[element === currentPage && 'bg-gray-50', loadingPage === element && 'opacity-40']"
                 >
                     <span
                         class="px-1.5 text-sm font-semibold"

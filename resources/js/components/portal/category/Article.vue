@@ -59,7 +59,7 @@
     <router-link :to="to" class="group flex items-center gap-x-3 px-6 py-3 transition duration-75 hover:bg-gray-50">
         <div class="flex-1 min-w-0 flex flex-col gap-y-1.5">
             <span class="text-sm font-medium text-gray-700">{{ name }}</span>
-            <Tags :tags="tags" :featured="featured" />
+            <Tags v-if="tags.length > 0 || featured" :tags="tags" :featured="featured" />
         </div>
         <ChevronRightIcon
             class="size-5 shrink-0 text-gray-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100"
