@@ -32,37 +32,31 @@
 </COPYRIGHT>
 -->
 <script setup>
-    import { ChevronRightIcon } from '@heroicons/vue/20/solid';
-    import Tags from '../Tags.vue';
+    import { PaperClipIcon } from '@heroicons/vue/20/solid';
 
     defineProps({
-        to: {
-            type: [Object, String],
-            required: true,
-        },
-        name: {
-            type: String,
-            required: true,
-        },
-        tags: {
+        attachments: {
             type: Array,
-            default: () => [],
-        },
-        featured: {
-            type: Boolean,
-            default: false,
+            required: true,
         },
     });
 </script>
 
 <template>
-    <router-link :to="to" class="group flex items-center gap-x-3 px-6 py-3 transition duration-75 hover:bg-gray-50">
-        <div class="flex-1 min-w-0 flex flex-col gap-y-1.5">
-            <span class="text-sm font-medium text-gray-700">{{ name }}</span>
-            <Tags v-if="tags.length > 0 || featured" :tags="tags" :featured="featured" />
+    <div class="max-w-5xl w-full mx-auto">
+        <h3 class="text-lg font-semibold text-gray-900 mb-3">Article Resources</h3>
+        <div class="divide-y divide-gray-200">
+            <div v-for="(attachment, index) in attachments" :key="index" class="flex items-center gap-x-3 py-3">
+                <PaperClipIcon class="size-5 shrink-0 text-gray-400" aria-hidden="true" />
+                <a
+                    :href="attachment.url"
+                    class="text-sm font-medium text-brand-600 hover:text-brand-500 underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {{ attachment.name }}
+                </a>
+            </div>
         </div>
-        <ChevronRightIcon
-            class="size-5 shrink-0 text-gray-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100"
-        />
-    </router-link>
+    </div>
 </template>

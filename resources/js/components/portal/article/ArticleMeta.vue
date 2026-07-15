@@ -32,37 +32,29 @@
 </COPYRIGHT>
 -->
 <script setup>
-    import { ChevronRightIcon } from '@heroicons/vue/20/solid';
-    import Tags from '../Tags.vue';
+    import { ClockIcon, EyeIcon } from '@heroicons/vue/20/solid';
 
     defineProps({
-        to: {
-            type: [Object, String],
+        viewCount: {
+            type: Number,
             required: true,
         },
-        name: {
+        lastUpdated: {
             type: String,
             required: true,
-        },
-        tags: {
-            type: Array,
-            default: () => [],
-        },
-        featured: {
-            type: Boolean,
-            default: false,
         },
     });
 </script>
 
 <template>
-    <router-link :to="to" class="group flex items-center gap-x-3 px-6 py-3 transition duration-75 hover:bg-gray-50">
-        <div class="flex-1 min-w-0 flex flex-col gap-y-1.5">
-            <span class="text-sm font-medium text-gray-700">{{ name }}</span>
-            <Tags v-if="tags.length > 0 || featured" :tags="tags" :featured="featured" />
+    <div class="flex flex-col sm:flex-row sm:items-center gap-y-1 gap-x-4">
+        <div class="flex items-center gap-x-1.5">
+            <EyeIcon class="size-4 shrink-0" aria-hidden="true" />
+            <span>{{ viewCount }} Views</span>
         </div>
-        <ChevronRightIcon
-            class="size-5 shrink-0 text-gray-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100"
-        />
-    </router-link>
+        <div class="flex items-center gap-x-1.5">
+            <ClockIcon class="size-4 shrink-0" aria-hidden="true" />
+            <span>Last updated: {{ lastUpdated }}</span>
+        </div>
+    </div>
 </template>

@@ -32,37 +32,41 @@
 </COPYRIGHT>
 -->
 <script setup>
-    import { ChevronRightIcon } from '@heroicons/vue/20/solid';
-    import Tags from '../Tags.vue';
+    import DOMPurify from 'dompurify';
 
     defineProps({
-        to: {
-            type: [Object, String],
-            required: true,
-        },
-        name: {
+        content: {
             type: String,
             required: true,
-        },
-        tags: {
-            type: Array,
-            default: () => [],
-        },
-        featured: {
-            type: Boolean,
-            default: false,
         },
     });
 </script>
 
 <template>
-    <router-link :to="to" class="group flex items-center gap-x-3 px-6 py-3 transition duration-75 hover:bg-gray-50">
-        <div class="flex-1 min-w-0 flex flex-col gap-y-1.5">
-            <span class="text-sm font-medium text-gray-700">{{ name }}</span>
-            <Tags v-if="tags.length > 0 || featured" :tags="tags" :featured="featured" />
-        </div>
-        <ChevronRightIcon
-            class="size-5 shrink-0 text-gray-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100"
-        />
-    </router-link>
+    <div
+        class="prose max-w-5xl w-full mx-auto prose-p:leading-snug! prose-p:my-2.5! prose-headings:my-4! prose-hr:my-5! prose-ul:my-3! prose-ol:my-3! prose-li:my-0! [&_li>p]:my-1! [&_td_p]:my-3! [&_th_p]:my-3! prose-table:w-full! prose-table:my-6 prose-table:border-separate prose-table:border-spacing-0 prose-table:rounded-lg prose-table:border prose-table:border-gray-200 prose-table:overflow-hidden prose-table:shadow-xs prose-td:border-b prose-td:border-gray-100 prose-td:align-middle prose-td:px-6 prose-td:py-2 prose-td:text-left prose-td:text-gray-700 prose-th:border-none prose-th:bg-brand-600 prose-th:px-6 prose-th:py-2 prose-th:text-left prose-th:font-bold prose-th:text-white [&_tr:last-child_td]:border-b-[3px]! [&_tr:last-child_td]:border-brand-600! even:prose-tr:bg-gray-50"
+        v-html="
+            DOMPurify.sanitize(content, {
+                ADD_TAGS: ['iframe', 'video', 'source'],
+                ADD_ATTR: [
+                    'allow',
+                    'allowfullscreen',
+                    'frameborder',
+                    'controls',
+                    'target',
+                    'rel',
+                    'data-video-embed',
+                    'data-video-type',
+                    'data-video-src',
+                    'data-video-width',
+                    'data-video-height',
+                    'data-cols',
+                    'data-col-span',
+                    'data-from-breakpoint',
+                    'data-color',
+                    'data-id',
+                ],
+            })
+        "
+    ></div>
 </template>

@@ -1,4 +1,6 @@
-<!--
+<?php
+
+/*
 <COPYRIGHT>
 
     Copyright © 2016-2026, Canyon GBS LLC. All rights reserved.
@@ -30,39 +32,31 @@
     https://www.canyongbs.com or contact us via email at legal@canyongbs.com.
 
 </COPYRIGHT>
--->
-<script setup>
-    import { ChevronRightIcon } from '@heroicons/vue/20/solid';
-    import Tags from '../Tags.vue';
+*/
 
-    defineProps({
-        to: {
-            type: [Object, String],
-            required: true,
-        },
-        name: {
-            type: String,
-            required: true,
-        },
-        tags: {
-            type: Array,
-            default: () => [],
-        },
-        featured: {
-            type: Boolean,
-            default: false,
-        },
-    });
-</script>
+namespace Spatie\LaravelSettings {
+    abstract class Settings
+    {
+        abstract public static function group(): string;
+    }
+}
 
-<template>
-    <router-link :to="to" class="group flex items-center gap-x-3 px-6 py-3 transition duration-75 hover:bg-gray-50">
-        <div class="flex-1 min-w-0 flex flex-col gap-y-1.5">
-            <span class="text-sm font-medium text-gray-700">{{ name }}</span>
-            <Tags v-if="tags.length > 0 || featured" :tags="tags" :featured="featured" />
-        </div>
-        <ChevronRightIcon
-            class="size-5 shrink-0 text-gray-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100"
-        />
-    </router-link>
-</template>
+namespace {
+    use Spatie\LaravelSettings\Settings;
+
+    class SettingsWithDefaults extends Settings
+    {
+        public string $name = 'default';
+
+        public ?string $optionalValue = null;
+
+        public bool $isEnabled = false;
+
+        public int $count = 0;
+
+        public static function group(): string
+        {
+            return 'test';
+        }
+    }
+}

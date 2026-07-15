@@ -31,38 +31,8 @@
 
 </COPYRIGHT>
 -->
-<script setup>
-    import { ChevronRightIcon } from '@heroicons/vue/20/solid';
-    import Tags from '../Tags.vue';
-
-    defineProps({
-        to: {
-            type: [Object, String],
-            required: true,
-        },
-        name: {
-            type: String,
-            required: true,
-        },
-        tags: {
-            type: Array,
-            default: () => [],
-        },
-        featured: {
-            type: Boolean,
-            default: false,
-        },
-    });
-</script>
-
 <template>
-    <router-link :to="to" class="group flex items-center gap-x-3 px-6 py-3 transition duration-75 hover:bg-gray-50">
-        <div class="flex-1 min-w-0 flex flex-col gap-y-1.5">
-            <span class="text-sm font-medium text-gray-700">{{ name }}</span>
-            <Tags v-if="tags.length > 0 || featured" :tags="tags" :featured="featured" />
-        </div>
-        <ChevronRightIcon
-            class="size-5 shrink-0 text-gray-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100"
-        />
-    </router-link>
+    <div class="bg-white ring-1 ring-gray-950/5 shadow-xs rounded-xl px-6 py-4 flex flex-col gap-y-6">
+        <slot />
+    </div>
 </template>

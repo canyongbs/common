@@ -32,37 +32,40 @@
 </COPYRIGHT>
 -->
 <script setup>
-    import { ChevronRightIcon } from '@heroicons/vue/20/solid';
-    import Tags from '../Tags.vue';
+    import { XMarkIcon } from '@heroicons/vue/24/outline/index.js';
 
     defineProps({
-        to: {
-            type: [Object, String],
-            required: true,
+        icon: {
+            type: Object,
+            default: null,
         },
-        name: {
-            type: String,
-            required: true,
-        },
-        tags: {
-            type: Array,
-            default: () => [],
-        },
-        featured: {
+        contained: {
             type: Boolean,
-            default: false,
+            default: true,
         },
     });
 </script>
 
 <template>
-    <router-link :to="to" class="group flex items-center gap-x-3 px-6 py-3 transition duration-75 hover:bg-gray-50">
-        <div class="flex-1 min-w-0 flex flex-col gap-y-1.5">
-            <span class="text-sm font-medium text-gray-700">{{ name }}</span>
-            <Tags v-if="tags.length > 0 || featured" :tags="tags" :featured="featured" />
+    <section class="px-6 py-12" :class="contained && 'rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5'">
+        <div class="mx-auto grid max-w-lg justify-items-center text-center">
+            <div class="mb-4 flex size-12 items-center justify-center rounded-full bg-gray-100">
+                <component :is="icon || XMarkIcon" class="size-6 text-gray-400" />
+            </div>
+
+            <div class="grid justify-items-center text-center">
+                <h4 class="text-base font-semibold leading-6 text-gray-950">
+                    <slot name="heading" />
+                </h4>
+
+                <p v-if="$slots.description" class="mt-1 text-sm text-gray-500">
+                    <slot name="description" />
+                </p>
+
+                <div v-if="$slots.actions" class="mt-6">
+                    <slot name="actions" />
+                </div>
+            </div>
         </div>
-        <ChevronRightIcon
-            class="size-5 shrink-0 text-gray-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100"
-        />
-    </router-link>
+    </section>
 </template>
