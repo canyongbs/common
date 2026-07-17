@@ -33,13 +33,13 @@
 -->
 <script setup>
     import { DocumentTextIcon, FolderIcon } from '@heroicons/vue/24/outline';
-    import Article from '../category/Article.vue';
-    import Pagination from '../Pagination.vue';
-    import ResourceList from '../ResourceList.vue';
-    import ResourceListItem from '../ResourceListItem.vue';
-    import SearchLoading from '../SearchLoading.vue';
-    import Subheading from '../Subheading.vue';
-    import Tabs from '../Tabs.vue';
+    import Article from './category/Article.vue';
+    import Pagination from './Pagination.vue';
+    import ResourceList from './ResourceList.vue';
+    import ResourceListItem from './ResourceListItem.vue';
+    import SearchLoading from './SearchLoading.vue';
+    import Subheading from './Subheading.vue';
+    import Tabs from './Tabs.vue';
 
     defineEmits(['fetchNextPage', 'fetchPreviousPage', 'fetchPage', 'change-filter']);
 
