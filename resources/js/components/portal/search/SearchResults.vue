@@ -60,6 +60,10 @@
             type: Boolean,
             required: true,
         },
+        filterTabs: {
+            type: Array,
+            default: () => [],
+        },
         selectedFilter: {
             type: String,
             default: '',
@@ -85,12 +89,6 @@
             default: 0,
         },
     });
-
-    const filterTabs = [
-        { label: 'All Articles', value: 'all-articles' },
-        { label: 'Featured', value: 'featured' },
-        { label: 'Most Viewed', value: 'most-viewed' },
-    ];
 </script>
 
 <template>
@@ -107,8 +105,9 @@
 
         <div class="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5">
             <Tabs
+                v-if="filterTabs.length > 0"
                 :tabs="filterTabs"
-                :modelValue="selectedFilter || 'all-articles'"
+                :modelValue="selectedFilter || filterTabs[0]?.value"
                 @update:modelValue="$emit('change-filter', $event)"
                 :contained="true"
             />
