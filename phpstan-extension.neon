@@ -55,6 +55,10 @@ services:
         tags:
             - phpstan.rules.rule
     -
+        class: CanyonGBS\Common\Rules\SettingsPropertiesMustHaveDefaults\SettingsPropertiesMustHaveDefaultsRule
+        tags:
+            - phpstan.rules.rule
+    -
         class: CanyonGBS\Common\Rules\ShouldBeUniqueJobMustDefineUniqueFor\ShouldBeUniqueJobMustDefineUniqueForRule
         tags:
             - phpstan.rules.rule
