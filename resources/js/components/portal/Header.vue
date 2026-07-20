@@ -188,7 +188,7 @@
             <div class="ms-auto flex items-center gap-x-4">
                 <!-- Global search -->
                 <form
-                    v-if="!['home', 'view-category'].includes(route?.name)"
+                    v-if="!['home', 'view-category', 'view-subcategory'].includes(route?.name)"
                     @submit.prevent="onSearch"
                     class="flex items-center max-w-[12rem]"
                 >
