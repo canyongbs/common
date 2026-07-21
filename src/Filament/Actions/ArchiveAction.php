@@ -38,59 +38,135 @@ namespace CanyonGBS\Common\Filament\Actions;
 
 use Exception;
 use Filament\Actions\Action;
+use Filament\Actions\Concerns\CanCustomizeProcess;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
-class ArchiveAction
+class ArchiveAction extends Action
 {
-    public static function make(): Action
+    use CanCustomizeProcess;
+
+    protected function setUp(): void
     {
-        return Action::make('archive')
-            ->label('Archive')
-            ->modalHeading(fn (Action $action): string => "Archive {$action->getRecordTitle()}")
-            ->modalSubmitActionLabel('Archive')
-            ->successNotificationTitle('Archived')
-            ->defaultColor('warning')
-            ->groupedIcon('heroicon-m-archive-box')
-            ->modalIcon('heroicon-o-archive-box')
-            ->hidden(static function (Model $record): bool {
-                if (! method_exists($record, 'isArchived')) {
-                    throw new Exception('The [ArchiveAction] requires the model to use the [CanBeArchived] trait.');
+        parent::setUp();
+
+        $this->label(fn (Model $record): string => $this->shouldDeleteInsteadOfArchive($record) ? 'Delete' : 'Archive');
+
+        $this->modalHeading(fn (Model $record): string => ($this->shouldDeleteInsteadOfArchive($record) ? 'Delete' : 'Archive') . " {$this->getRecordTitle()}");
+
+        $this->modalSubmitActionLabel(fn (Model $record): string => $this->shouldDeleteInsteadOfArchive($record) ? 'Delete' : 'Archive');
+
+        $this->successNotificationTitle(function (?Model $record): string {
+            // The record is no longer resolvable once it has been deleted,
+            // which only happens after a successful deletion.
+            if (! $record instanceof Model) {
+                return 'Deleted';
+            }
+
+            return $this->shouldDeleteInsteadOfArchive($record) ? 'Deleted' : 'Archived';
+        });
+
+        $this->defaultColor(fn (Model $record): string => $this->shouldDeleteInsteadOfArchive($record) ? 'danger' : 'warning');
+
+        $this->groupedIcon(fn (Model $record): Heroicon => $this->shouldDeleteInsteadOfArchive($record) ? Heroicon::Trash : Heroicon::ArchiveBox);
+
+        $this->modalIcon(fn (Model $record): Heroicon => $this->shouldDeleteInsteadOfArchive($record) ? Heroicon::OutlinedTrash : Heroicon::OutlinedArchiveBox);
+
+        $this->hidden(function (Model $record): bool {
+            if ($this->shouldDeleteInsteadOfArchive($record)) {
+                if (! method_exists($record, 'trashed')) {
+                    return false;
                 }
 
-                return $record->isArchived();
-            })
-            ->requiresConfirmation()
-            ->action(function (Action $action, Model $record): void {
+                return $record->trashed();
+            }
+
+            if (! method_exists($record, 'isArchived')) {
+                throw new Exception('The [ArchiveAction] requires the model to use the [CanBeArchived] trait.');
+            }
+
+            return $record->isArchived();
+        });
+
+        $this->requiresConfirmation();
+
+        $this->action(function (): void {
+            $result = $this->process(function (Model $record): bool {
+                if ($this->shouldDeleteInsteadOfArchive($record)) {
+                    return (bool) $record->delete();
+                }
+
                 if (! method_exists($record, 'archive')) {
                     throw new Exception('The [ArchiveAction] requires the model to use the [CanBeArchived] trait.');
                 }
 
-                $result = $record->archive();
-
-                if (! $result) {
-                    $action->failure();
-
-                    return;
-                }
-
-                $action->success();
-            })
-            ->authorize(function (Model $record, Component $livewire): bool {
-                if ((! $livewire instanceof EditRecord) && (! $livewire instanceof ViewRecord)) {
-                    throw new Exception('Unsupported Livewire component for [ArchiveAction] authorization. It must be used within [EditRecord] or [ViewRecord], or a custom [authorize()] function must be used.');
-                }
-
-                return $livewire::getResource()::can('archive', $record);
-            })
-            ->successRedirectUrl(function (Component $livewire): string {
-                if ((! $livewire instanceof EditRecord) && (! $livewire instanceof ViewRecord)) {
-                    throw new Exception('Unsupported Livewire component for [ArchiveAction] redirect. It must be used within [EditRecord] or [ViewRecord], or a custom [successRedirectUrl()] function must be used.');
-                }
-
-                return $livewire::getResource()::getUrl('index');
+                return $record->archive();
             });
+
+            if (! $result) {
+                $this->failure();
+
+                return;
+            }
+
+            $this->success();
+        });
+
+        $this->authorize(function (Model $record, Component $livewire): bool {
+            if ((! $livewire instanceof EditRecord) && (! $livewire instanceof ViewRecord)) {
+                throw new Exception('Unsupported Livewire component for [ArchiveAction] authorization. It must be used within [EditRecord] or [ViewRecord], or a custom [authorize()] function must be used.');
+            }
+
+            if ((! $this->shouldDeleteInsteadOfArchive($record)) && $this->hasArchivePolicyMethod($record)) {
+                return $livewire::getResource()::can('archive', $record);
+            }
+
+            return $livewire::getResource()::can('delete', $record);
+        });
+
+        $this->successRedirectUrl(function (Component $livewire): string {
+            if ((! $livewire instanceof EditRecord) && (! $livewire instanceof ViewRecord)) {
+                throw new Exception('Unsupported Livewire component for [ArchiveAction] redirect. It must be used within [EditRecord] or [ViewRecord], or a custom [successRedirectUrl()] function must be used.');
+            }
+
+            return $livewire::getResource()::getUrl('index');
+        });
+    }
+
+    public static function getDefaultName(): ?string
+    {
+        return 'archive';
+    }
+
+    /**
+     * Archiving exists to preserve records that are still referenced elsewhere.
+     * A model may define an optional `isUsed()` method to report whether the
+     * individual record is still referenced, in which case unreferenced records
+     * are safe to delete outright instead of being archived.
+     */
+    public function shouldDeleteInsteadOfArchive(?Model $record = null): bool
+    {
+        $record ??= $this->getRecord();
+
+        if (! $record instanceof Model) {
+            return false;
+        }
+
+        if (! method_exists($record, 'isUsed')) {
+            return false;
+        }
+
+        return ! $record->isUsed();
+    }
+
+    protected function hasArchivePolicyMethod(Model $record): bool
+    {
+        $policy = Gate::getPolicyFor($record::class);
+
+        return filled($policy) && method_exists($policy, 'archive');
     }
 }

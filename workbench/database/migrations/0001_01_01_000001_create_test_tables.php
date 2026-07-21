@@ -116,10 +116,20 @@ return new class () extends Migration {
             $table->text('body');
             $table->timestamps();
         });
+
+        Schema::create('attachments', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->boolean('is_used')->default(false);
+            $table->timestamp('archived_at')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('attachments');
         Schema::dropIfExists('reviews');
         Schema::dropIfExists('articles');
         Schema::dropIfExists('categories');

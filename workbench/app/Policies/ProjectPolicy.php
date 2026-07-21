@@ -34,47 +34,40 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Policies;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\Foundation\Actions\CreateVendorSymlink;
-use Orchestra\Testbench\TestCase as Orchestra;
+use Workbench\App\Models\Project;
 use Workbench\App\Models\User;
-use Workbench\App\Providers\TestingPanelProvider;
 
-abstract class TestCase extends Orchestra
+class ProjectPolicy
 {
-    protected $enablesPackageDiscoveries = true;
+    /**
+     * @var array<string, bool>
+     */
+    public static array $abilities = [];
 
-    protected function resolveApplication()
+    public static function reset(): void
     {
-        $app = parent::resolveApplication();
-
-        // Package discovery reads the skeleton's `vendor` directory, which
-        // must be symlinked to this package's `vendor` directory. The path is
-        // resolved explicitly instead of with `package_path()`, which reports
-        // Rector's bundled `vendor` directory once a Rector test class has
-        // been autoloaded.
-        (new CreateVendorSymlink(dirname(__DIR__) . '/vendor'))->handle(clone $app);
-
-        return $app;
+        static::$abilities = [];
     }
 
-    protected function getPackageProviders($app): array
+    public function viewAny(User $user): bool
     {
-        return [
-            CommonServiceProvider::class,
-            TestingPanelProvider::class,
-        ];
+        return static::$abilities['viewAny'] ?? true;
     }
 
-    protected function defineEnvironment($app): void
+    public function view(User $user, Project $project): bool
     {
-        $app['config']->set('auth.providers.users.model', User::class);
+        return static::$abilities['view'] ?? true;
     }
 
-    protected function defineDatabaseMigrations(): void
+    public function update(User $user, Project $project): bool
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return static::$abilities['update'] ?? true;
+    }
+
+    public function delete(User $user, Project $project): bool
+    {
+        return static::$abilities['delete'] ?? true;
     }
 }

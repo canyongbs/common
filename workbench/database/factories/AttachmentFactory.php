@@ -34,47 +34,27 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\Database\Factories;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\Foundation\Actions\CreateVendorSymlink;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
-use Workbench\App\Providers\TestingPanelProvider;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Workbench\App\Models\Attachment;
 
-abstract class TestCase extends Orchestra
+/** @extends Factory<Attachment> */
+class AttachmentFactory extends Factory
 {
-    protected $enablesPackageDiscoveries = true;
+    protected $model = Attachment::class;
 
-    protected function resolveApplication()
-    {
-        $app = parent::resolveApplication();
-
-        // Package discovery reads the skeleton's `vendor` directory, which
-        // must be symlinked to this package's `vendor` directory. The path is
-        // resolved explicitly instead of with `package_path()`, which reports
-        // Rector's bundled `vendor` directory once a Rector test class has
-        // been autoloaded.
-        (new CreateVendorSymlink(dirname(__DIR__) . '/vendor'))->handle(clone $app);
-
-        return $app;
-    }
-
-    protected function getPackageProviders($app): array
+    /** @return array<string, mixed> */
+    public function definition(): array
     {
         return [
-            CommonServiceProvider::class,
-            TestingPanelProvider::class,
+            'name' => $this->faker->sentence(),
+            'is_used' => false,
         ];
     }
 
-    protected function defineEnvironment($app): void
+    public function used(): static
     {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return $this->state(['is_used' => true]);
     }
 }
