@@ -63,7 +63,7 @@ class ArchiveBulkAction extends BulkAction
     {
         parent::setUp();
 
-        $this->label('Archive');
+        $this->label(fn (): string => $this->shouldDeleteUnusedRecords() ? 'Archive / Delete' : 'Archive');
 
         $this->modalHeading(fn (): string => "Archive {$this->getTitleCasePluralModelLabel()}");
 

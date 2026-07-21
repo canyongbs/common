@@ -251,7 +251,7 @@ it('has archive styling and a delete warning in the modal when the model defines
     Article::factory()->create();
 
     Livewire::test(ListArticles::class)
-        ->assertActionHasLabel(TestAction::make('archive')->table()->bulk(), 'Archive')
+        ->assertActionHasLabel(TestAction::make('archive')->table()->bulk(), 'Archive / Delete')
         ->assertActionHasColor(TestAction::make('archive')->table()->bulk(), 'warning')
         ->assertActionHasIcon(TestAction::make('archive')->table()->bulk(), Heroicon::ArchiveBox)
         ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => ((string) $action->getModalHeading()) === 'Archive Articles')
@@ -264,6 +264,7 @@ it('has no delete warning in the modal when the model does not define `used()`',
     Image::factory()->create();
 
     Livewire::test(ListImages::class)
+        ->assertActionHasLabel(TestAction::make('archive')->table()->bulk(), 'Archive')
         ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => ! str_contains((string) $action->getModalDescription(), 'permanently deleted'));
 });
 
