@@ -34,47 +34,20 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Filament\Resources\Articles\Pages;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\Foundation\Actions\CreateVendorSymlink;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
-use Workbench\App\Providers\TestingPanelProvider;
+use CanyonGBS\Common\Filament\Actions\ArchiveAction;
+use Filament\Resources\Pages\EditRecord;
+use Workbench\App\Filament\Resources\Articles\ArticleResource;
 
-abstract class TestCase extends Orchestra
+class EditArticle extends EditRecord
 {
-    protected $enablesPackageDiscoveries = true;
+    protected static string $resource = ArticleResource::class;
 
-    protected function resolveApplication()
-    {
-        $app = parent::resolveApplication();
-
-        // Package discovery reads the skeleton's `vendor` directory, which
-        // must be symlinked to this package's `vendor` directory. The path is
-        // resolved explicitly instead of with `package_path()`, which reports
-        // Rector's bundled `vendor` directory once a Rector test class has
-        // been autoloaded.
-        (new CreateVendorSymlink(dirname(__DIR__) . '/vendor'))->handle(clone $app);
-
-        return $app;
-    }
-
-    protected function getPackageProviders($app): array
+    protected function getHeaderActions(): array
     {
         return [
-            CommonServiceProvider::class,
-            TestingPanelProvider::class,
+            ArchiveAction::make(),
         ];
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
     }
 }

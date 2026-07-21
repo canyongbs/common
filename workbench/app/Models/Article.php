@@ -72,6 +72,11 @@ class Article extends Model
         $query->whereHas('reviews');
     }
 
+    public function isUsed(): bool
+    {
+        return (bool) ($this->reviews_exists ??= $this->reviews()->exists());
+    }
+
     protected static function newFactory(): ArticleFactory
     {
         return ArticleFactory::new();
