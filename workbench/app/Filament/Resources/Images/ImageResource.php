@@ -34,47 +34,40 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Filament\Resources\Images;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\Foundation\Actions\CreateVendorSymlink;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
-use Workbench\App\Providers\TestingPanelProvider;
+use CanyonGBS\Common\Filament\Actions\ArchiveBulkAction;
+use Filament\Resources\Resource;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Workbench\App\Filament\Resources\Images\Pages\ListImages;
+use Workbench\App\Models\Image;
 
-abstract class TestCase extends Orchestra
+/**
+ * @extends Resource<Image>
+ */
+class ImageResource extends Resource
 {
-    protected $enablesPackageDiscoveries = true;
+    protected static ?string $model = Image::class;
 
-    protected function resolveApplication()
+    public static bool $authorizesIndividualRecords = false;
+
+    public static function table(Table $table): Table
     {
-        $app = parent::resolveApplication();
-
-        // Package discovery reads the skeleton's `vendor` directory, which
-        // must be symlinked to this package's `vendor` directory. The path is
-        // resolved explicitly instead of with `package_path()`, which reports
-        // Rector's bundled `vendor` directory once a Rector test class has
-        // been autoloaded.
-        (new CreateVendorSymlink(dirname(__DIR__) . '/vendor'))->handle(clone $app);
-
-        return $app;
+        return $table
+            ->columns([
+                TextColumn::make('url'),
+            ])
+            ->toolbarActions([
+                ArchiveBulkAction::make()
+                    ->authorizeIndividualRecords(static::$authorizesIndividualRecords ? 'delete' : null),
+            ]);
     }
 
-    protected function getPackageProviders($app): array
+    public static function getPages(): array
     {
         return [
-            CommonServiceProvider::class,
-            TestingPanelProvider::class,
+            'index' => ListImages::route('/'),
         ];
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
     }
 }

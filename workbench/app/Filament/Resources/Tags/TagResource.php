@@ -34,47 +34,27 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Filament\Resources\Tags;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\Foundation\Actions\CreateVendorSymlink;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
-use Workbench\App\Providers\TestingPanelProvider;
+use Filament\Resources\Resource;
+use Workbench\App\Filament\Resources\Tags\Pages\EditTag;
+use Workbench\App\Filament\Resources\Tags\Pages\ListTags;
+use Workbench\App\Models\Tag;
 
-abstract class TestCase extends Orchestra
+/**
+ * @extends Resource<Tag>
+ */
+class TagResource extends Resource
 {
-    protected $enablesPackageDiscoveries = true;
+    protected static ?string $model = Tag::class;
 
-    protected function resolveApplication()
-    {
-        $app = parent::resolveApplication();
+    protected static ?string $recordTitleAttribute = 'name';
 
-        // Package discovery reads the skeleton's `vendor` directory, which
-        // must be symlinked to this package's `vendor` directory. The path is
-        // resolved explicitly instead of with `package_path()`, which reports
-        // Rector's bundled `vendor` directory once a Rector test class has
-        // been autoloaded.
-        (new CreateVendorSymlink(dirname(__DIR__) . '/vendor'))->handle(clone $app);
-
-        return $app;
-    }
-
-    protected function getPackageProviders($app): array
+    public static function getPages(): array
     {
         return [
-            CommonServiceProvider::class,
-            TestingPanelProvider::class,
+            'index' => ListTags::route('/'),
+            'edit' => EditTag::route('/{record}/edit'),
         ];
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
     }
 }

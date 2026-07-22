@@ -147,6 +147,47 @@ It excludes:
 
 - Archived records that are **not "used"**.
 
+### Checking whether a single record is used
+
+The `used()` method filters queries. Its record-level counterpart is an optional `isUsed()` method, which reports whether an individual record is still referenced:
+
+```php
+class ProjectType extends Model
+{
+    use CanBeArchived;
+
+    public function used(Builder $query): void
+    {
+        $query->whereHas('projects');
+    }
+
+    public function isUsed(): bool
+    {
+        return (bool) ($this->projects_exists ??= $this->projects()->exists());
+    }
+}
+```
+
+The two methods should agree on what "used" means. Defining `isUsed()` changes the behavior of the `ArchiveAction` Filament component, which deletes unused records instead of archiving them ([see below](#filament-archive-action)).
+
+#### Keeping `isUsed()` efficient
+
+`isUsed()` may be called several times per request, so implement it with the pattern above instead of querying the relationship directly. `$this->projects_exists` is the attribute that Eloquent's `withExists('projects')` populates: when the record was retrieved with `withExists()`, the check reads the eager-loaded value and runs no query at all. Otherwise, the first call runs a single `exists` query and stores the result in the same attribute, so repeated calls never query again.
+
+In a table context, where `isUsed()` may be evaluated for every row, always eager-load the existence check with `modifyQueryUsing()` to avoid one query per record:
+
+```php
+use Illuminate\Database\Eloquent\Builder;
+
+$table->modifyQueryUsing(
+    fn (Builder $query) => $query->withExists('projects'),
+)
+```
+
+This can be combined with other query changes, such as `withoutArchived()`.
+
+One caveat of the memoizing pattern: when the value is computed lazily (without `withExists()`), the result is stored as a "dirty" attribute on the model. Avoid calling `save()` on the same model instance afterwards, as the attribute does not correspond to a real database column.
+
 ---
 
 ## Model events
@@ -177,7 +218,7 @@ Project::unarchived(function (Project $project) {
 
 ## Authorization
 
-Define an `archive` method on your model's policy. The `ArchiveAction` Filament component calls `can('archive', $record)` to determine if the action should be available.
+The `ArchiveAction` Filament component calls `can('delete', $record)` to determine if the action should be available, so define a `delete` method on your model's policy. The same ability is checked whether the action archives or deletes the record -- archiving is a soft alternative to deletion, so it is governed by the same permission.
 
 ```php
 use App\Models\Project;
@@ -186,17 +227,11 @@ use Illuminate\Auth\Access\Response;
 
 class ProjectPolicy
 {
-    public function archive(User $user, Project $project): Response
+    public function delete(User $user, Project $project): Response
     {
-        // Example: only allow archiving if the project has associated data
-        // that would be lost by deletion.
-        if (! $project->tasks()->exists()) {
-            return Response::deny('Delete this project instead of archiving it.');
-        }
-
         return $user->can('projects.delete')
             ? Response::allow()
-            : Response::deny('You do not have permission to archive this project.');
+            : Response::deny('You do not have permission to delete this project.');
     }
 }
 ```
@@ -228,8 +263,28 @@ class EditProject extends EditRecord
 The action:
 
 - Is hidden when the record is already archived.
-- Authorizes via the policy's `archive` method.
+- Authorizes via the policy's `delete` method.
 - Redirects to the resource's index page on success.
+
+### Deleting unused records instead of archiving
+
+Archiving exists to preserve records that are still referenced elsewhere. If a record is not referenced by anything, there is nothing to preserve, and it can safely be deleted outright.
+
+If the model defines an optional `isUsed()` method ([see above](#checking-whether-a-single-record-is-used)), `ArchiveAction` becomes a dual-mode action:
+
+- **`isUsed()` returns `true`** -- the record is still referenced, so the action looks and behaves exactly as described above: it archives the record.
+- **`isUsed()` returns `false`** -- the record is unreferenced, so the action looks and behaves like Filament's `DeleteAction` instead: it is labelled "Delete" with a `danger` color and trash icon, calls `$record->delete()`, and is hidden when the record is soft-deleted (rather than when it is archived).
+
+If the model does not define `isUsed()`, the action always archives.
+
+Closures passed to the action can check which mode applies to the current record by calling `shouldDeleteInsteadOfArchive()` on the action:
+
+```php
+ArchiveAction::make()
+    ->modalDescription(fn (ArchiveAction $action): ?string => $action->shouldDeleteInsteadOfArchive()
+        ? 'This record is not in use, so it will be permanently deleted.'
+        : null)
+```
 
 ### Custom authorization or redirect
 
@@ -237,9 +292,83 @@ The default `authorize()` and `successRedirectUrl()` callbacks expect the action
 
 ```php
 ArchiveAction::make()
-    ->authorize(fn (Model $record): bool => Gate::allows('archive', $record))
+    ->authorize(fn (Model $record): bool => Gate::allows('delete', $record))
     ->successRedirectUrl('/projects');
 ```
+
+### Customizing the operation
+
+Like Filament's `DeleteAction`, the archive/delete operation itself can be replaced with `using()`. Return `true` on success or `false` to report a failure:
+
+```php
+ArchiveAction::make()
+    ->using(function (Model $record, ArchiveAction $action): bool {
+        if ($action->shouldDeleteInsteadOfArchive($record)) {
+            return (bool) $record->delete();
+        }
+
+        return $record->archive();
+    })
+```
+
+---
+
+## Filament: bulk archive action
+
+`ArchiveBulkAction` is a table bulk action that processes all selected records:
+
+```php
+use CanyonGBS\Common\Filament\Actions\ArchiveBulkAction;
+
+public static function table(Table $table): Table
+{
+    return $table
+        ->toolbarActions([
+            ArchiveBulkAction::make(),
+        ]);
+}
+```
+
+Like the single-record `ArchiveAction` uses `isUsed()`, the bulk action decides between archiving and deleting -- but at the query level, using the model's `used()` scope:
+
+- If the model defines `used()`, selected records that are "used" are archived, and the rest are permanently deleted. The confirmation modal warns the user about this.
+- If the model does not define `used()`, every selected record is archived.
+- If the model does not use the `CanBeArchived` trait, an exception is thrown.
+
+The notification sent when the action finishes counts each operation separately -- for example, "5 archived, 3 deleted". If some records could not be processed, failure messages are appended below the counts.
+
+Closures passed to the action can check whether unused records will be deleted by calling `shouldDeleteUnusedRecords()` on the action.
+
+### Processing modes
+
+By default, records are fetched and processed one at a time, so `archiving`/`deleting` model events fire for each record. An operation cancelled by an event listener counts as a failure in the final notification. To determine which records to archive, the `used()` scope is applied to the selection in a single query up front, so the split does not cost a query per record.
+
+To avoid loading a large selection into memory at once, records can be fetched in chunks:
+
+```php
+ArchiveBulkAction::make()
+    ->chunkSelectedRecords(100)
+```
+
+For the fastest option, `fetchSelectedRecords(false)` switches to two bulk statements (one `UPDATE`, one `DELETE`) with no model hydration at all, but model events do not fire, and per-record failure reporting is unavailable:
+
+```php
+ArchiveBulkAction::make()
+    ->fetchSelectedRecords(false)
+```
+
+### Bulk authorization
+
+By default, the action is authorized with the policy's `deleteAny` method -- one check for the whole selection, consistent with Filament's `DeleteBulkAction`.
+
+To also check the `delete` policy method for each individual record, use `authorizeIndividualRecords()`:
+
+```php
+ArchiveBulkAction::make()
+    ->authorizeIndividualRecords('delete')
+```
+
+Records that fail the check are skipped, and the final notification reports how many were skipped alongside the archived/deleted counts. Individual record authorization only applies in the default (fetched) processing mode.
 
 ---
 

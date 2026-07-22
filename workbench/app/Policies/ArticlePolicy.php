@@ -34,47 +34,60 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Policies;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\Foundation\Actions\CreateVendorSymlink;
-use Orchestra\Testbench\TestCase as Orchestra;
+use Workbench\App\Models\Article;
 use Workbench\App\Models\User;
-use Workbench\App\Providers\TestingPanelProvider;
 
-abstract class TestCase extends Orchestra
+class ArticlePolicy
 {
-    protected $enablesPackageDiscoveries = true;
+    /**
+     * @var array<string, bool>
+     */
+    public static array $abilities = [];
 
-    protected function resolveApplication()
+    /**
+     * @var array<int, mixed>
+     */
+    public static array $deniedDeleteKeys = [];
+
+    public static function reset(): void
     {
-        $app = parent::resolveApplication();
-
-        // Package discovery reads the skeleton's `vendor` directory, which
-        // must be symlinked to this package's `vendor` directory. The path is
-        // resolved explicitly instead of with `package_path()`, which reports
-        // Rector's bundled `vendor` directory once a Rector test class has
-        // been autoloaded.
-        (new CreateVendorSymlink(dirname(__DIR__) . '/vendor'))->handle(clone $app);
-
-        return $app;
+        static::$abilities = [];
+        static::$deniedDeleteKeys = [];
     }
 
-    protected function getPackageProviders($app): array
+    public function viewAny(User $user): bool
     {
-        return [
-            CommonServiceProvider::class,
-            TestingPanelProvider::class,
-        ];
+        return static::$abilities['viewAny'] ?? true;
     }
 
-    protected function defineEnvironment($app): void
+    public function view(User $user, Article $article): bool
     {
-        $app['config']->set('auth.providers.users.model', User::class);
+        return static::$abilities['view'] ?? true;
     }
 
-    protected function defineDatabaseMigrations(): void
+    public function update(User $user, Article $article): bool
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return static::$abilities['update'] ?? true;
+    }
+
+    public function delete(User $user, Article $article): bool
+    {
+        if (in_array($article->getKey(), static::$deniedDeleteKeys)) {
+            return false;
+        }
+
+        return static::$abilities['delete'] ?? true;
+    }
+
+    public function deleteAny(User $user): bool
+    {
+        return static::$abilities['deleteAny'] ?? true;
+    }
+
+    public function archive(User $user, Article $article): bool
+    {
+        return static::$abilities['archive'] ?? true;
     }
 }
