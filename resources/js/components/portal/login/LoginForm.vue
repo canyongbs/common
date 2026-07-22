@@ -32,13 +32,10 @@
 </COPYRIGHT>
 -->
 <script setup>
-    /**
-     * `@formkit/vue` only exists in each portal's own node_modules, not the
-     * root project shared by `common`, so `FormKit` is injected via the
-     * `formKit` prop here instead of being imported directly.
-     */
     import { ref } from 'vue';
-    import LoginSubmitActions from './LoginSubmitActions.vue';
+    import BaseButton from '../../BaseButton.vue';
+    import Footer from '../Footer.vue';
+    import Heading from '../Heading.vue';
 
     const authentication = defineModel('authentication', {
         type: Object,
@@ -46,12 +43,28 @@
     });
 
     defineProps({
-        formKit: {
-            type: [Object, Function],
+        title: {
+            type: String,
+            required: true,
+        },
+        headerLogo: {
+            type: String,
+            required: true,
+        },
+        footerLogo: {
+            type: String,
+            required: true,
+        },
+        appName: {
+            type: String,
             required: true,
         },
         requiresAuthentication: {
             type: Boolean,
+            required: true,
+        },
+        formKit: {
+            type: [Object, Function],
             required: true,
         },
     });
@@ -69,44 +82,68 @@
 </script>
 
 <template>
-    <component :is="formKit" type="form" @submit="handleSubmit" v-model="authentication" :actions="false">
-        <div class="mt-8 flex flex-col gap-6">
-            <div class="-mb-4">
-                <component
-                    :is="formKit"
-                    type="email"
-                    label="Email address"
-                    name="email"
-                    validation="required|email"
-                    validation-visibility="submit"
-                    :disabled="authentication.isRequested || authentication.registrationAllowed"
-                />
-            </div>
-
-            <slot name="registration" />
-
-            <p v-if="authentication.requestedMessage" class="text-sm text-gray-500">
-                {{ authentication.requestedMessage }}
-            </p>
-
-            <div v-if="authentication.isRequested" class="-mb-4">
-                <component
-                    :is="formKit"
-                    type="otp"
-                    digits="6"
-                    label="Enter the code here"
-                    name="code"
-                    validation="required"
-                    validation-visibility="submit"
-                />
-            </div>
-
-            <LoginSubmitActions
-                :is-requested="authentication.isRequested"
-                :requires-authentication="requiresAuthentication"
-                :submitting="submitting"
-                @cancel="emit('cancel')"
-            />
+    <div class="flex min-h-screen w-full flex-col bg-gray-50 text-gray-950 antialiased">
+        <div
+            class="sticky top-0 z-10 flex justify-center items-center w-full border-b border-gray-200 flex-shrink-0 p-4 bg-gray-50"
+        >
+            <img :src="headerLogo" class="h-9 block" :alt="appName" />
         </div>
-    </component>
+
+        <main class="mx-auto flex flex-1 justify-center items-center w-full px-4 md:px-6 lg:px-8 max-w-screen-lg py-8">
+            <div class="w-full max-w-md">
+                <Heading :title="title" class="text-center" />
+
+                <component :is="formKit" type="form" @submit="handleSubmit" v-model="authentication" :actions="false">
+                    <div class="mt-8 flex flex-col gap-6">
+                        <div class="-mb-4">
+                            <component
+                                :is="formKit"
+                                type="email"
+                                label="Email address"
+                                name="email"
+                                validation="required|email"
+                                validation-visibility="submit"
+                                :disabled="authentication.isRequested || authentication.registrationAllowed"
+                            />
+                        </div>
+
+                        <slot name="registration" />
+
+                        <p v-if="authentication.requestedMessage" class="text-sm text-gray-500">
+                            {{ authentication.requestedMessage }}
+                        </p>
+
+                        <div v-if="authentication.isRequested" class="-mb-4">
+                            <component
+                                :is="formKit"
+                                type="otp"
+                                digits="6"
+                                label="Enter the code here"
+                                name="code"
+                                validation="required"
+                                validation-visibility="submit"
+                            />
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <BaseButton type="submit" color="primary" size="lg" class="w-full" :loading="submitting">
+                                {{ authentication.isRequested ? 'Sign in' : 'Send login code' }}
+                            </BaseButton>
+
+                            <button
+                                v-if="!requiresAuthentication"
+                                type="button"
+                                class="inline-flex items-center justify-center gap-1.5 text-sm font-medium text-gray-700 outline-none hover:underline focus-visible:underline"
+                                @click="emit('cancel')"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </component>
+            </div>
+        </main>
+
+        <Footer :logo="footerLogo" :app-name="appName" />
+    </div>
 </template>
