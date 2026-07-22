@@ -67,6 +67,14 @@
             type: [Object, Function],
             required: true,
         },
+        formKitSchema: {
+            type: [Object, Function],
+            default: null,
+        },
+        registrationSchema: {
+            type: Array,
+            default: () => [],
+        },
     });
 
     const emit = defineEmits(['authenticate', 'cancel']);
@@ -107,7 +115,16 @@
                             />
                         </div>
 
-                        <slot name="registration" />
+                        <div
+                            v-if="authentication.registrationAllowed && registrationSchema.length"
+                            class="flex flex-col gap-6"
+                        >
+                            <p class="text-sm text-gray-500">
+                                You are not registered yet. Please fill in the form below to register.
+                            </p>
+
+                            <component :is="formKitSchema" :schema="registrationSchema" />
+                        </div>
 
                         <p v-if="authentication.requestedMessage" class="text-sm text-gray-500">
                             {{ authentication.requestedMessage }}
