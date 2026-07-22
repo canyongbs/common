@@ -34,7 +34,6 @@
 <script setup>
     import { ArrowRightEndOnRectangleIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/vue/20/solid';
     import { ref } from 'vue';
-    import { useRoute, useRouter } from 'vue-router';
 
     const props = defineProps({
         headerLogo: {
@@ -57,18 +56,19 @@
             type: Array,
             required: true,
         },
+        hideSearch: {
+            type: Boolean,
+            default: false,
+        },
     });
 
-    const emit = defineEmits(['showLogin', 'logout']);
-
-    const route = useRoute();
-    const router = useRouter();
+    const emit = defineEmits(['showLogin', 'logout', 'search']);
 
     const sidebarOpen = ref(false);
     const searchQuery = ref('');
 
     const onSearch = () => {
-        router.push({ name: 'home', query: { search: searchQuery.value } });
+        emit('search', searchQuery.value);
     };
 </script>
 
@@ -187,11 +187,7 @@
             <!-- End section -->
             <div class="ms-auto flex items-center gap-x-4">
                 <!-- Global search -->
-                <form
-                    v-if="!['home', 'view-category', 'view-subcategory'].includes(route?.name)"
-                    @submit.prevent="onSearch"
-                    class="flex items-center max-w-[12rem]"
-                >
+                <form v-if="!hideSearch" @submit.prevent="onSearch" class="flex items-center max-w-[12rem]">
                     <div
                         class="flex rounded-lg bg-white shadow-sm ring-1 ring-gray-950/10 transition duration-75 focus-within:ring-2 focus-within:ring-brand-600"
                     >

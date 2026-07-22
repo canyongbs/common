@@ -35,7 +35,9 @@
 */
 
 use Illuminate\Support\Carbon;
+use Workbench\App\Models\Article;
 use Workbench\App\Models\Project;
+use Workbench\App\Models\Review;
 use Workbench\App\Models\Task;
 
 it('can archive a model', function () {
@@ -255,3 +257,25 @@ it('excludes archived and unused models with `withoutArchivedAndUnused` scope', 
 it('throws `BadMethodCallException` when using `withoutArchivedAndUnused` without a `used` method', function () {
     Task::query()->withoutArchivedAndUnused();
 })->throws(BadMethodCallException::class);
+
+it('reads an eager-loaded relation existence attribute in `isUsed()` instead of querying', function () {
+    $article = Article::factory()->create();
+    Review::factory()->create(['article_id' => $article->id]);
+
+    $article = Article::query()->withExists('reviews')->find($article->getKey());
+
+    Review::query()->delete();
+
+    expect($article->isUsed())->toBeTrue();
+});
+
+it('memoizes the relation existence in `isUsed()` after the first check', function () {
+    $article = Article::factory()->create();
+
+    expect($article->isUsed())->toBeFalse();
+
+    Review::factory()->create(['article_id' => $article->id]);
+
+    expect($article->isUsed())->toBeFalse();
+    expect($article->fresh()->isUsed())->toBeTrue();
+});

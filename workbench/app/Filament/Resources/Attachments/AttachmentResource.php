@@ -34,47 +34,33 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Filament\Resources\Attachments;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\Foundation\Actions\CreateVendorSymlink;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
-use Workbench\App\Providers\TestingPanelProvider;
+use Filament\Resources\Resource;
+use Illuminate\Database\Eloquent\Builder;
+use Workbench\App\Filament\Resources\Attachments\Pages\EditAttachment;
+use Workbench\App\Filament\Resources\Attachments\Pages\ListAttachments;
+use Workbench\App\Models\Attachment;
 
-abstract class TestCase extends Orchestra
+/**
+ * @extends Resource<Attachment>
+ */
+class AttachmentResource extends Resource
 {
-    protected $enablesPackageDiscoveries = true;
+    protected static ?string $model = Attachment::class;
 
-    protected function resolveApplication()
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getRecordRouteBindingEloquentQuery(): Builder
     {
-        $app = parent::resolveApplication();
-
-        // Package discovery reads the skeleton's `vendor` directory, which
-        // must be symlinked to this package's `vendor` directory. The path is
-        // resolved explicitly instead of with `package_path()`, which reports
-        // Rector's bundled `vendor` directory once a Rector test class has
-        // been autoloaded.
-        (new CreateVendorSymlink(dirname(__DIR__) . '/vendor'))->handle(clone $app);
-
-        return $app;
+        return parent::getRecordRouteBindingEloquentQuery()->withTrashed(); /** @phpstan-ignore method.notFound */
     }
 
-    protected function getPackageProviders($app): array
+    public static function getPages(): array
     {
         return [
-            CommonServiceProvider::class,
-            TestingPanelProvider::class,
+            'index' => ListAttachments::route('/'),
+            'edit' => EditAttachment::route('/{record}/edit'),
         ];
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
     }
 }

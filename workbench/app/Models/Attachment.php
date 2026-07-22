@@ -34,47 +34,35 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Tests;
+namespace Workbench\App\Models;
 
-use CanyonGBS\Common\CommonServiceProvider;
-use Orchestra\Testbench\Foundation\Actions\CreateVendorSymlink;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Workbench\App\Models\User;
-use Workbench\App\Providers\TestingPanelProvider;
+use CanyonGBS\Common\Models\Concerns\CanBeArchived;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Workbench\Database\Factories\AttachmentFactory;
 
-abstract class TestCase extends Orchestra
+class Attachment extends Model
 {
-    protected $enablesPackageDiscoveries = true;
+    use CanBeArchived;
+    use HasFactory;
+    use SoftDeletes;
 
-    protected function resolveApplication()
+    protected $guarded = [];
+
+    public function used(Builder $query): void
     {
-        $app = parent::resolveApplication();
-
-        // Package discovery reads the skeleton's `vendor` directory, which
-        // must be symlinked to this package's `vendor` directory. The path is
-        // resolved explicitly instead of with `package_path()`, which reports
-        // Rector's bundled `vendor` directory once a Rector test class has
-        // been autoloaded.
-        (new CreateVendorSymlink(dirname(__DIR__) . '/vendor'))->handle(clone $app);
-
-        return $app;
+        $query->where('is_used', true);
     }
 
-    protected function getPackageProviders($app): array
+    public function isUsed(): bool
     {
-        return [
-            CommonServiceProvider::class,
-            TestingPanelProvider::class,
-        ];
+        return (bool) $this->is_used;
     }
 
-    protected function defineEnvironment($app): void
+    protected static function newFactory(): AttachmentFactory
     {
-        $app['config']->set('auth.providers.users.model', User::class);
-    }
-
-    protected function defineDatabaseMigrations(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
+        return AttachmentFactory::new();
     }
 }
