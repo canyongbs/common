@@ -57,9 +57,7 @@ class ArchivingScope implements Scope
      * @param Builder<covariant TModel> $builder
      * @param  TModel  $model
      */
-    public function apply(Builder $builder, Model $model): void
-    {
-    }
+    public function apply(Builder $builder, Model $model): void {}
 
     /**
      * @param Builder<*>  $builder
