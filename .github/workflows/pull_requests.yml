@@ -279,11 +279,15 @@ jobs:
                   persist-credentials: false
 
             - name: Install Dependencies
+              env:
+                  LARAVEL_CONSTRAINT: ${{ matrix.laravel-constraint }}
+                  TESTBENCH_CONSTRAINT: ${{ matrix.testbench-constraint }}
+                  FILAMENT_CONSTRAINT: ${{ matrix.filament-constraint }}
               run: |
                   composer update \
-                      --with="laravel/framework:${{ matrix.laravel-constraint }}" \
-                      --with="orchestra/testbench:${{ matrix.testbench-constraint }}" \
-                      --with="filament/filament:${{ matrix.filament-constraint }}" \
+                      --with="laravel/framework:${LARAVEL_CONSTRAINT}" \
+                      --with="orchestra/testbench:${TESTBENCH_CONSTRAINT}" \
+                      --with="filament/filament:${FILAMENT_CONSTRAINT}" \
                       --prefer-dist --no-ansi --no-interaction --no-progress --optimize-autoloader
 
             - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
