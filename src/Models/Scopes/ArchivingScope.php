@@ -41,6 +41,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
+/**
+ * @template TModel of Model
+ *
+ * @implements Scope<TModel>
+ */
 class ArchivingScope implements Scope
 {
     /**
@@ -49,9 +54,7 @@ class ArchivingScope implements Scope
     protected array $extensions = ['Archive', 'Unarchive', 'WithoutArchived', 'OnlyArchived', 'WithoutArchivedAndUnused'];
 
     /**
-     * @template TModel of Model
-     *
-     * @param Builder<TModel> $builder
+     * @param Builder<covariant TModel> $builder
      * @param  TModel  $model
      */
     public function apply(Builder $builder, Model $model): void {}
