@@ -94,7 +94,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "CanyonGBS\\Common\\CommonServiceProvider"
+                "CanyonGBS\\Common\\CommonServiceProvider",
+                "CanyonGBS\\Common\\CommonBoostServiceProvider"
             ]
         }
     },

@@ -1,0 +1,275 @@
+<?php
+
+/*
+<COPYRIGHT>
+
+    Copyright © 2016-2026, Canyon GBS LLC. All rights reserved.
+
+    Canyon GBS Common is licensed under the Elastic License 2.0. For more details,
+    see https://github.com/canyongbs/common/blob/main/LICENSE.
+
+    Notice:
+
+    - You may not provide the software to third parties as a hosted or managed
+      service, where the service provides users with access to any substantial set of
+      the features or functionality of the software.
+    - You may not move, change, disable, or circumvent the license key functionality
+      in the software, and you may not remove or obscure any functionality in the
+      software that is protected by the license key.
+    - You may not alter, remove, or obscure any licensing, copyright, or other notices
+      of the licensor in the software. Any use of the licensor’s trademarks is subject
+      to applicable law.
+    - Canyon GBS LLC respects the intellectual property rights of others and expects the
+      same in return. Canyon GBS™ and Canyon GBS Common are registered trademarks of
+      Canyon GBS LLC, and we are committed to enforcing and protecting our trademarks
+      vigorously.
+    - The software solution, including services, infrastructure, and code, is offered as a
+      Software as a Service (SaaS) by Canyon GBS LLC.
+    - Use of this software implies agreement to the license terms and conditions as stated
+      in the Elastic License 2.0.
+
+    For more information or inquiries please visit our website at
+    https://www.canyongbs.com or contact us via email at legal@canyongbs.com.
+
+</COPYRIGHT>
+*/
+
+namespace CanyonGBS\Common\Console\Commands;
+
+use function array_is_list;
+
+use Illuminate\Console\Command;
+use Illuminate\Filesystem\Filesystem;
+
+class Publish extends Command
+{
+    protected $signature = 'common:publish';
+
+    protected $description = 'Publish common-managed configuration and content into the app by merging base files with the app\'s overrides';
+
+    /**
+     * The generated files that should be ignored by every consuming app.
+     *
+     * @var list<string>
+     */
+    protected array $gitignoreEntries = [
+        '/boost.json',
+        '/.vscode/mcp.json',
+        '/AGENTS.md',
+        '/.github/skills/',
+        '/.ai/skills/',
+        '/.ai/guidelines/',
+    ];
+
+    /**
+     * The content types published from common and overlaid with each app's overrides.
+     *
+     * @var list<string>
+     */
+    protected array $aiContentTypes = [
+        'skills',
+        'guidelines',
+    ];
+
+    public function __construct(
+        protected Filesystem $files,
+    ) {
+        parent::__construct();
+    }
+
+    public function handle(): int
+    {
+        $files = [
+            [
+                'base' => __DIR__ . '/../../../boost.json',
+                'override' => base_path('boost.override.json'),
+                'output' => base_path('boost.json'),
+            ],
+            [
+                'base' => __DIR__ . '/../../../mcp.json',
+                'override' => base_path('.vscode/mcp.override.json'),
+                'output' => base_path('.vscode/mcp.json'),
+            ],
+        ];
+
+        foreach ($files as $file) {
+            if ($this->publish($file['base'], $file['override'], $file['output']) === self::FAILURE) {
+                return self::FAILURE;
+            }
+        }
+
+        $this->publishGitignore();
+
+        $this->publishAiContent();
+
+        $this->publishOverrideDirectories();
+
+        return self::SUCCESS;
+    }
+
+    protected function publishAiContent(): void
+    {
+        foreach ($this->aiContentTypes as $type) {
+            $output = base_path('.ai/' . $type);
+
+            $this->files->deleteDirectory($output);
+
+            $this->copyAiFiles(__DIR__ . '/../../../.ai/' . $type, $output);
+            $this->copyAiFiles(base_path('.ai/overrides/' . $type), $output);
+
+            $this->components->info("The [.ai/{$type}] directory was published successfully.");
+        }
+    }
+
+    protected function copyAiFiles(string $source, string $output): void
+    {
+        if (! $this->files->isDirectory($source)) {
+            return;
+        }
+
+        foreach ($this->files->allFiles($source, hidden: true) as $file) {
+            if ($file->getFilename() === '.gitkeep') {
+                continue;
+            }
+
+            $destination = $output . '/' . $file->getRelativePathname();
+
+            $this->files->ensureDirectoryExists(dirname($destination));
+
+            $this->files->copy($file->getPathname(), $destination);
+        }
+    }
+
+    protected function publishOverrideDirectories(): void
+    {
+        foreach ($this->aiContentTypes as $type) {
+            $keep = base_path('.ai/overrides/' . $type . '/.gitkeep');
+
+            if ($this->files->exists($keep)) {
+                continue;
+            }
+
+            $this->files->ensureDirectoryExists(dirname($keep));
+
+            $this->files->put($keep, '');
+
+            $this->components->info("The [.ai/overrides/{$type}] directory was created for your custom skills and guidelines.");
+        }
+    }
+
+    protected function publishGitignore(): void
+    {
+        $start = '# BEGIN canyongbs/common (common:publish) — do not edit this block manually.';
+        $end = '# END canyongbs/common (common:publish)';
+
+        $block = implode(PHP_EOL, [$start, ...$this->gitignoreEntries, $end]);
+
+        $path = base_path('.gitignore');
+
+        $contents = $this->files->exists($path) ? $this->files->get($path) : '';
+
+        $pattern = '/' . preg_quote($start, '/') . '.*?' . preg_quote($end, '/') . '/s';
+
+        if (preg_match($pattern, $contents)) {
+            $contents = preg_replace($pattern, $block, $contents);
+        } else {
+            $contents = rtrim($contents);
+            $contents = ($contents === '' ? '' : $contents . PHP_EOL . PHP_EOL) . $block . PHP_EOL;
+        }
+
+        $this->files->put($path, $contents);
+
+        $this->components->info('The [.gitignore] file was updated successfully.');
+    }
+
+    protected function publish(string $basePath, string $overridePath, string $outputPath): int
+    {
+        $baseName = basename($basePath);
+        $overrideName = basename($overridePath);
+        $outputName = basename($outputPath);
+
+        if (! $this->files->exists($basePath)) {
+            $this->components->error("The common base [{$baseName}] could not be found.");
+
+            return self::FAILURE;
+        }
+
+        $base = $this->readJson($basePath);
+
+        if ($base === null) {
+            $this->components->error("The common base [{$baseName}] contains invalid JSON.");
+
+            return self::FAILURE;
+        }
+
+        $override = [];
+
+        if ($this->files->exists($overridePath)) {
+            $override = $this->readJson($overridePath);
+
+            if ($override === null) {
+                $this->components->error("The app's [{$overrideName}] contains invalid JSON.");
+
+                return self::FAILURE;
+            }
+        }
+
+        $merged = $this->deepMerge($base, $override);
+
+        $this->files->ensureDirectoryExists(dirname($outputPath));
+
+        $this->files->put(
+            $outputPath,
+            json_encode($merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL,
+        );
+
+        $this->components->info("The [{$outputName}] file was published successfully.");
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * @return array<mixed>|null
+     */
+    protected function readJson(string $path): ?array
+    {
+        $decoded = json_decode($this->files->get($path), associative: true);
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * @param array<mixed> $base
+     * @param array<mixed> $override
+     *
+     * @return array<mixed>
+     */
+    protected function deepMerge(array $base, array $override): array
+    {
+        if (array_is_list($base) && array_is_list($override)) {
+            $merged = [...$base, ...$override];
+
+            $unique = [];
+
+            foreach ($merged as $value) {
+                if (! in_array($value, $unique, strict: true)) {
+                    $unique[] = $value;
+                }
+            }
+
+            return $unique;
+        }
+
+        foreach ($override as $key => $value) {
+            if (is_array($value) && isset($base[$key]) && is_array($base[$key])) {
+                $base[$key] = $this->deepMerge($base[$key], $value);
+
+                continue;
+            }
+
+            $base[$key] = $value;
+        }
+
+        return $base;
+    }
+}
