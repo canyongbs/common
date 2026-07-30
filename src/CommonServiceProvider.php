@@ -68,6 +68,27 @@ class CommonServiceProvider extends PackageServiceProvider
         'spatie/laravel-medialibrary',
     ];
 
+    /**
+     * Boost guideline keys to remove entirely across every app (e.g. 'deployments').
+     * Use this for core or package guidelines that should never be published.
+     *
+     * @var list<string>
+     */
+    protected array $excludedGuidelines = [
+        //
+    ];
+
+    /**
+     * Boost skill keys to remove entirely across every app. This only affects
+     * bundled and third-party skills; skills published by common are controlled
+     * by their presence in common's `.ai/skills` directory instead.
+     *
+     * @var list<string>
+     */
+    protected array $excludedSkills = [
+        //
+    ];
+
     public function configurePackage(Package $package): void
     {
         $package
@@ -141,24 +162,27 @@ class CommonServiceProvider extends PackageServiceProvider
         });
 
         if ($this->app->runningInConsole()) {
-            $this->configureBoostGuidelineOverrides();
+            $this->configureBoost();
         }
     }
 
-    protected function configureBoostGuidelineOverrides(): void
+    protected function configureBoost(): void
     {
-        $excluded = config('boost.guidelines.exclude', []);
+        $excludedGuidelines = [...config('boost.guidelines.exclude', []), ...$this->excludedGuidelines];
 
         foreach ($this->overridablePackageGuidelines as $guideline) {
             foreach (['blade.php', 'md'] as $extension) {
                 if (file_exists(base_path(".ai/guidelines/{$guideline}.{$extension}"))) {
-                    $excluded[] = $guideline;
+                    $excludedGuidelines[] = $guideline;
 
                     break;
                 }
             }
         }
 
-        config(['boost.guidelines.exclude' => array_values(array_unique($excluded))]);
+        config([
+            'boost.guidelines.exclude' => array_values(array_unique($excludedGuidelines)),
+            'boost.skills.exclude' => array_values(array_unique([...config('boost.skills.exclude', []), ...$this->excludedSkills])),
+        ]);
     }
 }
