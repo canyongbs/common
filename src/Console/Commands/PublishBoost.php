@@ -45,7 +45,7 @@ class PublishBoost extends Command
 {
     protected $signature = 'common:publish-boost';
 
-    protected $description = 'Publish a boost.json by deep merging the app\'s boost.override.json over the common base configuration';
+    protected $description = 'Publish boost.json and .vscode/mcp.json by deep merging the app\'s overrides over the common base configuration';
 
     public function __construct(
         protected Filesystem $files,
@@ -55,10 +55,36 @@ class PublishBoost extends Command
 
     public function handle(): int
     {
-        $basePath = __DIR__ . '/../../../boost.json';
+        $files = [
+            [
+                'base' => __DIR__ . '/../../../boost.json',
+                'override' => base_path('boost.override.json'),
+                'output' => base_path('boost.json'),
+            ],
+            [
+                'base' => __DIR__ . '/../../../.vscode/mcp.json',
+                'override' => base_path('.vscode/mcp.override.json'),
+                'output' => base_path('.vscode/mcp.json'),
+            ],
+        ];
+
+        foreach ($files as $file) {
+            if ($this->publish($file['base'], $file['override'], $file['output']) === self::FAILURE) {
+                return self::FAILURE;
+            }
+        }
+
+        return self::SUCCESS;
+    }
+
+    protected function publish(string $basePath, string $overridePath, string $outputPath): int
+    {
+        $baseName = basename($basePath);
+        $overrideName = basename($overridePath);
+        $outputName = basename($outputPath);
 
         if (! $this->files->exists($basePath)) {
-            $this->components->error('The common base [boost.json] could not be found.');
+            $this->components->error("The common base [{$baseName}] could not be found.");
 
             return self::FAILURE;
         }
@@ -66,12 +92,10 @@ class PublishBoost extends Command
         $base = $this->readJson($basePath);
 
         if ($base === null) {
-            $this->components->error('The common base [boost.json] contains invalid JSON.');
+            $this->components->error("The common base [{$baseName}] contains invalid JSON.");
 
             return self::FAILURE;
         }
-
-        $overridePath = base_path('boost.override.json');
 
         $override = [];
 
@@ -79,7 +103,7 @@ class PublishBoost extends Command
             $override = $this->readJson($overridePath);
 
             if ($override === null) {
-                $this->components->error('The app\'s [boost.override.json] contains invalid JSON.');
+                $this->components->error("The app's [{$overrideName}] contains invalid JSON.");
 
                 return self::FAILURE;
             }
@@ -87,12 +111,14 @@ class PublishBoost extends Command
 
         $merged = $this->deepMerge($base, $override);
 
+        $this->files->ensureDirectoryExists(dirname($outputPath));
+
         $this->files->put(
-            base_path('boost.json'),
+            $outputPath,
             json_encode($merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL,
         );
 
-        $this->components->info('The [boost.json] file was published successfully.');
+        $this->components->info("The [{$outputName}] file was published successfully.");
 
         return self::SUCCESS;
     }
