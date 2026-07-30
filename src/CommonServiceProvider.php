@@ -55,6 +55,19 @@ use Tapp\FilamentTimezoneField\Forms\Components\TimezoneSelect;
 
 class CommonServiceProvider extends PackageServiceProvider
 {
+    /**
+     * Third-party package guidelines that may be overridden from common by
+     * publishing a matching file into the app's `.ai/guidelines` directory.
+     * Boost cannot replace these by path (unlike first-party guidelines), so
+     * we exclude the original only while an override file is present.
+     *
+     * @var list<string>
+     */
+    protected array $overridablePackageGuidelines = [
+        'filament/filament',
+        'spatie/laravel-medialibrary',
+    ];
+
     public function configurePackage(Package $package): void
     {
         $package
@@ -126,5 +139,26 @@ class CommonServiceProvider extends PackageServiceProvider
         TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
             $component->searchable();
         });
+
+        if ($this->app->runningInConsole()) {
+            $this->configureBoostGuidelineOverrides();
+        }
+    }
+
+    protected function configureBoostGuidelineOverrides(): void
+    {
+        $excluded = config('boost.guidelines.exclude', []);
+
+        foreach ($this->overridablePackageGuidelines as $guideline) {
+            foreach (['blade.php', 'md'] as $extension) {
+                if (file_exists(base_path(".ai/guidelines/{$guideline}.{$extension}"))) {
+                    $excluded[] = $guideline;
+
+                    break;
+                }
+            }
+        }
+
+        config(['boost.guidelines.exclude' => array_values(array_unique($excluded))]);
     }
 }
