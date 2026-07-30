@@ -88,7 +88,26 @@ class PublishBoost extends Command
 
         $this->publishGitignore();
 
+        $this->publishCustomDirectories();
+
         return self::SUCCESS;
+    }
+
+    protected function publishCustomDirectories(): void
+    {
+        foreach (['.ai/skills', '.ai/guidelines'] as $directory) {
+            $keep = base_path($directory . '/.gitkeep');
+
+            if ($this->files->exists($keep)) {
+                continue;
+            }
+
+            $this->files->ensureDirectoryExists(base_path($directory));
+
+            $this->files->put($keep, '');
+
+            $this->components->info("The [{$directory}] directory was created for your custom skills and guidelines.");
+        }
     }
 
     protected function publishGitignore(): void
