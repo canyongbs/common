@@ -40,7 +40,7 @@ use CanyonGBS\Common\Console\Commands\CreatePermissionMigration;
 use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
 use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
-use CanyonGBS\Common\Console\Commands\PublishBoost;
+use CanyonGBS\Common\Console\Commands\Publish;
 use CanyonGBS\Common\Database\Migrations\PermissionMigrationCreator;
 use CanyonGBS\Common\Support\PermissionResolver;
 use Filament\Support\Assets\Js;
@@ -81,7 +81,7 @@ class CommonServiceProvider extends PackageServiceProvider
             ->hasCommands([
                 MakeCleanupTask::class,
                 MakeFeatureFlag::class,
-                PublishBoost::class,
+                Publish::class,
             ]);
     }
 

@@ -41,14 +41,14 @@ use Illuminate\Filesystem\Filesystem;
 
 use function array_is_list;
 
-class PublishBoost extends Command
+class Publish extends Command
 {
-    protected $signature = 'common:publish-boost';
+    protected $signature = 'common:publish';
 
-    protected $description = 'Publish boost.json, .vscode/mcp.json and .ai skills/guidelines by merging the common base configuration with the app\'s overrides';
+    protected $description = 'Publish common-managed configuration and content into the app by merging base files with the app\'s overrides';
 
     /**
-     * The generated Boost artifacts that should be ignored by every consuming app.
+     * The generated files that should be ignored by every consuming app.
      *
      * @var list<string>
      */
@@ -62,7 +62,7 @@ class PublishBoost extends Command
     ];
 
     /**
-     * The .ai content types published from common and overlaid with each app's overrides.
+     * The content types published from common and overlaid with each app's overrides.
      *
      * @var list<string>
      */
@@ -159,8 +159,8 @@ class PublishBoost extends Command
 
     protected function publishGitignore(): void
     {
-        $start = '# BEGIN canyongbs/common (common:publish-boost) — do not edit this block manually.';
-        $end = '# END canyongbs/common (common:publish-boost)';
+        $start = '# BEGIN canyongbs/common (common:publish) — do not edit this block manually.';
+        $end = '# END canyongbs/common (common:publish)';
 
         $block = implode(PHP_EOL, [$start, ...$this->gitignoreEntries, $end]);
 
