@@ -60,7 +60,7 @@ Composer links a local path as a symlink. An app may already be permanently wire
 
 Composer creates the symlink as `vendor/canyongbs/common -> ../../../common`. The app is mounted in the container at `/var/www/html`, so that relative link resolves **inside the container** to `/var/www/common`. That path only exists if you bind-mount the sibling checkout there.
 
-In the app's `docker-compose.dev.yml`, add the mount to **every service that runs app code** — typically `app`, `worker`, `scheduler`, and the `local-cli` tooling service. Each already mounts the app as `- '.:/var/www/html'`; add a sibling line next to it:
+In the app's `docker-compose.dev.yml`, add the mount to **every service that runs app code** — typically `app`, `worker`, and `scheduler`. Each already mounts the app as `- '.:/var/www/html'`; add a sibling line next to it:
 
 ```yaml
     app:
@@ -72,6 +72,7 @@ In the app's `docker-compose.dev.yml`, add the mount to **every service that run
 Notes for keeping this generic per app:
 - The mount **target** must be the path the symlink resolves to. With the app at `/var/www/html`, that is always `/var/www/common`. Confirm the app's mount point if it differs.
 - Add the mount to *all* app-executing services, not just `app` — the queue worker and scheduler load common too.
+- The `local-cli` tooling service is defined in a separate `docker-compose.local-cli.yml` (not `docker-compose.dev.yml`). If you run commands through local-cli, add the same `../common:/var/www/common` mount to its service there too.
 
 ## Step 3 — Install and restart
 

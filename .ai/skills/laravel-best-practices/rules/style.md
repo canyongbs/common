@@ -11,7 +11,7 @@
 | Column | snake_case, no model name | `meta_title` | `article_meta_title` |
 | Foreign key | singular model + `_id` | `article_id` | `articles_id` |
 | Route | plural | `articles/1` | `article/1` |
-| Route name | snake_case with dots | `users.show_active` | `users.show-active` |
+| Route name | kebab-case with dots | `users.show-active` | `users.show_active` |
 | Method | camelCase | `getAll` | `get_all` |
 | Variable | camelCase | `$articlesWithAuthor` | `$articles_with_author` |
 | Collection | descriptive, plural | `$activeUsers` | `$data` |

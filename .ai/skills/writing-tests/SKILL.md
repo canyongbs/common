@@ -133,6 +133,8 @@ expect($record->user_id)->toBe($user->getKey())
 
 Import Pest Laravel functions where used, e.g. `use function Pest\Laravel\{actingAs, postJson, artisan};` and `use function Pest\Livewire\livewire;`.
 
+For existence checks (e.g. delete / bulk-action tests) use `assertModelExists($model)` / `assertModelMissing($model)`; use `assertDatabaseHas(...)` / `assertDatabaseMissing(...)` when asserting specific column values changed by a side effect.
+
 ## Datasets
 
 Use datasets for repetitive cases — especially validation. Pass a labelled associative array to `->with()`; each key becomes the case name. Wrap entries that build objects in `fn () => [...]` so they resolve lazily.

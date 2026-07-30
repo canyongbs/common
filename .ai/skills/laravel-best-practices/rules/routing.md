@@ -40,6 +40,8 @@ Route::resource('posts', PostController::class);
 Route::apiResource('posts', Api\PostController::class);
 ```
 
+> **This codebase is Filament-first.** Most CRUD lives in Filament resources and pages, not routes/controllers. For the few standalone HTTP endpoints, prefer single-action invokable controllers (one class with an `__invoke()` method per action) over resource controllers.
+
 ## Keep Controllers Thin
 
 Aim for under 10 lines per method. Extract business logic to action or service classes.

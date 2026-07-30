@@ -50,7 +50,6 @@ class CommonBoostServiceProvider extends ServiceProvider
      */
     protected array $overridablePackageGuidelines = [
         'filament/filament',
-        'spatie/laravel-medialibrary',
     ];
 
     /**
@@ -61,6 +60,7 @@ class CommonBoostServiceProvider extends ServiceProvider
      */
     protected array $excludedGuidelines = [
         'deployments',
+        'spatie/laravel-medialibrary',
     ];
 
     /**
@@ -73,7 +73,9 @@ class CommonBoostServiceProvider extends ServiceProvider
     protected array $excludedSkills = [
         // Replaced by common's `writing-tests` skill.
         'pest-testing',
+        // Suppressed entirely: unused, or promote patterns we do not follow.
         'medialibrary-development',
+        'livewire-development',
     ];
 
     public function boot(): void

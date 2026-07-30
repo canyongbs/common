@@ -23,6 +23,8 @@ public function store(StorePostRequest $request)
 }
 ```
 
+> **In Filament-first apps, form validation lives in the Filament schema**, not Form Requests — e.g. `TextInput::make('email')->required()->email()->unique()`, or `->rules([...])` for custom rules. Reserve Form Request classes for traditional HTTP/API endpoints; for a small API action, inline `$request->validate()` is also acceptable.
+
 ## Array vs. String Notation for Rules
 
 Array syntax is more readable and composes cleanly with `Rule::` objects. Prefer it in new code, but check existing Form Requests first and match whatever notation the project already uses.

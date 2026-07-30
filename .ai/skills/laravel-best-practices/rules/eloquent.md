@@ -40,6 +40,8 @@ $active = User::active()->get();
 $articles = Article::whereHas('user', fn ($q) => $q->active())->get();
 ```
 
+> **This codebase prefers dedicated scope classes over `scopeX()` methods.** Write an invokable class and apply it explicitly with `->tap(new WithoutAdmins())` on a query; for a truly universal constraint, implement the `Scope` interface and register it with `addGlobalScope(...)` in the model. Follow the existing scope classes rather than adding `scope*()` methods.
+
 ## Apply Global Scopes Sparingly
 
 Global scopes silently modify every query on the model, making debugging difficult. Prefer local scopes and reserve global scopes for truly universal constraints like soft deletes or multi-tenancy.
