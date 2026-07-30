@@ -47,6 +47,18 @@ class PublishBoost extends Command
 
     protected $description = 'Publish boost.json and .vscode/mcp.json by deep merging the app\'s overrides over the common base configuration';
 
+    /**
+     * The generated Boost artifacts that should be ignored by every consuming app.
+     *
+     * @var list<string>
+     */
+    protected array $gitignoreEntries = [
+        '/boost.json',
+        '/.vscode/mcp.json',
+        '/AGENTS.md',
+        '/.github/skills/',
+    ];
+
     public function __construct(
         protected Filesystem $files,
     ) {
@@ -62,7 +74,7 @@ class PublishBoost extends Command
                 'output' => base_path('boost.json'),
             ],
             [
-                'base' => __DIR__ . '/../../../.vscode/mcp.json',
+                'base' => __DIR__ . '/../../../mcp.json',
                 'override' => base_path('.vscode/mcp.override.json'),
                 'output' => base_path('.vscode/mcp.json'),
             ],
@@ -74,7 +86,34 @@ class PublishBoost extends Command
             }
         }
 
+        $this->publishGitignore();
+
         return self::SUCCESS;
+    }
+
+    protected function publishGitignore(): void
+    {
+        $start = '# BEGIN canyongbs/common (common:publish-boost) — do not edit this block manually.';
+        $end = '# END canyongbs/common (common:publish-boost)';
+
+        $block = implode(PHP_EOL, [$start, ...$this->gitignoreEntries, $end]);
+
+        $path = base_path('.gitignore');
+
+        $contents = $this->files->exists($path) ? $this->files->get($path) : '';
+
+        $pattern = '/' . preg_quote($start, '/') . '.*?' . preg_quote($end, '/') . '/s';
+
+        if (preg_match($pattern, $contents)) {
+            $contents = preg_replace($pattern, $block, $contents);
+        } else {
+            $contents = rtrim($contents);
+            $contents = ($contents === '' ? '' : $contents . PHP_EOL . PHP_EOL) . $block . PHP_EOL;
+        }
+
+        $this->files->put($path, $contents);
+
+        $this->components->info('The [.gitignore] file was updated successfully.');
     }
 
     protected function publish(string $basePath, string $overridePath, string $outputPath): int
