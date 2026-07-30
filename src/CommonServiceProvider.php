@@ -55,40 +55,6 @@ use Tapp\FilamentTimezoneField\Forms\Components\TimezoneSelect;
 
 class CommonServiceProvider extends PackageServiceProvider
 {
-    /**
-     * Third-party package guidelines that may be overridden from common by
-     * publishing a matching file into the app's `.ai/guidelines` directory.
-     * Boost cannot replace these by path (unlike first-party guidelines), so
-     * we exclude the original only while an override file is present.
-     *
-     * @var list<string>
-     */
-    protected array $overridablePackageGuidelines = [
-        'filament/filament',
-        'spatie/laravel-medialibrary',
-    ];
-
-    /**
-     * Boost guideline keys to remove entirely across every app (e.g. 'deployments').
-     * Use this for core or package guidelines that should never be published.
-     *
-     * @var list<string>
-     */
-    protected array $excludedGuidelines = [
-        //
-    ];
-
-    /**
-     * Boost skill keys to remove entirely across every app. This only affects
-     * bundled and third-party skills; skills published by common are controlled
-     * by their presence in common's `.ai/skills` directory instead.
-     *
-     * @var list<string>
-     */
-    protected array $excludedSkills = [
-        //
-    ];
-
     public function configurePackage(Package $package): void
     {
         $package
@@ -160,29 +126,5 @@ class CommonServiceProvider extends PackageServiceProvider
         TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
             $component->searchable();
         });
-
-        if ($this->app->runningInConsole()) {
-            $this->configureBoost();
-        }
-    }
-
-    protected function configureBoost(): void
-    {
-        $excludedGuidelines = [...config('boost.guidelines.exclude', []), ...$this->excludedGuidelines];
-
-        foreach ($this->overridablePackageGuidelines as $guideline) {
-            foreach (['blade.php', 'md'] as $extension) {
-                if (file_exists(base_path(".ai/guidelines/{$guideline}.{$extension}"))) {
-                    $excludedGuidelines[] = $guideline;
-
-                    break;
-                }
-            }
-        }
-
-        config([
-            'boost.guidelines.exclude' => array_values(array_unique($excludedGuidelines)),
-            'boost.skills.exclude' => array_values(array_unique([...config('boost.skills.exclude', []), ...$this->excludedSkills])),
-        ]);
     }
 }
