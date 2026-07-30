@@ -1,9 +1,9 @@
 ---
 name: writing-tests
-description: "Use this skill whenever writing, editing, fixing, or refactoring automated tests in a Canyon GBS Laravel application — including tests for Filament resources, pages, relation managers, actions, jobs, models, enums, console commands, and HTTP controllers. Trigger whenever a test is created or changed, a test breaks after a code change, assertions or datasets are added, or PHPUnit is converted to Pest. Covers test file placement and naming (mirroring the source namespace), one-file-per-class organization, describe() grouping, it()/expect() style, datasets, Filament Livewire testing helpers, Worksome RequestFactory usage, shared Pest.php helpers, and Pest 4 features. This is the single authoritative testing skill for these apps — it supersedes generic Pest guidance. Do not use for non-test PHP code, factories that are not request factories, seeders, or migrations."
+description: 'Use this skill whenever writing, editing, fixing, or refactoring automated tests in a Canyon GBS Laravel application — including tests for Filament resources, pages, relation managers, actions, jobs, models, enums, console commands, and HTTP controllers. Trigger whenever a test is created or changed, a test breaks after a code change, assertions or datasets are added, or PHPUnit is converted to Pest. Covers test file placement and naming (mirroring the source namespace), one-file-per-class organization, describe() grouping, it()/expect() style, datasets, Filament Livewire testing helpers, Worksome RequestFactory usage, shared Pest.php helpers, and Pest 4 features. This is the single authoritative testing skill for these apps — it supersedes generic Pest guidance. Do not use for non-test PHP code, factories that are not request factories, seeders, or migrations.'
 license: Elastic-2.0
 metadata:
-  author: canyongbs
+    author: canyongbs
 ---
 
 # Writing Tests
@@ -21,19 +21,19 @@ Test behaviour, not framework or configuration presence. A test should exercise 
 - **Anything driven by a user-supplied closure needs a test** — `getStateUsing()`, `formatStateUsing()`, `state()`, `visible()` / `hidden()`, `disabled()`, action `visible()` / `authorize()`, a table query modification, conditional validation, etc. If you wrote a closure, assert its effect.
 - **Do not assert mere structural presence** — that a column or field simply exists. It restates the resource definition, breaks on trivial edits, and catches no real bug. Assert observable behaviour instead.
 - Assert observable outcomes: access / authorization, resolved state and formatting, records shown / hidden, sort and search results, redirects, database writes, notifications and other side effects.
-- **When asserting a side effect, establish the starting state first.** Confirm (or deliberately arrange) that the effect has *not* already happened before the action runs, then assert it did afterwards — so the test proves the action caused it rather than passing on pre-existing state. For example, `assertDatabaseMissing(...)` before and `assertDatabaseHas(...)` after; or `expect($model->status)->toBe(Status::Pending)` before → act → `expect($model->refresh()->status)->toBe(Status::Active)` after.
+- **When asserting a side effect, establish the starting state first.** Confirm (or deliberately arrange) that the effect has _not_ already happened before the action runs, then assert it did afterwards — so the test proves the action caused it rather than passing on pre-existing state. For example, `assertDatabaseMissing(...)` before and `assertDatabaseHas(...)` after; or `expect($model->status)->toBe(Status::Pending)` before → act → `expect($model->refresh()->status)->toBe(Status::Active)` after.
 - Assert column visibility only when it is **conditional** (shown in some cases, hidden in others) with `assertTableColumnVisible()` / `assertTableColumnHidden()` — never a static `assertTableColumnExists()` list.
 
 ## File & Directory Placement
 
 The test file's path and name **mirror the source class's namespace and file name**, with a `Test.php` suffix.
 
-| Source | Test file |
-|--------|-----------|
-| `app/Models/User.php` | `tests/Models/UserTest.php` |
-| `app/Actions/GenerateOneTimeLoginCode.php` | `tests/Actions/GenerateOneTimeLoginCodeTest.php` |
-| `app/Console/Commands/ConnectOlympus.php` | `tests/Console/Commands/ConnectOlympusTest.php` |
-| `app/Filament/Resources/Users/Pages/ListUsers.php` | `tests/Filament/Resources/Users/Pages/ListUsersTest.php` |
+| Source                                                                   | Test file                                                                      |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `app/Models/User.php`                                                    | `tests/Models/UserTest.php`                                                    |
+| `app/Actions/GenerateOneTimeLoginCode.php`                               | `tests/Actions/GenerateOneTimeLoginCodeTest.php`                               |
+| `app/Console/Commands/ConnectOlympus.php`                                | `tests/Console/Commands/ConnectOlympusTest.php`                                |
+| `app/Filament/Resources/Users/Pages/ListUsers.php`                       | `tests/Filament/Resources/Users/Pages/ListUsersTest.php`                       |
 | `app/Filament/Resources/Users/RelationManagers/RolesRelationManager.php` | `tests/Filament/Resources/Users/RelationManagers/RolesRelationManagerTest.php` |
 
 ### One test file per class
@@ -52,23 +52,23 @@ Create the file manually at the mirrored path. Do **not** scaffold with `php art
 
 Use `it()` by default — descriptions read as `it('<present-tense phrase>')`. Reach for `test()` only when an `it('...')` description would be grammatically awkward (e.g. `test('the pipeline resolves handlers in order')`). Wrap code identifiers (permission names, action classes, fields, class names) in backticks. Follow these templates:
 
-| Case | Template |
-|------|----------|
-| Render | `it('can render the <page-type> <resource> page')` — e.g. `it('can render the list users page')` |
-| List records | `it('can list <models>')` |
-| Columns | `it('has the expected columns')` |
-| Sort / search | `it('can sort by column')` / `it('can search by column')` |
-| Create | `it('can create a <model>')` |
-| Update | `it('can update a <model>')` |
-| Display data | `it('displays the <model> data')` |
-| Attach / detach | `it('can attach a <related> to a <owner>')` / `it('can detach a <related> from a <owner>')` / `it('bulk detaches <related> from a <owner>')` |
-| Associate / dissociate | `it('associates a <related> to the <owner>')` / `it('dissociates a <related> from the <owner>')` |
-| Validation | `it('validates the inputs')` with a `->with([...])` dataset |
-| Action visibility | ``it('shows the `<Action>` action ...')`` / ``it('hides the `<Action>` action ...')`` |
-| Negative behaviour | `it('does not <disallowed behaviour>')` |
-| Deny access | ``it('denies access to the <page> without the `<permission>` permission')`` |
-| Allow access | ``it('allows access to the <page> with the `<permission>` permission')`` |
-| Admin access | `it('allows a super admin to access the <page>')` / `it('allows a partner admin to access the <page> without any explicit permissions')` |
+| Case                   | Template                                                                                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Render                 | `it('can render the <page-type> <resource> page')` — e.g. `it('can render the list users page')`                                             |
+| List records           | `it('can list <models>')`                                                                                                                    |
+| Columns                | `it('has the expected columns')`                                                                                                             |
+| Sort / search          | `it('can sort by column')` / `it('can search by column')`                                                                                    |
+| Create                 | `it('can create a <model>')`                                                                                                                 |
+| Update                 | `it('can update a <model>')`                                                                                                                 |
+| Display data           | `it('displays the <model> data')`                                                                                                            |
+| Attach / detach        | `it('can attach a <related> to a <owner>')` / `it('can detach a <related> from a <owner>')` / `it('bulk detaches <related> from a <owner>')` |
+| Associate / dissociate | `it('associates a <related> to the <owner>')` / `it('dissociates a <related> from the <owner>')`                                             |
+| Validation             | `it('validates the inputs')` with a `->with([...])` dataset                                                                                  |
+| Action visibility      | ``it('shows the `<Action>` action ...')`` / ``it('hides the `<Action>` action ...')``                                                        |
+| Negative behaviour     | `it('does not <disallowed behaviour>')`                                                                                                      |
+| Deny access            | ``it('denies access to the <page> without the `<permission>` permission')``                                                                  |
+| Allow access           | ``it('allows access to the <page> with the `<permission>` permission')``                                                                     |
+| Admin access           | `it('allows a super admin to access the <page>')` / `it('allows a partner admin to access the <page> without any explicit permissions')`     |
 
 Validation dataset keys are `'<field> <rule>'` — `'name required'`, `'name max'`, `'email unique'`.
 
@@ -124,11 +124,11 @@ expect($record->user_id)->toBe($user->getKey())
     ->and($record->expires_at->toDateTimeString())->toBe(now()->addDay()->toDateTimeString());
 ```
 
-| Use | Instead of |
-|-----|------------|
-| `assertSuccessful()` | `assertStatus(200)` |
-| `assertNotFound()` | `assertStatus(404)` |
-| `assertForbidden()` | `assertStatus(403)` |
+| Use                     | Instead of          |
+| ----------------------- | ------------------- |
+| `assertSuccessful()`    | `assertStatus(200)` |
+| `assertNotFound()`      | `assertStatus(404)` |
+| `assertForbidden()`     | `assertStatus(403)` |
 | `assertUnprocessable()` | `assertStatus(422)` |
 
 Import Pest Laravel functions where used, e.g. `use function Pest\Laravel\{actingAs, postJson, artisan};` and `use function Pest\Livewire\livewire;`.
@@ -166,9 +166,9 @@ Simple scalar datasets are also fine: `->with(['id', 'created_at', 'updated_at']
 - Global setup lives in `tests/Pest.php`. In single-database apps it binds the base `TestCase` with `RefreshDatabase` for all tests: `pest()->extend(TestCase::class)->use(RefreshDatabase::class)->in(__DIR__);`. Apps with split landlord/tenant suites bind a `TestCase` per suite instead (see **Multi-tenancy**).
 - `tests/TestCase.php` stays minimal (empty body) — put shared logic in `Pest.php` helper functions, not the base class.
 - Authentication and tenancy use the shared helper functions (do not reinvent them per file):
-  - `createUserWithPermissions(UserPermission::View, ...)` — user granted exactly those permissions via a fresh role.
-  - `createUserWithRoleNamed(Authenticatable::SUPER_ADMIN_ROLE)` — user assigned a named role.
-  - `setCurrentTenantFor($user)` — single-database apps: attach an organization and set it as the current Filament tenant (see **Multi-tenancy**).
+    - `createUserWithPermissions(UserPermission::View, ...)` — user granted exactly those permissions via a fresh role.
+    - `createUserWithRoleNamed(Authenticatable::SUPER_ADMIN_ROLE)` — user assigned a named role.
+    - `setCurrentTenantFor($user)` — single-database apps: attach an organization and set it as the current Filament tenant (see **Multi-tenancy**).
 - The exact helpers available differ per app — check `tests/Pest.php`.
 - Add a new test-scoped helper as a plain function (in the test file for local use, or `Pest.php` if shared), as with `auditsFor()`.
 - Use Eloquent model factories for domain data (`User::factory()->create()`).
@@ -217,19 +217,19 @@ it('can create a user', function () {
 
 Common helpers to use consistently:
 
-| Helper | Purpose |
-|--------|---------|
-| `livewire(Page::class)` / `livewire(Manager::class, ['ownerRecord' => $model, 'pageClass' => Edit::class])` | Instantiate the component |
-| `fillForm($data)` / `assertSchemaStateSet($data)` | Set / assert form or infolist state |
-| `call('create' \| 'save' \| 'delete')` | Invoke the page action |
-| `assertHasFormErrors($errors)` / `assertHasNoFormErrors()` | Validation |
-| `assertCanSeeTableRecords()` / `assertCanNotSeeTableRecords()` | Table contents |
-| `sortTable()` / `searchTable()` | Table sort / search behaviour |
-| `assertTableColumnVisible()` / `assertTableColumnHidden()` | Assert conditional column visibility (not static existence) |
-| `assertTableColumnStateSet($column, $state, record: $record)` / `assertTableColumnFormattedStateSet(...)` | Assert a column's resolved / formatted cell state |
-| `assertActionVisible()` / `assertActionHidden()` | Action visibility |
-| `callAction(TestAction::make(ActionClass::class)->table())` / `->bulk()` | Table & bulk actions |
-| `selectTableRecords([$id])` | Select rows for bulk actions |
+| Helper                                                                                                      | Purpose                                                     |
+| ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `livewire(Page::class)` / `livewire(Manager::class, ['ownerRecord' => $model, 'pageClass' => Edit::class])` | Instantiate the component                                   |
+| `fillForm($data)` / `assertSchemaStateSet($data)`                                                           | Set / assert form or infolist state                         |
+| `call('create' \| 'save' \| 'delete')`                                                                      | Invoke the page action                                      |
+| `assertHasFormErrors($errors)` / `assertHasNoFormErrors()`                                                  | Validation                                                  |
+| `assertCanSeeTableRecords()` / `assertCanNotSeeTableRecords()`                                              | Table contents                                              |
+| `sortTable()` / `searchTable()`                                                                             | Table sort / search behaviour                               |
+| `assertTableColumnVisible()` / `assertTableColumnHidden()`                                                  | Assert conditional column visibility (not static existence) |
+| `assertTableColumnStateSet($column, $state, record: $record)` / `assertTableColumnFormattedStateSet(...)`   | Assert a column's resolved / formatted cell state           |
+| `assertActionVisible()` / `assertActionHidden()`                                                            | Action visibility                                           |
+| `callAction(TestAction::make(ActionClass::class)->table())` / `->bulk()`                                    | Table & bulk actions                                        |
+| `selectTableRecords([$id])`                                                                                 | Select rows for bulk actions                                |
 
 - Render checks use HTTP: `$this->get(UserResource::getUrl('create'))->assertSuccessful();`.
 - Relation managers are instantiated with the owner record and page class — `livewire(RolesRelationManager::class, ['ownerRecord' => $user, 'pageClass' => EditUser::class])` — and actions are driven with `callAction(TestAction::make(AttachAction::class)->table())` (add `->bulk()` for bulk actions).
@@ -246,6 +246,7 @@ Plain columns/entries only need existence checks (`assertTableColumnExists()`); 
 ### The `authorization` block (required on every resource page)
 
 Place it last in the file. At minimum cover:
+
 - denies access without the relevant permission (`assertForbidden()`);
 - allows access with the relevant permission (`assertSuccessful()`);
 - allows a super admin;
@@ -256,40 +257,49 @@ Place it last in the file. At minimum cover:
 "Required" cases appear in every such test file; add "when applicable" cases only when the resource has that behaviour. Happy-path cases are top-level `it()`s; the `authorization` block is always last.
 
 **List page (`List<Models>Test`)**
+
 - Required: render; `can list <models>`; `can sort by column`; `can search by column`; `authorization`.
 - When applicable: assert custom column state / formatting with `assertTableColumnStateSet` / `assertTableColumnFormattedStateSet` (required for any column with a custom `state()` / `getStateUsing()` / `formatStateUsing()`); assert conditional column visibility with `assertTableColumnVisible` / `assertTableColumnHidden`; `describe('tenant scoping')`; `describe('deletion')` (delete / bulk-delete action present); action visibility (e.g. `impersonation`, `admin visibility`); `describe('filters')`.
 
 **Create page (`Create<Model>Test`)**
+
 - Required: render; `can create a <model>`; `validates the inputs` (dataset); `authorization`.
 - When applicable: create with optional / related fields; auto-associates with the current tenant; notifications / side effects sent (and not sent); same name allowed in different tenants.
 
 **Edit page (`Edit<Model>Test`)**
+
 - Required: render; `displays the <model> data` (`assertSchemaStateSet`); `can update a <model>`; `allows saving with the same name as the current record`; `validates the inputs` (dataset); `authorization`.
 - When applicable: `describe('deletion')`; conditional field visibility; disabled / read-only fields; complex form state (e.g. permission matrices).
 
 **View page (`View<Model>Test`)**
+
 - Required: render; `displays the <model> data` — assert entries with `assertSchemaStateSet`, and it is required to assert any infolist entry that uses custom state / formatting; `authorization`.
 - When applicable: header actions (e.g. impersonation); admin visibility.
 
 **Relation manager (`<Related>RelationManagerTest`)**
+
 - Required: attach / associate; detach / dissociate; `authorization`.
 - When applicable: assert custom column state / formatting with `assertTableColumnStateSet` / `assertTableColumnFormattedStateSet` (required for any column with custom state); bulk detach; action visibility gated on the owner's permissions; option / dropdown filtering; business-rule restrictions (`does not let ...`).
 
 **Manage-related-records page (`Manage<Related>Test`, extends `ManageRelatedRecords`)**
+
 - Required: render; lists the related records scoped to the owner; does not list other owners' records; `can sort by column`; `can search by column`; `authorization`.
 - When applicable: `describe('filters')`; `describe('deletion')`; create / edit related records; custom column state (`assertTableColumnStateSet` / `assertTableColumnFormattedStateSet`); conditional column visibility.
 - Instantiate with the owner record: `livewire(ManageAdapters::class, ['record' => $owner->getRouteKey()])`.
 
 **Custom / settings form page (`Manage<Thing>Test`, a custom page with a form)**
+
 - Required: render; loads existing data into the form (`assertSchemaStateSet`); saves with valid data; `authorization` — include a "does not save without the `update` permission" case.
 - When applicable: `validates the inputs` (dataset) when the form validates; tenant scoping; fallback / default behaviour.
 
 **Table widget (`<Name>WidgetTest`)**
+
 - Required: render; lists the expected / scoped records; `authorization` when the widget is access-gated.
 - When applicable: custom column state / formatting (`assertTableColumnStateSet` / `assertTableColumnFormattedStateSet`) whenever a closure resolves the value; `describe('filters')`; `can sort by column` / `can search by column` when enabled; conditional visibility via the widget's `canView()` closure.
 - Instantiate with `livewire(<Name>Widget::class)`; pass `['record' => $model]` for a record-scoped widget.
 
 **Stats-overview & chart widgets (`<Name>WidgetTest`)**
+
 - Required: render; assert each computed **stat value** reflects the underlying data; for charts, assert the computed **dataset / labels** reflect the data; conditional visibility via `canView()`.
 - When applicable: filters / period selection.
 - Every stat and data point comes from a closure, so each must be asserted (see **What to assert**).

@@ -5,6 +5,7 @@
 Let Laravel resolve models automatically from route parameters.
 
 Incorrect:
+
 ```php
 public function show(int $id)
 {
@@ -13,6 +14,7 @@ public function show(int $id)
 ```
 
 Correct:
+
 ```php
 public function show(Post $post)
 {
@@ -47,6 +49,7 @@ Route::apiResource('posts', Api\PostController::class);
 Aim for under 10 lines per method. Extract business logic to action or service classes.
 
 Incorrect:
+
 ```php
 public function store(Request $request)
 {
@@ -62,6 +65,7 @@ public function store(Request $request)
 ```
 
 Correct:
+
 ```php
 public function store(StorePostRequest $request, CreatePostAction $create)
 {
@@ -76,6 +80,7 @@ public function store(StorePostRequest $request, CreatePostAction $create)
 Type-hinting Form Requests triggers automatic validation and authorization before the method executes.
 
 Incorrect:
+
 ```php
 public function store(Request $request): RedirectResponse
 {
@@ -91,6 +96,7 @@ public function store(Request $request): RedirectResponse
 ```
 
 Correct:
+
 ```php
 public function store(StorePostRequest $request): RedirectResponse
 {

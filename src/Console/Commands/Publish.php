@@ -36,10 +36,10 @@
 
 namespace CanyonGBS\Common\Console\Commands;
 
+use function array_is_list;
+
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-
-use function array_is_list;
 
 class Publish extends Command
 {

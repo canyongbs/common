@@ -6,8 +6,8 @@ This file applies to apps that use **Spatie multitenancy** with separate landlor
 
 Put a test where the code it exercises actually runs. The suite is chosen purely by directory — `tests/Pest.php` binds `TenantTestCase` to `Tenant` and `LandlordTestCase` to `Landlord`.
 
-- **Tenant suite (`tests/Tenant/**`)** — anything scoped to a tenant: tenant models, tenant-panel Filament resources/pages/relation managers, tenant actions, notifications, seeders. Most tests live here.
-- **Landlord suite (`tests/Landlord/**`)** — central/landlord code: tenant provisioning and management, landlord console commands, landlord-panel and cross-tenant logic, architecture tests.
+- **Tenant suite (`tests/Tenant/**`)\*\* — anything scoped to a tenant: tenant models, tenant-panel Filament resources/pages/relation managers, tenant actions, notifications, seeders. Most tests live here.
+- **Landlord suite (`tests/Landlord/**`)\*\* — central/landlord code: tenant provisioning and management, landlord console commands, landlord-panel and cross-tenant logic, architecture tests.
 
 Inside each suite the path still mirrors the source namespace (`app/Models/Foo.php` → `tests/Tenant/Models/FooTest.php`), and every other convention in this skill applies unchanged: one file per class, `it()` only, the `describe()` ordering with `authorization` last, request factories, etc.
 
