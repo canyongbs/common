@@ -45,7 +45,7 @@ class PublishBoost extends Command
 {
     protected $signature = 'common:publish-boost';
 
-    protected $description = 'Publish boost.json and .vscode/mcp.json by deep merging the app\'s overrides over the common base configuration';
+    protected $description = 'Publish boost.json, .vscode/mcp.json and .ai skills/guidelines by merging the common base configuration with the app\'s overrides';
 
     /**
      * The generated Boost artifacts that should be ignored by every consuming app.
@@ -57,6 +57,18 @@ class PublishBoost extends Command
         '/.vscode/mcp.json',
         '/AGENTS.md',
         '/.github/skills/',
+        '/.ai/skills/',
+        '/.ai/guidelines/',
+    ];
+
+    /**
+     * The .ai content types published from common and overlaid with each app's overrides.
+     *
+     * @var list<string>
+     */
+    protected array $aiContentTypes = [
+        'skills',
+        'guidelines',
     ];
 
     public function __construct(
@@ -88,25 +100,60 @@ class PublishBoost extends Command
 
         $this->publishGitignore();
 
-        $this->publishCustomDirectories();
+        $this->publishAiContent();
+
+        $this->publishOverrideDirectories();
 
         return self::SUCCESS;
     }
 
-    protected function publishCustomDirectories(): void
+    protected function publishAiContent(): void
     {
-        foreach (['.ai/skills', '.ai/guidelines'] as $directory) {
-            $keep = base_path($directory . '/.gitkeep');
+        foreach ($this->aiContentTypes as $type) {
+            $output = base_path('.ai/' . $type);
+
+            $this->files->deleteDirectory($output);
+
+            $this->copyAiFiles(__DIR__ . '/../../../.ai/' . $type, $output);
+            $this->copyAiFiles(base_path('.ai/overrides/' . $type), $output);
+
+            $this->components->info("The [.ai/{$type}] directory was published successfully.");
+        }
+    }
+
+    protected function copyAiFiles(string $source, string $output): void
+    {
+        if (! $this->files->isDirectory($source)) {
+            return;
+        }
+
+        foreach ($this->files->allFiles($source, hidden: true) as $file) {
+            if ($file->getFilename() === '.gitkeep') {
+                continue;
+            }
+
+            $destination = $output . '/' . $file->getRelativePathname();
+
+            $this->files->ensureDirectoryExists(dirname($destination));
+
+            $this->files->copy($file->getPathname(), $destination);
+        }
+    }
+
+    protected function publishOverrideDirectories(): void
+    {
+        foreach ($this->aiContentTypes as $type) {
+            $keep = base_path('.ai/overrides/' . $type . '/.gitkeep');
 
             if ($this->files->exists($keep)) {
                 continue;
             }
 
-            $this->files->ensureDirectoryExists(base_path($directory));
+            $this->files->ensureDirectoryExists(dirname($keep));
 
             $this->files->put($keep, '');
 
-            $this->components->info("The [{$directory}] directory was created for your custom skills and guidelines.");
+            $this->components->info("The [.ai/overrides/{$type}] directory was created for your custom skills and guidelines.");
         }
     }
 
