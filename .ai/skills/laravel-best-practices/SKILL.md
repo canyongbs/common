@@ -83,15 +83,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - `App::environment()` or `app()->isProduction()`
 - Config, lang files, and constants over hardcoded text
 
-### 8. Testing Patterns → `rules/testing.md`
-
-- `LazilyRefreshDatabase` over `RefreshDatabase` for speed
-- `assertModelExists()` over raw `assertDatabaseHas()`
-- Factory states and sequences over manual overrides
-- Use fakes (`Event::fake()`, `Exceptions::fake()`, etc.) — but always after factory setup, not before
-- `recycle()` to share relationship instances across factories
-
-### 9. Queue & Job Patterns → `rules/queue-jobs.md`
+### 8. Queue & Job Patterns → `rules/queue-jobs.md`
 
 - `retry_after` must exceed job `timeout`; use exponential backoff `[1, 5, 10]`
 - `ShouldBeUnique` to prevent duplicates; `ShouldBeUniqueUntilProcessing` for early lock release
@@ -99,7 +91,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - `RateLimited` middleware for external API calls; `Bus::batch()` for related jobs
 - Horizon for complex multi-queue scenarios
 
-### 10. Routing & Controllers → `rules/routing.md`
+### 9. Routing & Controllers → `rules/routing.md`
 
 - Implicit route model binding
 - Scoped bindings for nested resources
@@ -107,7 +99,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - Methods under 10 lines — extract to actions/services
 - Type-hint Form Requests for auto-validation
 
-### 11. HTTP Client → `rules/http-client.md`
+### 10. HTTP Client → `rules/http-client.md`
 
 - Explicit `timeout` and `connectTimeout` on every request
 - `retry()` with exponential backoff for external APIs
@@ -115,7 +107,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - `Http::pool()` for concurrent independent requests
 - `Http::fake()` and `preventStrayRequests()` in tests
 
-### 12. Events, Notifications & Mail → `rules/events-notifications.md`, `rules/mail.md`
+### 11. Events, Notifications & Mail → `rules/events-notifications.md`, `rules/mail.md`
 
 - Event discovery over manual registration; `event:cache` in production
 - `ShouldDispatchAfterCommit` / `afterCommit()` inside transactions
@@ -125,7 +117,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - `assertQueued()` not `assertSent()` for queued mailables
 - Markdown mailables for transactional emails
 
-### 13. Error Handling → `rules/error-handling.md`
+### 12. Error Handling → `rules/error-handling.md`
 
 - `report()`/`render()` on exception classes or in `bootstrap/app.php` — follow existing pattern
 - `ShouldntReport` for exceptions that should never log
@@ -134,7 +126,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - Force JSON rendering for API routes
 - Structured context via `context()` on exception classes
 
-### 14. Task Scheduling → `rules/scheduling.md`
+### 13. Task Scheduling → `rules/scheduling.md`
 
 - `withoutOverlapping()` on variable-duration tasks
 - `onOneServer()` on multi-server deployments
@@ -143,14 +135,14 @@ Check sibling files, related controllers, models, or tests for established patte
 - `takeUntilTimeout()` for time-bounded processing
 - Schedule groups for shared configuration
 
-### 15. Architecture → `rules/architecture.md`
+### 14. Architecture → `rules/architecture.md`
 
 - Single-purpose Action classes; dependency injection over `app()` helper
 - Prefer official Laravel packages and follow conventions, don't override defaults
 - Default to `ORDER BY id DESC` or `created_at DESC`; `mb_*` for UTF-8 safety
 - `defer()` for post-response work; `Context` for request-scoped data; `Concurrency::run()` for parallel execution
 
-### 16. Migrations → `rules/migrations.md`
+### 15. Migrations → `rules/migrations.md`
 
 - Generate migrations with `php artisan make:migration`
 - `constrained()` for foreign keys
@@ -160,21 +152,21 @@ Check sibling files, related controllers, models, or tests for established patte
 - Reversible `down()` by default; forward-fix migrations for intentionally irreversible changes
 - One concern per migration — never mix DDL and DML
 
-### 17. Collections → `rules/collections.md`
+### 16. Collections → `rules/collections.md`
 
 - Higher-order messages for simple collection operations
 - `cursor()` vs. `lazy()` — choose based on relationship needs
 - `lazyById()` when updating records while iterating
 - `toQuery()` for bulk operations on collections
 
-### 18. Blade & Views → `rules/blade-views.md`
+### 17. Blade & Views → `rules/blade-views.md`
 
 - `$attributes->merge()` in component templates
 - Blade components over `@include`; `@pushOnce` for per-component scripts
 - View Composers for shared view data
 - `@aware` for deeply nested component props
 
-### 19. Conventions & Style → `rules/style.md`
+### 18. Conventions & Style → `rules/style.md`
 
 - Follow Laravel naming conventions for all entities
 - Prefer Laravel helpers (`Str`, `Arr`, `Number`, `Uri`, `Str::of()`, `$request->string()`) over raw PHP functions
@@ -185,6 +177,6 @@ Check sibling files, related controllers, models, or tests for established patte
 
 Always use a sub-agent to read rule files and explore this skill's content.
 
-1. Identify the file type and select relevant sections (e.g., migration → §16, controller → §1, §3, §5, §6, §10)
+1. Identify the file type and select relevant sections (e.g., migration → §15, controller → §1, §3, §5, §6, §9)
 2. Check sibling files for existing patterns — follow those first per Consistency First
 3. Verify API syntax with `search-docs` for the installed Laravel version

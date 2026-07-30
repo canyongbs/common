@@ -10,7 +10,6 @@
         "laravel-best-practices",
         "pennant-development",
         "livewire-development",
-        "pest-testing",
         "tailwindcss-development"
     ]
 }

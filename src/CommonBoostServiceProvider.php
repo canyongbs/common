@@ -71,7 +71,9 @@ class CommonBoostServiceProvider extends ServiceProvider
      * @var list<string>
      */
     protected array $excludedSkills = [
-        //
+        // Replaced by common's `writing-tests` skill.
+        'pest-testing',
+        'medialibrary-development',
     ];
 
     public function boot(): void
