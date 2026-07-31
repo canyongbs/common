@@ -119,11 +119,19 @@
                             <component
                                 :is="item.icon"
                                 class="size-6"
-                                :class="isActive || isExactActive || item.activeRoutes?.includes($route.name) ? 'text-brand-700' : 'text-gray-400'"
+                                :class="
+                                    isActive || isExactActive || item.activeRoutes?.includes($route.name)
+                                        ? 'text-brand-700'
+                                        : 'text-gray-400'
+                                "
                             />
                             <span
                                 class="flex-1 truncate text-sm font-medium"
-                                :class="isActive || isExactActive || item.activeRoutes?.includes($route.name) ? 'text-brand-700' : 'text-gray-700'"
+                                :class="
+                                    isActive || isExactActive || item.activeRoutes?.includes($route.name)
+                                        ? 'text-brand-700'
+                                        : 'text-gray-700'
+                                "
                             >
                                 {{ item.label }}
                             </span>
@@ -173,11 +181,17 @@
                         <a
                             @click="navigate"
                             class="flex items-center justify-center gap-x-2 rounded-lg px-3 py-2 outline-none transition duration-75 hover:bg-gray-50 focus-visible:bg-gray-50 cursor-pointer"
-                            :class="(isActive || isExactActive || item.activeRoutes?.includes($route.name)) && 'bg-gray-50'"
+                            :class="
+                                (isActive || isExactActive || item.activeRoutes?.includes($route.name)) && 'bg-gray-50'
+                            "
                         >
                             <span
                                 class="text-sm font-medium"
-                                :class="isActive || isExactActive || item.activeRoutes?.includes($route.name) ? 'text-brand-600' : 'text-gray-700'"
+                                :class="
+                                    isActive || isExactActive || item.activeRoutes?.includes($route.name)
+                                        ? 'text-brand-600'
+                                        : 'text-gray-700'
+                                "
                             >
                                 {{ item.label }}
                             </span>
