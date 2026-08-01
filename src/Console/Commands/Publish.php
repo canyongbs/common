@@ -40,6 +40,7 @@ use function array_is_list;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
 
 class Publish extends Command
 {
@@ -109,19 +110,44 @@ class Publish extends Command
 
     protected function publishAiContent(): void
     {
+        $excludedSkills = $this->excludedCommonSkills();
+
         foreach ($this->aiContentTypes as $type) {
             $output = base_path('.ai/' . $type);
 
             $this->files->deleteDirectory($output);
 
-            $this->copyAiFiles(__DIR__ . '/../../../.ai/' . $type, $output);
+            $this->copyAiFiles(
+                __DIR__ . '/../../../.ai/' . $type,
+                $output,
+                $type === 'skills' ? $excludedSkills : [],
+            );
             $this->copyAiFiles(base_path('.ai/overrides/' . $type), $output);
 
             $this->components->info("The [.ai/{$type}] directory was published successfully.");
         }
     }
 
-    protected function copyAiFiles(string $source, string $output): void
+    /**
+     * Common skills the app has opted out of via `boost.skills.exclude`.
+     *
+     * @return list<string>
+     */
+    protected function excludedCommonSkills(): array
+    {
+        $excluded = config('boost.skills.exclude', []);
+
+        if (! is_array($excluded)) {
+            return [];
+        }
+
+        return array_values(array_filter($excluded, 'is_string'));
+    }
+
+    /**
+     * @param list<string> $excludedSkills
+     */
+    protected function copyAiFiles(string $source, string $output, array $excludedSkills = []): void
     {
         if (! $this->files->isDirectory($source)) {
             return;
@@ -129,6 +155,12 @@ class Publish extends Command
 
         foreach ($this->files->allFiles($source, hidden: true) as $file) {
             if ($file->getFilename() === '.gitkeep') {
+                continue;
+            }
+
+            $relativePath = str_replace('\\', '/', $file->getRelativePathname());
+
+            if ($excludedSkills !== [] && in_array(Str::before($relativePath, '/'), $excludedSkills, true)) {
                 continue;
             }
 

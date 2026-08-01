@@ -128,6 +128,11 @@ def vue(filePath)
 end
 
 def handle(filePath)
+  if filePath.start_with?('.ai/guidelines/', '.ai/skills/')
+    puts "Skipping AI content: #{filePath}...".gray
+    return
+  end
+
   if filePath =~ /\.blade\.php\z/
     blade(filePath)
   else

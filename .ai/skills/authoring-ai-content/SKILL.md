@@ -81,6 +81,7 @@ Skills are on-demand knowledge modules loaded when their `description` matches t
     ```
 - **The `description` is the most important line.** It decides whether the agent activates the skill. Write it as trigger conditions: when to use, what tasks/files it covers, and explicit "do not use for …" boundaries to avoid overlap with sibling skills. Study `writing-tests` and `local-common-development` for the expected shape.
 - No `boost.json` entry is needed for a common-authored skill — presence in `.ai/skills/` is what publishes and activates it. The `boost.json` `skills` array is only for enabling **Boost's bundled** skills.
+- To drop a common-authored skill from a **single** app, add its `name` to `boost.skills.exclude` — the same exclude list used for Boost's bundled skills. `common:publish` skips copying any common skill whose name appears there, so an app can opt out of shared skills it does not need (for example, an alpha app that does not yet use feature flags).
 
 ## The `common:publish` command
 
@@ -104,6 +105,8 @@ Boost then compiles the published guidelines into `AGENTS.md`. Because the publi
 | Change MCP servers                                                                                                   | `.vscode/mcp.override.json`                                                                                  |
 
 Remember array-merge semantics: to _disable_ something you exclude it via the appropriate `*.exclude` array, since arrays merge additively rather than being replaced.
+
+Excluding a **common-authored** skill works the same way: `boost.skills.exclude` now also drops shared skills at publish time (`common:publish` skips copying them), not only Boost's bundled ones.
 
 ## Removing bundled/third-party content across all apps
 
