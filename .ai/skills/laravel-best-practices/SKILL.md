@@ -1,6 +1,6 @@
 ---
 name: laravel-best-practices
-description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying models, migrations, policies, jobs, invokable controllers, Action and service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, queue and job configuration, HTTP client usage, database and PostgreSQL schema conventions (UUID keys, citext, unique indexes, soft deletes), configuration and environment access, naming and code-style conventions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
+description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying models, migrations, policies, jobs, invokable controllers, Action and service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, queue and job configuration, HTTP client usage, database and PostgreSQL schema conventions (UUID keys, citext, unique indexes, soft deletes), configuration and environment access, static frontend assets (Vite), naming and code-style conventions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
 license: MIT
 metadata:
     author: laravel
@@ -124,6 +124,12 @@ Check sibling files, related controllers, models, or tests for established patte
 - `env()` only inside config files
 - `App::environment()` or `app()->isProduction()`
 - Config, lang files, and constants over hardcoded text
+
+### 13. Frontend Assets → `rules/assets.md`
+
+- Static images live in `resources/images/` (kebab-case), never `public/`
+- Register each asset in the `vite.config.js` input list
+- Reference with `Vite::asset('resources/images/…')` in Blade and PHP (hashed manifest path)
 
 ## How to Apply
 
