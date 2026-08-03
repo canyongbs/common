@@ -60,6 +60,9 @@ Correct:
 ```php
 class ActiveArticles
 {
+    /**
+     * @param Builder<covariant Model> $query
+     */
     public function __invoke(Builder $query): void
     {
         $query
@@ -69,8 +72,8 @@ class ActiveArticles
 }
 
 // Usage
-$active = User::query()->tap(app(ActiveArticles::class))->get();
-$articles = Article::query()->whereHas('user', fn (Builder $query) => $query->tap(app(ActiveArticles::class)))->get();
+$active = User::query()->tap(new ActiveArticles())->get();
+$articles = Article::query()->whereHas('user', fn (Builder $query) => $query->tap(new ActiveArticles()))->get();
 ```
 
 ## Name Boolean and Timestamp Columns Consistently
