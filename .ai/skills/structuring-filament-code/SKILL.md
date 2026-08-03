@@ -141,10 +141,12 @@ class ArchiveAction extends Action
 
         $this->action(function (Model $record): void {
             $record->archive();
+
+            $this->success();
         });
 
-        $this->successRedirectUrl(fn (ArchiveAction $action): ?string => $action->evaluate($action->shouldRedirectToList)
-            ? $action->getResource()::getUrl()
+        $this->successRedirectUrl(fn (): ?string => $this->evaluate($this->shouldRedirectToList)
+            ? $this->getResource()::getUrl()
             : null);
     }
 
@@ -158,25 +160,7 @@ class ArchiveAction extends Action
 }
 ```
 
-Used out of the box as `ArchiveAction::make()`, or configured with `ArchiveAction::make()->shouldRedirectToList(false)`.
-
-## Inject the Current Object in Closures — Never `$this`
-
-Inside a Filament closure, get the component, action, or record through a **typed parameter** rather than `$this`. Filament injects them by type-hint (`Action $action`, `Component $component`, `Get $get`, `Set $set`, `Model $record`, …). This keeps closures self-contained and correct even when defined inside a `setUp()` or a `configure()` class.
-
-Incorrect:
-
-```php
-->visible(fn (): bool => $this->getRecord()->is_active)
-```
-
-Correct:
-
-```php
-->visible(fn (Component $component): bool => $component->getRecord()->is_active)
-```
-
-Within an extended class, the injected parameter is that class's own type, so closures can still read its config properties (`fn (ArchiveAction $action) => $action->shouldRedirectToList`). Direct method calls in `setUp()` that are not inside a closure (`$this->label(...)`) are fine — the rule is about closures.
+Used out of the box as `ArchiveAction::make()`, or configured with `ArchiveAction::make()->shouldRedirectToList(false)`. The action callback calls `$this->success()` so Filament sends the success notification and runs the redirect — a custom `action()` that omits it never reports success.
 
 ## Put a Single-Use Schema on the Page
 
@@ -228,5 +212,4 @@ public function form(Schema $schema): Schema
 - Single-use schema → inline on the page (`public function form(Schema $schema)`); extract to a class only when shared across 2+ places. (Relation managers / `ManageRelatedRecords` without a resource also define inline.)
 - Any multi-line or complex-closure field / column / filter / action → its own class.
 - `public static function make(<mandatory params>)` factory by default; `extends` + `setUp()` only for OOTB, no-required-param, optionally-configurable components.
-- Inject the object into closures via a typed parameter (`Action $action`, `Component $component`, …) — never `$this`.
 - No `hiddenOn` / `visibleOn` / `disabledOn` / `$operation` / `$livewire instanceof` / `$context` branching — each page owns its schema, reusing shared component classes.
