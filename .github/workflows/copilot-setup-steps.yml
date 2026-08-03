@@ -1,25 +1,25 @@
-name: Copilot Code Review Setup
+name: Copilot Setup Steps
 
-# Runs before Copilot code review to prepare its ephemeral environment. This is a
-# package (not an app), so it only installs PHP and Composer, then runs Composer's
-# post-autoload-dump hook so the generated AGENTS.md and .github/skills (common's
-# own guidelines plus the Boost guidelines/skills an app would receive) are
-# available to the reviewer.
+# Runs before the Copilot cloud (coding) agent starts working, to prepare its
+# ephemeral development environment. This is a package (not an app), so it only
+# installs PHP and Composer, then runs Composer's post-autoload-dump hook so the
+# generated AGENTS.md and .github/skills (common's own guidelines plus the Boost
+# guidelines/skills an app would receive) are available to the agent.
 on: # zizmor: ignore[concurrency-limits]
     workflow_dispatch:
     push:
         paths:
-            - .github/workflows/copilot-code-review.yml
+            - .github/workflows/copilot-setup-steps.yml
     pull_request:
         paths:
-            - .github/workflows/copilot-code-review.yml
+            - .github/workflows/copilot-setup-steps.yml
 
 permissions: {}
 
 jobs:
     # The job MUST be named `copilot-setup-steps` or Copilot will not pick it up.
     copilot-setup-steps:
-        name: Copilot Code Review Setup
+        name: Copilot Setup Steps
         runs-on: ubuntu-22.04
 
         permissions:
@@ -71,8 +71,8 @@ jobs:
               shell: bash
 
             # Fires the post-autoload-dump hook (common:compile-guidance) which
-            # generates AGENTS.md and .github/skills used by the code reviewer.
-            # Dev dependencies (Testbench, Boost) are required, so this runs
+            # generates AGENTS.md and .github/skills used by the agent. Dev
+            # dependencies (Testbench, Boost) are required, so this runs
             # without --no-dev.
             - name: Publish agent guidance
               run: composer dump-autoload

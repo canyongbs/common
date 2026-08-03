@@ -69,6 +69,8 @@ ProjectType::query()->withoutArchivedAndUnused()->get();
 
 An optional `isUsed()` is the record-level counterpart. It must agree with `used()`, and it changes the Filament `ArchiveAction` to delete unused records instead of archiving them (below). Keep it efficient — read the value eager-loaded by `withExists()` and memoize it, so it never runs more than one query:
 
+> **Adding `isUsed()` is what grants users the ability to delete.** Whether a model can be archived, deleted, or both must always be a deliberate, conscious decision — never a default. Defining `isUsed()` opts the model into deletion of unused records; omitting it means the `ArchiveAction` can *only ever archive*, never delete. So if Product asks for archiving and does not mention deletion, do **not** add `isUsed()` — leave it off so users can only archive. Add `isUsed()` only when deletion of unused records has been explicitly requested.
+
 ```php
 public function isUsed(): bool
 {
@@ -84,7 +86,7 @@ In tables where `isUsed()` runs per row, eager-load the check to avoid N+1: `$ta
 
 ## Authorization
 
-Archiving authorizes against the model's policy. When a record is being archived and the policy defines an optional `archive` method, `ArchiveAction` calls `can('archive', $record)`; otherwise — including when it falls back to deleting an unused record — it calls `can('delete', $record)`. Always define a `delete` method; add an `archive` method only when archiving needs a permission distinct from deletion.
+Archiving authorizes against the model's policy `delete` method — `ArchiveAction` calls `can('delete', $record)`, whether it archives or falls back to deleting an unused record. Always define a `delete` method.
 
 ## Filament Actions
 
@@ -104,8 +106,8 @@ protected function getHeaderActions(): array
 `ArchiveAction`:
 
 - Is hidden when the record is already archived.
-- Authorizes via the policy's `archive` method when archiving (if defined), otherwise falls back to `delete`, and redirects to the list page on success.
-- Switches to deleting instead (adopting a "Delete" label, danger colour, and calling `$record->delete()`) when the model defines `isUsed()` and it returns `false`; otherwise it archives. Closures can branch on `shouldDeleteInsteadOfArchive()`.
+- Authorizes via the policy's `delete` method and redirects to the index on success.
+- Becomes a **delete** action (Filament `DeleteAction` behaviour — "Delete" label, danger colour, `$record->delete()`) when the model defines `isUsed()` and it returns `false`; otherwise it archives. Closures can branch on `shouldDeleteInsteadOfArchive()`. If the model does not define `isUsed()`, `shouldDeleteInsteadOfArchive()` always returns `false` and the action only ever archives — deletion is opt-in and must be a conscious decision (see above).
 
 Override `authorize()`, `successRedirectUrl()`, or `using()` when the action is used outside a standard Edit/View page or needs custom behaviour.
 

@@ -61,6 +61,22 @@ use Tpetry\PostgresqlEnhanced\Support\Facades\Schema;
     - Raw-table `Rule::unique('table', 'column')`: `->whereNull('deleted_at')` (plus `->ignore($record)` on update).
     - Add `->where('other_column', $get('other_column'))` for composite / scoped indexes.
 
+## Never Use `->after()`
+
+Never add `->after('column')` (or `->first()`) to any column definition. PostgreSQL does not support positioning columns, so the enhanced builder silently ignores it — the column is always appended to the end of the table regardless. Including it adds no value and misleads readers into thinking the column order is controlled.
+
+Incorrect:
+
+```php
+$table->string('slug')->after('title'); // ->after() is ignored on PostgreSQL
+```
+
+Correct:
+
+```php
+$table->string('slug');
+```
+
 ## Use `constrained()` for Foreign Keys
 
 Automatic naming and referential integrity.
@@ -88,14 +104,16 @@ Correct (new migration to alter):
 ```php
 // 2024_03_15_add_slug_to_posts_table.php
 Schema::table('posts', function (Blueprint $table) {
-    $table->string('slug')->after('title');
+    $table->string('slug');
+    $table->uniqueIndex('slug');
 });
 ```
 
-Immutability applies to the migration's schema/data logic, not to two deletions that are part of the normal lifecycle:
+Immutability applies to the migration's schema/data logic, not to these deletions that are part of the normal lifecycle:
 
 - **Deleting a temporary (`tmp_`) data migration** once it has run across all environments — that is the point of the `tmp_` prefix. Track the deletion in a cleanup task (see the `writing-data-migrations` and `managing-cleanup-tasks` skills).
 - **Removing a Feature Flag's activation/deactivation** when the flag is cleaned up after a successful deploy — delete the activation migration along with the flag class (see the `managing-feature-flags` skill).
+- **Removing a one-off data change embedded in an otherwise permanent migration** when a cleanup task (or a cleanup-task note) marks it as no longer needed — e.g. a step that back-fills or fixes existing data mid-migration. Delete only that data step once it has run everywhere; the migration's schema/structural logic must remain intact.
 
 ## Add Indexes in the Migration
 

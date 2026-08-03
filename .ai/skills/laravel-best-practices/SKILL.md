@@ -55,6 +55,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - Generate migrations with `php artisan make:migration`
 - PostgreSQL via `tpetry/laravel-postgresql-enhanced` (import its `Blueprint`/`Schema`); UUID primary keys (`uuid('id')->primary()`, `foreignUuid()`); `caseInsensitiveText()` (citext) for case-insensitive columns
 - Always `uniqueIndex()`, never `unique()`; scope to `whereNull('deleted_at')` on soft-deleting tables; `nullsNotDistinct()` / partial indexes for NULLs; match unique validation to the index
+- Never use `->after()` / `->first()` — column positioning is ignored on PostgreSQL
 - `constrained()` for foreign keys
 - Never modify migrations that have run in production
 - Add indexes in the migration (columns used in `WHERE`, `ORDER BY`, `JOIN`)
@@ -108,6 +109,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - Atomic locks (`Cache::lock()` / `lockForUpdate()`) for race conditions
 - `mb_*` string functions for UTF-8 safety
 - `defer()` for post-response work; `Context` for request-scoped data; `Concurrency::run()` for parallel execution
+- Prefer co-locating exception `report()` / `render()` on the exception class over centralizing in `bootstrap/app.php`
 - Follow Laravel conventions; don't override defaults unnecessarily
 
 ### 11. Conventions & Style → `rules/style.md`

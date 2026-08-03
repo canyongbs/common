@@ -206,17 +206,23 @@ User::query()->where('is_active', false)->chunkById(200, function (Collection $u
 
 ## Bulk Operations with `toQuery()`
 
-Run a bulk update/delete against a collection without hand-building a `whereIn`.
+When you already have an Eloquent collection in memory (e.g. from an earlier `get()`), run a bulk update/delete against it with `toQuery()` instead of hand-building a `whereIn` from its IDs. `toQuery()` builds a single query constrained to those exact records using the model's primary keys.
 
 Incorrect:
 
 ```php
+$users = User::query()->where('subscription_expired', true)->get();
+
+// ...later, after working with $users
 User::query()->whereIn('id', $users->pluck('id'))->update(['is_active' => false]);
 ```
 
 Correct:
 
 ```php
+$users = User::query()->where('subscription_expired', true)->get();
+
+// ...later, after working with $users
 $users->toQuery()->update(['is_active' => false]);
 ```
 

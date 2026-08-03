@@ -68,13 +68,16 @@ class GenerateInvoice implements ShouldQueue, ShouldBeUnique
 
 ## Always Implement `failed()`
 
-Handle errors explicitly — don't rely on silent failure.
+Handle errors explicitly — don't rely on silent failure. Send the exception to `report()` (when it isn't `null`) so it flows through the app's normal error handling, rather than logging it manually with `Log::error()`.
 
 ```php
 public function failed(?Throwable $exception): void
 {
     $this->podcast->update(['status' => 'failed']);
-    Log::error('Processing failed', ['id' => $this->podcast->id, 'error' => $exception->getMessage()]);
+
+    if ($exception) {
+        report($exception);
+    }
 }
 ```
 

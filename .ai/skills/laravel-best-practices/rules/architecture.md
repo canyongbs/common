@@ -176,6 +176,35 @@ use Illuminate\Support\Facades\Concurrency;
 
 Each closure runs in a separate process with full Laravel access. Use for independent database queries, API calls, or computations that would otherwise run sequentially.
 
+## Exception Reporting and Rendering
+
+**Prefer co-locating `report()` and `render()` on the exception class.** Keeping the behaviour alongside the exception definition makes it easy to find and keeps `bootstrap/app.php` uncluttered:
+
+```php
+class InvalidOrderException extends Exception
+{
+    public function report(): void { /* custom reporting */ }
+
+    public function render(Request $request): Response
+    {
+        return response()->view('errors.invalid-order', status: 422);
+    }
+}
+```
+
+Only centralize handling in `bootstrap/app.php` when co-location doesn't fit — for example, handling a third-party exception you can't modify, or applying one rule across many exception types:
+
+```php
+->withExceptions(function (Exceptions $exceptions) {
+    $exceptions->report(function (InvalidOrderException $e) { /* ... */ });
+    $exceptions->render(function (InvalidOrderException $e, Request $request) {
+        return response()->view('errors.invalid-order', status: 422);
+    });
+})
+```
+
+Whichever you use, follow the pattern already established in the codebase for consistency.
+
 ## Convention Over Configuration
 
 Follow Laravel conventions. Don't override defaults unnecessarily.
