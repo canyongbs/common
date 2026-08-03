@@ -43,14 +43,17 @@ use Illuminate\Support\Str;
 use Workbench\App\Support\LocalGuidelineAssist;
 
 /**
- * Compiles common's own `.ai/` guidance into the places Copilot reads
- * automatically inside this package.
+ * Compiles common's own `.ai/` guidance — plus the Boost guidelines and skills
+ * an app would receive — into the places Copilot reads automatically inside
+ * this package.
  *
  * Laravel Boost handles this in consuming apps, but Boost does not run inside
  * the package itself. This command renders the guideline Blade templates into a
- * root `AGENTS.md` and copies the skills into `.github/skills/`, so that when we
- * write code in this package Copilot benefits from the same shared guidance we
- * ship to apps. It is wired into composer's post-install/post-update hooks.
+ * root `AGENTS.md` and copies the skills into `.github/skills/`. Alongside
+ * common's own content it also pulls in the Boost guidelines that packages ship
+ * (e.g. Filament's) and the bundled skills enabled in `boost.json` (e.g.
+ * TailwindCSS), so developing here benefits from the same guidance we ship to
+ * apps. It is wired into composer's post-install/post-update hooks.
  */
 class CompileAgentGuidance extends Command
 {
@@ -90,11 +93,35 @@ class CompileAgentGuidance extends Command
     {
         $root = $this->packagePath();
 
-        $this->compileGuidelines($root);
-        $this->publishSkills($root);
+        $boost = $this->readBoostConfig($root);
+
+        $this->compileGuidelines($root, $boost);
+        $this->publishSkills($root, $boost);
         $this->publishGitignore($root);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Read the package's `boost.json` — the same config Boost consumes in apps,
+     * and the source of truth for which package guidelines and bundled skills
+     * to pull in locally.
+     *
+     * @return array{packages: list<string>, skills: list<string>}
+     */
+    protected function readBoostConfig(string $root): array
+    {
+        $path = $root . '/boost.json';
+
+        $config = $this->files->exists($path)
+            ? json_decode($this->files->get($path), associative: true)
+            : null;
+
+        $list = fn (string $key): array => is_array($config[$key] ?? null)
+            ? array_values(array_filter($config[$key], 'is_string'))
+            : [];
+
+        return ['packages' => $list('packages'), 'skills' => $list('skills')];
     }
 
     /**
@@ -108,7 +135,10 @@ class CompileAgentGuidance extends Command
         return $path === '' ? $root : $root . '/' . ltrim($path, '/');
     }
 
-    protected function compileGuidelines(string $root): void
+    /**
+     * @param array{packages: list<string>, skills: list<string>} $boost
+     */
+    protected function compileGuidelines(string $root, array $boost): void
     {
         $assist = new LocalGuidelineAssist();
 
@@ -119,7 +149,11 @@ class CompileAgentGuidance extends Command
 
         $shared = $this->renderGuidelinesFrom($root . '/.ai/guidelines', $assist, applyExclusions: true);
 
-        $sections = [...array_values($local), ...array_values($shared)];
+        // Guidelines that installed packages ship for Boost (e.g. Filament's),
+        // which Boost would inject into an app's AGENTS.md.
+        $bundled = $this->bundledPackageGuidelines($root, $boost, $assist);
+
+        $sections = [...array_values($local), ...array_values($shared), ...array_values($bundled)];
 
         $output = $this->packagePath('AGENTS.md');
 
@@ -132,6 +166,63 @@ class CompileAgentGuidance extends Command
         $this->files->put($output, $this->wrapGuidelines($sections));
 
         $this->components->info('The [AGENTS.md] file was compiled successfully.');
+    }
+
+    /**
+     * Render the Boost guidelines that packages ship under
+     * `resources/boost/guidelines` (as Boost discovers them) for the packages
+     * listed in `boost.json`, unless common excludes the key or ships its own
+     * override for that package.
+     *
+     * @param array{packages: list<string>, skills: list<string>} $boost
+     *
+     * @return array<string, string>
+     */
+    protected function bundledPackageGuidelines(string $root, array $boost, LocalGuidelineAssist $assist): array
+    {
+        $excluded = $this->configList('boost.guidelines.exclude');
+
+        $sections = [];
+
+        foreach ($boost['packages'] as $package) {
+            if (in_array($package, $excluded, true) || $this->commonShipsGuideline($root, $package)) {
+                continue;
+            }
+
+            $file = $root . '/vendor/' . $package . '/resources/boost/guidelines/core.blade.php';
+
+            if ($this->files->exists($file)) {
+                $sections[$package] = $this->renderGuideline($file, $assist);
+            }
+        }
+
+        ksort($sections);
+
+        return $sections;
+    }
+
+    protected function commonShipsGuideline(string $root, string $key): bool
+    {
+        foreach (['blade.php', 'md'] as $extension) {
+            if ($this->files->exists($root . '/.ai/guidelines/' . $key . '.' . $extension)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * A string list read from Boost runtime config (populated by
+     * CommonBoostServiceProvider), tolerant of the config being absent.
+     *
+     * @return list<string>
+     */
+    protected function configList(string $key): array
+    {
+        $value = config($key, []);
+
+        return is_array($value) ? array_values(array_filter($value, 'is_string')) : [];
     }
 
     /**
@@ -172,7 +263,22 @@ class CompileAgentGuidance extends Command
 
     protected function renderGuideline(string $path, LocalGuidelineAssist $assist): string
     {
-        $rendered = Blade::render($this->files->get($path), ['assist' => $assist]);
+        // Protect code samples before Blade runs: `<?php` tags would otherwise
+        // execute, and backticks/component tags would be interpreted. Boost
+        // does the same when rendering the guidelines packages ship.
+        $placeholders = [
+            '`' => '__CG_BACKTICK__',
+            '<?php' => '__CG_OPEN_PHP__',
+            '<?=' => '__CG_OPEN_PHP_ECHO__',
+            '<x-' => '__CG_COMPONENT_OPEN__',
+            '</x-' => '__CG_COMPONENT_CLOSE__',
+        ];
+
+        $content = str_replace(array_keys($placeholders), array_values($placeholders), $this->files->get($path));
+
+        $rendered = html_entity_decode((string) Blade::render($content, ['assist' => $assist]), ENT_QUOTES | ENT_HTML5);
+
+        $rendered = str_replace(array_values($placeholders), array_keys($placeholders), $rendered);
 
         // Blade control directives leave behind blank lines; collapse runs of
         // three or more newlines down to a single blank line.
@@ -188,7 +294,8 @@ class CompileAgentGuidance extends Command
             '<!--',
             '    GENERATED FILE — do not edit by hand.',
             '    Produced by `vendor/bin/testbench common:compile-guidance` from the',
-            '    Blade templates in `.ai/local/guidelines` and `.ai/guidelines`. Edit',
+            '    Blade templates in `.ai/local/guidelines` and `.ai/guidelines`, plus',
+            '    the Boost guidelines shipped by the packages in `boost.json`. Edit',
             '    those sources and re-run the command (composer install/update runs it',
             '    automatically).',
             '-->',
@@ -197,16 +304,26 @@ class CompileAgentGuidance extends Command
         return $header . "\n\n" . implode("\n\n---\n\n", array_values($sections)) . "\n";
     }
 
-    protected function publishSkills(string $root): void
+    /**
+     * @param array{packages: list<string>, skills: list<string>} $boost
+     */
+    protected function publishSkills(string $root, array $boost): void
     {
-        $source = $root . '/.ai/skills';
         $output = $this->packagePath('.github/skills');
 
         $this->files->deleteDirectory($output);
 
-        if (! $this->files->isDirectory($source)) {
-            $this->components->warn('No [.ai/skills] directory found; skipping .github/skills.');
+        $this->copyCommonSkills($root, $output);
+        $this->copyBundledSkills($root, $boost, $output);
 
+        $this->components->info('The [.github/skills] directory was published successfully.');
+    }
+
+    protected function copyCommonSkills(string $root, string $output): void
+    {
+        $source = $root . '/.ai/skills';
+
+        if (! $this->files->isDirectory($source)) {
             return;
         }
 
@@ -221,8 +338,99 @@ class CompileAgentGuidance extends Command
 
             $this->files->copy($file->getPathname(), $destination);
         }
+    }
 
-        $this->components->info('The [.github/skills] directory was published successfully.');
+    /**
+     * Copy the Boost skills enabled in `boost.json` into `.github/skills`,
+     * skipping any common excludes or skills common authors itself.
+     *
+     * @param array{packages: list<string>, skills: list<string>} $boost
+     */
+    protected function copyBundledSkills(string $root, array $boost, string $output): void
+    {
+        $excluded = $this->configList('boost.skills.exclude');
+
+        foreach ($boost['skills'] as $name) {
+            // Skip skills excluded for every app, or ones common ships itself
+            // (e.g. laravel-best-practices) — common's copy wins.
+            if (in_array($name, $excluded, true) || $this->files->isDirectory($root . '/.ai/skills/' . $name)) {
+                continue;
+            }
+
+            $source = $this->resolveBundledSkillDir($root, $name);
+
+            if ($source === null) {
+                $this->components->warn("Could not locate the bundled skill [{$name}]; skipping.");
+
+                continue;
+            }
+
+            $this->copySkillDir($source, $output . '/' . $name);
+        }
+    }
+
+    /**
+     * Locate a bundled skill's source directory: first a package that ships it
+     * under `resources/boost/skills`, otherwise Boost's own `.ai`, preferring
+     * the highest version when the skill is versioned.
+     */
+    protected function resolveBundledSkillDir(string $root, string $name): ?string
+    {
+        $firstParty = glob($root . '/vendor/*/*/resources/boost/skills/' . $name, GLOB_ONLYDIR) ?: [];
+
+        if ($firstParty !== []) {
+            return $firstParty[0];
+        }
+
+        $boostAi = $root . '/vendor/laravel/boost/.ai';
+
+        $unversioned = glob($boostAi . '/*/skill/' . $name, GLOB_ONLYDIR) ?: [];
+
+        if ($unversioned !== []) {
+            return $unversioned[0];
+        }
+
+        // Versioned layout: `.ai/<package>/<version>/skill/<name>`.
+        $versioned = glob($boostAi . '/*/*/skill/' . $name, GLOB_ONLYDIR) ?: [];
+
+        usort($versioned, fn (string $a, string $b): int => version_compare($this->skillVersionSegment($b), $this->skillVersionSegment($a)));
+
+        return $versioned[0] ?? null;
+    }
+
+    protected function skillVersionSegment(string $path): string
+    {
+        $parts = explode('/', str_replace('\\', '/', $path));
+        $skillIndex = array_search('skill', $parts, true);
+
+        return $skillIndex > 0 ? $parts[$skillIndex - 1] : '0';
+    }
+
+    /**
+     * Copy a skill directory into place, rendering a `SKILL.blade.php` to
+     * `SKILL.md` and copying every other file (rules/, reference/) verbatim.
+     */
+    protected function copySkillDir(string $source, string $destination): void
+    {
+        $assist = new LocalGuidelineAssist();
+
+        foreach ($this->files->allFiles($source, hidden: true) as $file) {
+            $relative = $file->getRelativePathname();
+
+            if ($file->getFilename() === 'SKILL.blade.php') {
+                $target = $destination . '/' . Str::replaceLast('SKILL.blade.php', 'SKILL.md', $relative);
+
+                $this->files->ensureDirectoryExists(dirname($target));
+                $this->files->put($target, $this->renderGuideline($file->getPathname(), $assist) . "\n");
+
+                continue;
+            }
+
+            $target = $destination . '/' . $relative;
+
+            $this->files->ensureDirectoryExists(dirname($target));
+            $this->files->copy($file->getPathname(), $target);
+        }
     }
 
     protected function publishGitignore(string $root): void
