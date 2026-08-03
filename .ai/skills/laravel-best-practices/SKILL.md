@@ -37,6 +37,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - Iterate large datasets safely: `chunkById()` / `eachById()` when mutating, `cursor()` read-only, `lazy()` for eager loading
 - `toQuery()` for bulk operations; higher-order messages for simple collection ops
 - Never hardcode table names (`(new Model)->getTable()`); index queried columns
+- Case-insensitive search via `where(new Expression('lower(col)'), 'like', ...)` (indexable), not `ilike`
 
 ### 3. Advanced Query Patterns → `rules/advanced-queries.md`
 

@@ -255,6 +255,21 @@ DB::table((new User)->getTable())->where('is_active', true)->get();
 
 **Exception — migrations:** hardcoded table names via `DB::table('settings')` are acceptable and required there. Migrations are frozen snapshots, so referencing a model that is later renamed or deleted would break them.
 
+## Case-Insensitive Search with `lower()`
+
+For case-insensitive matching on a plain text column, wrap the column in `lower()` through an `Expression` and lowercase the search term — do **not** use `ilike`. A functional index on `lower(column)` makes this form indexable, whereas `ilike` cannot use a plain index.
+
+```php
+use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Str;
+
+Role::query()
+    ->where(new Expression('lower(name)'), 'like', '%' . Str::lower($search) . '%')
+    ->get();
+```
+
+Columns declared as `caseInsensitiveText()` (citext) are already case-insensitive — compare them directly, with no `lower()` wrapper needed (see `migrations.md`).
+
 ## Index the Columns You Query
 
 Index every column used in `WHERE`, `ORDER BY`, `JOIN`, and `GROUP BY` clauses, and add compound indexes for common multi-column filters and sorts. Define the indexes in the migration that creates the table — see `migrations.md`.

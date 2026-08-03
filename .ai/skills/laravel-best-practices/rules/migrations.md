@@ -26,12 +26,13 @@ use Tpetry\PostgresqlEnhanced\Schema\Blueprint;
 use Tpetry\PostgresqlEnhanced\Support\Facades\Schema;
 ```
 
-- **UUID primary keys** on every table — never auto-increment. Pair with `use HasUuids` on the model (see `models.md`).
+- **UUID primary keys** on every table — never auto-increment. Pair with `use HasUuids` on the model (see `models.md`). For foreign keys and polymorphic columns, use the UUID helpers (`foreignUuid()`, `uuidMorphs()` / `nullableUuidMorphs()`) — never `foreignId()`/`morphs()`/`nullableMorphs()` (which are integer-based) or hand-rolled `*_id` + `*_type` columns.
 
     ```php
     $table->uuid('id')->primary();
     $table->foreignUuid('property_id')->constrained()->cascadeOnDelete();
-    $table->nullableUuidMorphs('subject');
+    $table->uuidMorphs('subject');
+    $table->nullableUuidMorphs('commentable');
     ```
 
 - **`caseInsensitiveText()` (citext) for case-insensitive columns** — names, emails, slugs, anything compared without case. Enable the extension once in its own migration (`DB::statement('CREATE EXTENSION IF NOT EXISTS citext')`). A `citext` column makes lookups and `unique` validation case-insensitive automatically, with no extra rule configuration.
