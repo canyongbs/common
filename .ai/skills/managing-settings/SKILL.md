@@ -160,7 +160,8 @@ Settings classes are not Eloquent models, so uploaded files attach to the settin
 
     ```blade
     @php
-        $url = $loginSettings::getSettingsPropertyModel('login.header_image')
+        $url = $loginSettings
+            ::getSettingsPropertyModel('login.header_image')
             ?->getFirstTemporaryUrl(now()->addMinute(), 'header_image', 'login');
     @endphp
     ```

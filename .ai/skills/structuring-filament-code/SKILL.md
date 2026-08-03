@@ -1,6 +1,6 @@
 ---
 name: structuring-filament-code
-description: 'Use when writing or reviewing Filament v4 code in a Canyon GBS app and want it maintainable and small — organizing a resource''s form, infolist, and table into separate `configure()` classes; extracting fields, columns, filters, or actions into their own classes; deciding between a static `make()` factory and extending a component base class; or splitting a schema per page instead of branching by operation/context. Trigger whenever a Filament schema/table/action definition grows beyond a few lines or gains a complex closure, when adding a resource page schema, or when you see per-page branching (`hiddenOn`/`visibleOn`/`disabledOn`, `$operation`, `$livewire instanceof`). Do not use for: non-Filament PHP (use `laravel-best-practices`), Filament file uploads (use `handling-file-uploads`), settings-page wiring (use `managing-settings`), or writing tests (use `writing-tests`).'
+description: "Use when writing or reviewing Filament v4 code in a Canyon GBS app and want it maintainable and small — organizing a resource's form, infolist, and table into separate `configure()` classes; extracting fields, columns, filters, or actions into their own classes; deciding between a static `make()` factory and extending a component base class; or splitting a schema per page instead of branching by operation/context. Trigger whenever a Filament schema/table/action definition grows beyond a few lines or gains a complex closure, when adding a resource page schema, or when you see per-page branching (`hiddenOn`/`visibleOn`/`disabledOn`, `$operation`, `$livewire instanceof`). Do not use for: non-Filament PHP (use `laravel-best-practices`), Filament file uploads (use `handling-file-uploads`), settings-page wiring (use `managing-settings`), or writing tests (use `writing-tests`)."
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -49,7 +49,7 @@ class DepartmentForm
 }
 ```
 
-**Exception:** relation managers and `ManageRelatedRecords` pages that do **not** have a backing resource define their form/table **inline** (there is no resource to host separate schema classes). If a relation manager surfaces records that *do* have their own resource, reuse that resource's schema/table classes instead of duplicating them.
+**Exception:** relation managers and `ManageRelatedRecords` pages that do **not** have a backing resource define their form/table **inline** (there is no resource to host separate schema classes). If a relation manager surfaces records that _do_ have their own resource, reuse that resource's schema/table classes instead of duplicating them.
 
 ## Extract Non-Trivial Components into Their Own Classes
 
