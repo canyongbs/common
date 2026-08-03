@@ -1,6 +1,6 @@
 ---
 name: managing-feature-flags
-description: 'Use when creating, activating, gating code behind, or removing a class-based Feature Flag in a Canyon GBS app — Laravel Pennant flags under `App\Features` extending `App\Support\AbstractFeatureFlag`, generated with `make:ff`. Trigger whenever you introduce a schema or data change that code depends on and must be guarded for zero-downtime deploys, add or edit an `active()` / `resolve()` check, activate a flag inside a migration, or clean up a flag after a deployment. Covers the make:ff command and its cleanup-task prompt, the resolve() default, activation-in-migration patterns, the active/inactive code split, and documenting non-obvious flag removals with inline cleanup comments. Do not use for: the mechanics of cleanup task files themselves (use managing-cleanup-tasks), writing the migrations that carry the change (use writing-data-migrations), subscription/license feature ADDON gating (app-specific), or Pennant scoped/config-driven flags.'
+description: 'Use when creating, activating, gating code behind, or removing a class-based Feature Flag in a Canyon GBS app — Laravel Pennant flags under `App\Features` extending `App\Support\AbstractFeatureFlag`, generated with `make:ff`. Trigger whenever you introduce a schema or data change that code depends on and must be guarded for zero-downtime deploys, add or edit an `active()` / `resolve()` check, activate a flag inside a migration, or clean up a flag after a deployment. Covers the make:ff command and its cleanup-task prompt, the resolve() default, activation-in-migration patterns, the active/inactive code split, and documenting non-obvious flag removals with inline cleanup comments. Do not use for: the mechanics of cleanup task files themselves (use `managing-cleanup-tasks`), writing the migrations that carry the change (use `writing-data-migrations`), subscription/license feature ADDON gating (app-specific), or Pennant scoped/config-driven flags.'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -111,6 +111,20 @@ public function down(): void
 ```
 
 See the `writing-data-migrations` skill for migration rules (idempotency, required `down()`, permanent vs `tmp_`).
+
+### Never activate a flag in a test
+
+The test suite runs your migrations (`RefreshDatabase`), so the activation migration **already activates the flag** — it is active in every test by default. **Do not call `SomeFeature::activate()` in a test, `beforeEach()`, or a helper** to "turn on" a flag; it is redundant and hides a broken activation migration (if the migration fails to activate, the test must fail).
+
+To exercise the **inactive** (pre-migration) branch, call `SomeFeature::deactivate()` for that case only:
+
+```php
+it('uses the old behaviour when the flag is inactive', function () {
+    SomeFeature::deactivate();
+
+    // assert the inactive-path behaviour
+});
+```
 
 ## Cleaning up a Feature Flag
 
