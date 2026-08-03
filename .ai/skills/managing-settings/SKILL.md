@@ -59,7 +59,7 @@ return new class () extends SettingsMigration {
             try {
                 $this->migrator->add('theme.changelog_url');
             } catch (SettingAlreadyExists $exception) {
-                // Already added — safe to re-run.
+                // do nothing
             }
         });
     }
