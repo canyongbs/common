@@ -104,7 +104,7 @@ protected function getHeaderActions(): array
 `ArchiveAction`:
 
 - Is hidden when the record is already archived.
-- Authorizes via the policy's `delete` method and redirects to the index on success.
+- Authorizes via the policy's `delete` method and redirects to the list page on success.
 - Becomes a **delete** action (Filament `DeleteAction` behaviour — "Delete" label, danger colour, `$record->delete()`) when the model defines `isUsed()` and it returns `false`; otherwise it archives. Closures can branch on `shouldDeleteInsteadOfArchive()`.
 
 Override `authorize()`, `successRedirectUrl()`, or `using()` when the action is used outside a standard Edit/View page or needs custom behaviour.
