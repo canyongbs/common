@@ -20,6 +20,29 @@
 | Config      | snake_case                | `google_calendar.php`     | `googleCalendar.php`     |
 | Enum        | singular                  | `UserType`                | `UserTypes`              |
 
+## Name Boolean and Timestamp Columns Consistently
+
+Prefix boolean attributes with `is_`, `has_`, or `can_` so they read as a yes/no question. Name timestamp and datetime columns in the past tense with an `_at` suffix.
+
+Incorrect:
+
+```php
+$table->boolean('active');
+$table->boolean('admin');
+$table->timestamp('publish');
+$table->timestamp('expiry');
+```
+
+Correct:
+
+```php
+$table->boolean('is_active');
+$table->boolean('can_impersonate');
+$table->boolean('has_verified_email');
+$table->timestamp('published_at');
+$table->timestamp('expires_at');
+```
+
 ## Prefer Shorter Readable Syntax
 
 | Verbose                            | Shorter                |

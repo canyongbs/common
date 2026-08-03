@@ -75,18 +75,12 @@ Schema::create('orders', function (Blueprint $table) {
 });
 ```
 
-## Mirror Defaults in Model `$attributes`
+## Mirror Column Defaults in the Model
 
-When a column has a database default, mirror it in the model so new instances have correct values before saving.
+When a migration adds a column with a database default, mirror that default in the model's `$attributes` so new instances have the correct value before saving — see `models.md`.
 
 ```php
-// Migration
 $table->string('status')->default('pending');
-
-// Model
-protected $attributes = [
-    'status' => 'pending',
-];
 ```
 
 ## Write Reversible `down()` Methods by Default
