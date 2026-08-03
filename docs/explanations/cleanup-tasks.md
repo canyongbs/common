@@ -20,7 +20,7 @@ A cleanup task file can track three types of work:
 
 1. **Feature Flags** — Class references to Feature Flag classes that should be removed once active in production
 2. **Temporary Migrations** — File paths of `tmp_`-prefixed migrations that should be deleted after they've run across all environments
-3. **Additional Cleanup** — Freeform instructions for other post-deployment work (e.g., removing legacy code paths, updating configuration, deleting unused files)
+3. **Additional Cleanup** — Freeform instructions for post-deployment work that has no home in code. This section is deliberately small: it must not restate obvious Feature Flag removals or list file paths and line numbers (see the comment pattern below)
 
 ## Lifecycle
 
@@ -31,27 +31,30 @@ A cleanup task file can track three types of work:
 
 ## The `TODO: Cleanup Task` Comment Pattern
 
-When cleanup requires more context than what fits in the cleanup task file alone, use inline code comments with the standardized pattern:
+Cleanup that is more than an obvious Feature Flag removal is documented **at the change site**, not in the cleanup task file. Co-locating the instructions with the code keeps them accurate — file paths and line numbers drift, co-located comments do not — and keeps the cleanup task file small.
+
+Mark each non-obvious change site with a comment built from a **stable root plus a unique tag**:
 
 ```php
-// TODO: Cleanup Task - Details on what changes should be made
+// TODO: Cleanup Task (some-feature): details on what to change here
 ```
 
 For multiline instructions:
 
 ```php
 /*
- * TODO: Cleanup Task - After SomeFeature is removed:
- * - Change this default value from 'legacy' to 'new_format'
- * - Update the config to set 'feature_mode' => true
- * - Remove the fallback query below
+ * TODO: Cleanup Task (some-feature): after SomeFeature is removed:
+ * - change this default value from 'legacy' to 'new_format'
+ * - remove the fallback query below
  */
 ```
 
-Adapt the comment syntax for the language of the file (e.g., `<!-- TODO: Cleanup Task -->` in Blade templates).
+Adapt the comment syntax for the language of the file (e.g., `{{-- TODO: Cleanup Task (some-feature): ... --}}` in Blade templates).
 
-This pattern makes it easy to search the codebase for `TODO: Cleanup Task` to find all locations that need attention during cleanup.
+The stable `TODO: Cleanup Task` root lets you find **every** cleanup site in the codebase; the `(some-feature)` tag — a short, unique identifier for one cleanup task — narrows the search to a single task. The cleanup task file then only needs to name the tag to search for, instead of duplicating instructions or referencing volatile file paths and line numbers.
+
+Obvious Feature Flag removals need no comment at all: when a flag guards an `if`, ternary, or `match`, cleanup simply means keeping the active branch and discarding the inactive one.
 
 ---
 
-See [Manage Cleanup Tasks](../how-tos/manage-cleanup-tasks.md) for practical guidance on creating and completing Cleanup Tasks.
+See the `managing-cleanup-tasks` skill for practical guidance on creating and completing Cleanup Tasks.
