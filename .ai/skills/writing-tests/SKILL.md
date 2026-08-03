@@ -193,7 +193,7 @@ For landlord/tenant suite placement and tricks (making a tenant current, asserti
 
 ## Feature Flags
 
-The suite runs your migrations (`RefreshDatabase`), and the activation migration already activates each Feature Flag — so **every flag is active in tests by default**. **Never call `SomeFeature::activate()`** in a test, `beforeEach()`, or helper to enable a flag: it is redundant and masks a broken activation migration (which must make the test fail). Only call `SomeFeature::deactivate()`, and only in the specific case that exercises the inactive (pre-migration) branch. See the `managing-feature-flags` skill.
+The suite runs your migrations (`RefreshDatabase`), and, most of the time, the activation migration already activates each Feature Flag — so **every flag is active in tests by default**. **Never call `SomeFeature::activate()`** in a test, `beforeEach()`, or helper to enable a flag: it is redundant and masks a broken activation migration (which must make the test fail). Only call `SomeFeature::deactivate()`, and only in the specific case that exercises the inactive (pre-migration) branch. See the `managing-feature-flags` skill.
 
 ## Filament Resource Testing
 
