@@ -445,7 +445,7 @@ class CompileAgentGuidance extends Command
         $start = '# BEGIN canyongbs/common (common:compile-guidance) — do not edit this block manually.';
         $end = '# END canyongbs/common (common:compile-guidance)';
 
-        $block = implode(PHP_EOL, [$start, ...$this->gitignoreEntries, $end]);
+        $block = implode("\n", [$start, ...$this->gitignoreEntries, $end]);
 
         $path = $root . '/.gitignore';
 
@@ -453,11 +453,11 @@ class CompileAgentGuidance extends Command
 
         $pattern = '/' . preg_quote($start, '/') . '.*?' . preg_quote($end, '/') . '/s';
 
-        if (preg_match($pattern, $contents)) {
+        if (preg_match($pattern, $contents) === 1) {
             $contents = preg_replace($pattern, $block, $contents);
         } else {
             $contents = rtrim($contents);
-            $contents = ($contents === '' ? '' : $contents . PHP_EOL . PHP_EOL) . $block . PHP_EOL;
+            $contents = ($contents === '' ? '' : $contents . "\n\n") . $block . "\n";
         }
 
         $this->files->put($path, $contents);
