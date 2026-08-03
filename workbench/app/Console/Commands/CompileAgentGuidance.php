@@ -110,36 +110,16 @@ class CompileAgentGuidance extends Command
 
     protected function compileGuidelines(string $root): void
     {
-        $source = $root . '/.ai/guidelines';
-
-        if (! $this->files->isDirectory($source)) {
-            $this->components->warn('No [.ai/guidelines] directory found; skipping AGENTS.md.');
-
-            return;
-        }
-
         $assist = new LocalGuidelineAssist();
 
-        $sections = [];
+        // Common-only guidelines that set the scene (developing the package
+        // itself, not a consuming app). They are never published to apps, so
+        // they live outside `.ai/guidelines` and are compiled first.
+        $local = $this->renderGuidelinesFrom($root . '/.ai/local/guidelines', $assist, applyExclusions: false);
 
-        foreach ($this->files->allFiles($source) as $file) {
-            if ($file->getExtension() !== 'php' || ! str_ends_with($file->getFilename(), '.blade.php')) {
-                continue;
-            }
+        $shared = $this->renderGuidelinesFrom($root . '/.ai/guidelines', $assist, applyExclusions: true);
 
-            $key = Str::of($file->getRelativePathname())
-                ->replace('\\', '/')
-                ->beforeLast('.blade.php')
-                ->value();
-
-            if (in_array($key, $this->excludedGuidelines, true)) {
-                continue;
-            }
-
-            $sections[$key] = $this->renderGuideline($file->getPathname(), $assist);
-        }
-
-        ksort($sections);
+        $sections = [...array_values($local), ...array_values($shared)];
 
         $output = $this->packagePath('AGENTS.md');
 
@@ -154,6 +134,42 @@ class CompileAgentGuidance extends Command
         $this->components->info('The [AGENTS.md] file was compiled successfully.');
     }
 
+    /**
+     * Render every guideline Blade template in a directory, keyed by its path
+     * relative to that directory (without extension) and sorted by key.
+     *
+     * @return array<string, string>
+     */
+    protected function renderGuidelinesFrom(string $source, LocalGuidelineAssist $assist, bool $applyExclusions): array
+    {
+        if (! $this->files->isDirectory($source)) {
+            return [];
+        }
+
+        $sections = [];
+
+        foreach ($this->files->allFiles($source) as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            $key = Str::of($file->getRelativePathname())
+                ->replace('\\', '/')
+                ->beforeLast('.blade.php')
+                ->value();
+
+            if ($applyExclusions && in_array($key, $this->excludedGuidelines, true)) {
+                continue;
+            }
+
+            $sections[$key] = $this->renderGuideline($file->getPathname(), $assist);
+        }
+
+        ksort($sections);
+
+        return $sections;
+    }
+
     protected function renderGuideline(string $path, LocalGuidelineAssist $assist): string
     {
         $rendered = Blade::render($this->files->get($path), ['assist' => $assist]);
@@ -164,7 +180,7 @@ class CompileAgentGuidance extends Command
     }
 
     /**
-     * @param array<string, string> $sections
+     * @param list<string> $sections
      */
     protected function wrapGuidelines(array $sections): string
     {
@@ -172,8 +188,9 @@ class CompileAgentGuidance extends Command
             '<!--',
             '    GENERATED FILE — do not edit by hand.',
             '    Produced by `vendor/bin/testbench common:compile-guidance` from the',
-            '    Blade templates in `.ai/guidelines`. Edit those sources and re-run the',
-            '    command (composer install/update runs it automatically).',
+            '    Blade templates in `.ai/local/guidelines` and `.ai/guidelines`. Edit',
+            '    those sources and re-run the command (composer install/update runs it',
+            '    automatically).',
             '-->',
         ]);
 
