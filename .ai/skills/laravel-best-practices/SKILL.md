@@ -1,6 +1,6 @@
 ---
 name: laravel-best-practices
-description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying models, migrations, policies, jobs, invokable controllers, Action and service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, queue and job configuration, HTTP client usage, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
+description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying models, migrations, policies, jobs, invokable controllers, Action and service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, queue and job configuration, HTTP client usage, configuration and environment access, naming and code-style conventions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
 license: MIT
 metadata:
     author: laravel
@@ -35,7 +35,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - `whereBelongsTo($model)` for relationship queries
 - Iterate large datasets safely: `chunkById()` / `eachById()` when mutating, `cursor()` read-only, `lazy()` for eager loading
 - `toQuery()` for bulk operations; higher-order messages for simple collection ops
-- Never hardcode table names (`(new Model)->getTable()`); index queried columns; never query in Blade
+- Never hardcode table names (`(new Model)->getTable()`); index queried columns
 
 ### 3. Advanced Query Patterns → `rules/advanced-queries.md`
 

@@ -266,27 +266,3 @@ Order::query()->where('status', 'pending')->latest()->get();
 // Migration — index the filtered/sorted columns
 $table->index(['status', 'created_at']);
 ```
-
-## Never Query in Blade Templates
-
-Pass data from the controller/component; never execute queries in Blade.
-
-Incorrect:
-
-```blade
-@foreach (User::query()->get() as $user)
-    {{ $user->profile->name }}
-@endforeach
-```
-
-Correct:
-
-```php
-$users = User::query()->with('profile')->get();
-```
-
-```blade
-@foreach ($users as $user)
-    {{ $user->profile->name }}
-@endforeach
-```
