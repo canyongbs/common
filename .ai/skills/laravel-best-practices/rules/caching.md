@@ -58,9 +58,19 @@ Cache::tags(['user-1'])->flush();
 
 `add()` only writes if the key does not exist — atomic, no race condition between checking and writing.
 
-Incorrect: `if (! Cache::has('lock')) { Cache::put('lock', true, 10); }`
+Incorrect:
 
-Correct: `Cache::add('lock', true, 10);`
+```php
+if (! Cache::has('lock')) {
+    Cache::put('lock', true, 10);
+}
+```
+
+Correct:
+
+```php
+Cache::add('lock', true, 10);
+```
 
 ## Use `once()` for Per-Request Memoization
 

@@ -8,7 +8,7 @@
 - If you're creating a generic PHP class, use `{{ $assist->artisanCommand('make:class') }}`.
 - Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
 
-### Model Creation
+## Model Creation
 
 - When creating new models, create useful factories and seeders for them too. Ask the user if they need any other things, using `{{ $assist->artisanCommand('make:model --help') }}` to check the available options.
 

@@ -1,6 +1,6 @@
 ---
 name: creating-permissions
-description: 'Use when creating, seeding, renaming, or deleting Spatie Laravel-permission permissions in a Canyon GBS app via a permission migration. Trigger whenever you add permissions for a model or feature, run `make:permission-migration`, use the `CanModifyPermissions` trait (createPermissions / deletePermissions / renamePermissions / renamePermissionGroups), choose a permission group, or decide which of the allowed permission names a model needs. Covers the `seed_permissions_` naming, permission groups, the allowed permission-name format, guards, and the `--module` flag. Do not use for: general data migrations (use writing-data-migrations), or writing the policies / authorization checks that consume the permissions.'
+description: 'Use when creating, seeding, renaming, or deleting Spatie Laravel-permission permissions in a Canyon GBS app via a permission migration. Trigger whenever you add permissions for a model or feature, run `make:permission-migration`, use the `CanModifyPermissions` trait (createPermissions / deletePermissions / renamePermissions / renamePermissionGroups), choose a permission group, or decide which of the allowed permission names a model needs. Covers the `seed_permissions_` naming, permission groups, the allowed permission-name format, guards, and the `--module` flag. Do not use for: general data migrations (use `writing-data-migrations`), or writing the policies / authorization checks that consume the permissions.'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -14,7 +14,7 @@ Run every command through the `pls` guideline (these apps run inside the `app` c
 
 ## Permission Groups
 
-Every permission **must** belong to a `PermissionGroup` — a label that organises permissions in the UI. Reuse an existing group where possible, or create a new one. Product usually defines the group name; if it is not specified, confirm with Product or leadership before inventing one.
+Every permission **must** belong to a `PermissionGroup` — a label that organises permissions in the UI. Reuse an existing group where possible, or create a new one. The group name usually comes from the ticket; if it is not specified, ask the user rather than inventing one.
 
 ## Allowed Permission Names
 
@@ -32,7 +32,7 @@ And, only when requested:
 
 - `permission-name.import`
 
-Not every model needs every permission — for example, omit `*.update` for a model that is never updated. Decide the set before creating it, confirming with Product or leadership when it is unclear.
+Not every model needs every permission — for example, omit `*.update` for a model that is never updated. Decide the set before creating it, asking the user when it is unclear.
 
 ## Permission Migrations
 
