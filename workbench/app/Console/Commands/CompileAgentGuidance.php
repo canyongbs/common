@@ -113,9 +113,16 @@ class CompileAgentGuidance extends Command
     {
         $path = $root . '/boost.json';
 
-        $config = $this->files->exists($path)
-            ? json_decode($this->files->get($path), associative: true)
-            : null;
+        if (! $this->files->exists($path)) {
+            return ['packages' => [], 'skills' => []];
+        }
+
+        try {
+            $config = json_decode($this->files->get($path), true, flags: JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            $this->components->warn("Invalid [boost.json] ({$exception->getMessage()}); skipping bundled guidelines/skills.");
+            $config = [];
+        }
 
         $list = fn (string $key): array => is_array($config[$key] ?? null)
             ? array_values(array_filter($config[$key], 'is_string'))
