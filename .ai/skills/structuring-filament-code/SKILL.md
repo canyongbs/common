@@ -129,7 +129,7 @@ An extended class can be instantiated with no arguments, so it **cannot enforce 
 ```php
 class ArchiveAction extends Action
 {
-    protected bool | Closure $shouldRedirectToIndex = true;
+    protected bool | Closure $shouldRedirectToList = true;
 
     protected function setUp(): void
     {
@@ -143,22 +143,22 @@ class ArchiveAction extends Action
             $record->archive();
         });
 
-        $this->successRedirectUrl(fn (ArchiveAction $action): ?string => $action->evaluate($action->shouldRedirectToIndex)
-            ? $action->getResource()::getUrl('index')
+        $this->successRedirectUrl(fn (ArchiveAction $action): ?string => $action->evaluate($action->shouldRedirectToList)
+            ? $action->getResource()::getUrl()
             : null);
     }
 
     // Optional config method, stored in a config property — the whole reason to extend
-    public function shouldRedirectToIndex(bool | Closure $condition = true): static
+    public function shouldRedirectToList(bool | Closure $condition = true): static
     {
-        $this->shouldRedirectToIndex = $condition;
+        $this->shouldRedirectToList = $condition;
 
         return $this;
     }
 }
 ```
 
-Used out of the box as `ArchiveAction::make()`, or configured with `ArchiveAction::make()->shouldRedirectToIndex(false)`.
+Used out of the box as `ArchiveAction::make()`, or configured with `ArchiveAction::make()->shouldRedirectToList(false)`.
 
 ## Inject the Current Object in Closures — Never `$this`
 
@@ -176,7 +176,7 @@ Correct:
 ->visible(fn (Component $component): bool => $component->getRecord()->is_active)
 ```
 
-Within an extended class, the injected parameter is that class's own type, so closures can still read its config properties (`fn (ArchiveAction $action) => $action->shouldRedirectToIndex`). Direct method calls in `setUp()` that are not inside a closure (`$this->label(...)`) are fine — the rule is about closures.
+Within an extended class, the injected parameter is that class's own type, so closures can still read its config properties (`fn (ArchiveAction $action) => $action->shouldRedirectToList`). Direct method calls in `setUp()` that are not inside a closure (`$this->label(...)`) are fine — the rule is about closures.
 
 ## Put a Single-Use Schema on the Page
 
