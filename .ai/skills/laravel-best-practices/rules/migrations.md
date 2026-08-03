@@ -91,6 +91,11 @@ Schema::table('posts', function (Blueprint $table) {
 });
 ```
 
+Immutability applies to the migration's schema/data logic, not to two deletions that are part of the normal lifecycle:
+
+- **Deleting a temporary (`tmp_`) data migration** once it has run across all environments — that is the point of the `tmp_` prefix. Track the deletion in a cleanup task (see the `writing-data-migrations` and `managing-cleanup-tasks` skills).
+- **Removing a Feature Flag's activation/deactivation** when the flag is cleaned up after a successful deploy — delete the activation migration along with the flag class (see the `managing-feature-flags` skill).
+
 ## Add Indexes in the Migration
 
 Add indexes when creating the table, not as an afterthought. Columns used in `WHERE`, `ORDER BY`, and `JOIN` clauses need indexes.
