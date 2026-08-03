@@ -69,7 +69,7 @@ ProjectType::query()->withoutArchivedAndUnused()->get();
 
 An optional `isUsed()` is the record-level counterpart. It must agree with `used()`, and it changes the Filament `ArchiveAction` to delete unused records instead of archiving them (below). Keep it efficient — read the value eager-loaded by `withExists()` and memoize it, so it never runs more than one query:
 
-> **Adding `isUsed()` is what grants users the ability to delete.** Whether a model can be archived, deleted, or both must always be a deliberate, conscious decision — never a default. Defining `isUsed()` opts the model into deletion of unused records; omitting it means the `ArchiveAction` can *only ever archive*, never delete. So if Product asks for archiving and does not mention deletion, do **not** add `isUsed()` — leave it off so users can only archive. Add `isUsed()` only when deletion of unused records has been explicitly requested.
+> **Adding `isUsed()` is what grants users the ability to delete.** Whether a model can be archived, deleted, or both must always be a deliberate, conscious decision — never a default. Defining `isUsed()` opts the model into deletion of unused records; omitting it means the `ArchiveAction` can _only ever archive_, never delete. So if Product asks for archiving and does not mention deletion, do **not** add `isUsed()` — leave it off so users can only archive. Add `isUsed()` only when deletion of unused records has been explicitly requested.
 
 ```php
 public function isUsed(): bool
