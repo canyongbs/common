@@ -32,6 +32,22 @@ public function users(): BelongsToMany
 }
 ```
 
+## Use UUID Keys, Soft Deletes & Pivots
+
+- **UUID primary keys** — every model uses `HasUuids` (the migration declares a `uuid('id')` primary key; see `migrations.md`).
+- **Soft deletes on domain models** — domain models use `SoftDeletes`; "meta" tables such as pivots and join tables do **not**. On a soft-deleting table the unique index is scoped to `whereNull('deleted_at')`, and unique validation must match it (see `migrations.md`).
+- **Custom pivot models** extend `Pivot` and use `HasUuids` — a UUID key, no soft deletes.
+
+```php
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+
+class OrganizationUser extends Pivot
+{
+    use HasUuids;
+}
+```
+
 ## Define Attribute Casts
 
 Use the `casts()` method for automatic type conversion.

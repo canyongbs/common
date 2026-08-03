@@ -1,6 +1,6 @@
 ---
 name: laravel-best-practices
-description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying models, migrations, policies, jobs, invokable controllers, Action and service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, queue and job configuration, HTTP client usage, configuration and environment access, naming and code-style conventions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
+description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying models, migrations, policies, jobs, invokable controllers, Action and service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, queue and job configuration, HTTP client usage, database and PostgreSQL schema conventions (UUID keys, citext, unique indexes, soft deletes), configuration and environment access, naming and code-style conventions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
 license: MIT
 metadata:
     author: laravel
@@ -21,6 +21,7 @@ Check sibling files, related controllers, models, or tests for established patte
 ### 1. Models → `rules/models.md`
 
 - Relationship methods with correct types and return-type hints (`HasMany<Related, $this>`)
+- UUID keys via `HasUuids`; `SoftDeletes` on domain models (not pivots / meta tables); custom pivots extend `Pivot`
 - Attribute casts in the `casts()` method; cast date columns to Carbon
 - Define `$fillable` on every model to guard mass assignment
 - Mirror database column defaults in the model's `$attributes`
@@ -51,6 +52,8 @@ Check sibling files, related controllers, models, or tests for established patte
 ### 4. Migrations → `rules/migrations.md`
 
 - Generate migrations with `php artisan make:migration`
+- PostgreSQL via `tpetry/laravel-postgresql-enhanced` (import its `Blueprint`/`Schema`); UUID primary keys (`uuid('id')->primary()`, `foreignUuid()`); `caseInsensitiveText()` (citext) for case-insensitive columns
+- Always `uniqueIndex()`, never `unique()`; scope to `whereNull('deleted_at')` on soft-deleting tables; `nullsNotDistinct()` / partial indexes for NULLs; match unique validation to the index
 - `constrained()` for foreign keys
 - Never modify migrations that have run in production
 - Add indexes in the migration (columns used in `WHERE`, `ORDER BY`, `JOIN`)
