@@ -74,10 +74,10 @@ DB::select("SELECT * FROM users WHERE name = '{$request->name}'");
 Correct:
 
 ```php
-User::where('name', $request->name)->get();
+User::query()->where('name', $request->name)->get();
 
 // Raw expressions with bindings
-User::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->get();
+User::query()->whereRaw('LOWER(name) = ?', [strtolower($request->name)])->get();
 ```
 
 ## Escape Output to Prevent XSS

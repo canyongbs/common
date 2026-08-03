@@ -1,6 +1,6 @@
 ---
 name: laravel-best-practices
-description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying controllers, models, migrations, form requests, policies, jobs, scheduled commands, service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, validation, error handling, queue and job configuration, route definitions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
+description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying controllers, models, migrations, form requests, policies, jobs, scheduled commands, service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, error handling, queue and job configuration, route definitions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
 license: MIT
 metadata:
     author: laravel
@@ -89,17 +89,8 @@ Check sibling files, related controllers, models, or tests for established patte
 - `ShouldBeUnique` to prevent duplicates; `ShouldBeUniqueUntilProcessing` for early lock release
 - Always implement `failed()`; with `retryUntil()`, set `$tries = 0`
 - `RateLimited` middleware for external API calls; `Bus::batch()` for related jobs
-- Horizon for complex multi-queue scenarios
 
-### 9. Routing & Controllers → `rules/routing.md`
-
-- Implicit route model binding
-- Scoped bindings for nested resources
-- `Route::resource()` or `apiResource()`
-- Methods under 10 lines — extract to actions/services
-- Type-hint Form Requests for auto-validation
-
-### 10. HTTP Client → `rules/http-client.md`
+### 9. HTTP Client → `rules/http-client.md`
 
 - Explicit `timeout` and `connectTimeout` on every request
 - `retry()` with exponential backoff for external APIs
@@ -107,42 +98,14 @@ Check sibling files, related controllers, models, or tests for established patte
 - `Http::pool()` for concurrent independent requests
 - `Http::fake()` and `preventStrayRequests()` in tests
 
-### 11. Events, Notifications & Mail → `rules/events-notifications.md`, `rules/mail.md`
-
-- Event discovery over manual registration; `event:cache` in production
-- `ShouldDispatchAfterCommit` / `afterCommit()` inside transactions
-- Queue notifications and mailables with `ShouldQueue`
-- On-demand notifications for non-user recipients
-- `HasLocalePreference` on notifiable models
-- `assertQueued()` not `assertSent()` for queued mailables
-- Markdown mailables for transactional emails
-
-### 12. Error Handling → `rules/error-handling.md`
-
-- `report()`/`render()` on exception classes or in `bootstrap/app.php` — follow existing pattern
-- `ShouldntReport` for exceptions that should never log
-- Throttle high-volume exceptions to protect log sinks
-- `dontReportDuplicates()` for multi-catch scenarios
-- Force JSON rendering for API routes
-- Structured context via `context()` on exception classes
-
-### 13. Task Scheduling → `rules/scheduling.md`
-
-- `withoutOverlapping()` on variable-duration tasks
-- `onOneServer()` on multi-server deployments
-- `runInBackground()` for concurrent long tasks
-- `environments()` to restrict to appropriate environments
-- `takeUntilTimeout()` for time-bounded processing
-- Schedule groups for shared configuration
-
-### 14. Architecture → `rules/architecture.md`
+### 11. Architecture → `rules/architecture.md`
 
 - Single-purpose Action classes; dependency injection over `app()` helper
 - Prefer official Laravel packages and follow conventions, don't override defaults
 - Default to `ORDER BY id DESC` or `created_at DESC`; `mb_*` for UTF-8 safety
 - `defer()` for post-response work; `Context` for request-scoped data; `Concurrency::run()` for parallel execution
 
-### 15. Migrations → `rules/migrations.md`
+### 12. Migrations → `rules/migrations.md`
 
 - Generate migrations with `php artisan make:migration`
 - `constrained()` for foreign keys
@@ -152,21 +115,14 @@ Check sibling files, related controllers, models, or tests for established patte
 - Reversible `down()` by default; forward-fix migrations for intentionally irreversible changes
 - One concern per migration — never mix DDL and DML
 
-### 16. Collections → `rules/collections.md`
+### 13. Collections → `rules/collections.md`
 
 - Higher-order messages for simple collection operations
 - `cursor()` vs. `lazy()` — choose based on relationship needs
 - `lazyById()` when updating records while iterating
 - `toQuery()` for bulk operations on collections
 
-### 17. Blade & Views → `rules/blade-views.md`
-
-- `$attributes->merge()` in component templates
-- Blade components over `@include`; `@pushOnce` for per-component scripts
-- View Composers for shared view data
-- `@aware` for deeply nested component props
-
-### 18. Conventions & Style → `rules/style.md`
+### 14. Conventions & Style → `rules/style.md`
 
 - Follow Laravel naming conventions for all entities
 - Prefer Laravel helpers (`Str`, `Arr`, `Number`, `Uri`, `Str::of()`, `$request->string()`) over raw PHP functions

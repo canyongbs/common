@@ -9,7 +9,7 @@ class CreateOrderAction
 {
     public function __construct(private InventoryService $inventory) {}
 
-    public function handle(array $data): Order
+    public function __invoke(array $data): Order
     {
         $order = Order::create($data);
         $this->inventory->reserve($order);
@@ -21,14 +21,14 @@ class CreateOrderAction
 
 ## Use Dependency Injection
 
-Always use constructor injection. Avoid `app()` or `resolve()` inside classes.
+Always use constructor injection where available. Avoid `app()` or `resolve()` inside classes.
 
 Incorrect:
 
 ```php
-class OrderController extends Controller
+class CreateOrderController extends Controller
 {
-    public function store(StoreOrderRequest $request)
+    public function __invoke(StoreOrderRequest $request)
     {
         $service = app(OrderService::class);
 
@@ -40,11 +40,11 @@ class OrderController extends Controller
 Correct:
 
 ```php
-class OrderController extends Controller
+class CreateOrderController extends Controller
 {
     public function __construct(private OrderService $service) {}
 
-    public function store(StoreOrderRequest $request)
+    public function __invoke(StoreOrderRequest $request)
     {
         return $this->service->create($request->validated());
     }
@@ -84,33 +84,17 @@ Bind in a service provider:
 $this->app->bind(PaymentGateway::class, StripeGateway::class);
 ```
 
-## Default Sort by Descending
-
-When no explicit order is specified, sort by `id` or `created_at` descending. Without an explicit `ORDER BY`, row order is undefined.
-
-Incorrect:
-
-```php
-$posts = Post::paginate();
-```
-
-Correct:
-
-```php
-$posts = Post::latest()->paginate();
-```
-
 ## Use Atomic Locks for Race Conditions
 
 Prevent race conditions with `Cache::lock()` or `lockForUpdate()`.
 
 ```php
-Cache::lock('order-processing-'.$order->id, 10)->block(5, function () use ($order) {
+Cache::lock("order-processing-{$order->id}", 10)->block(5, function () use ($order) {
     $order->process();
 });
 
 // Or at query level
-$product = Product::where('id', $id)->lockForUpdate()->first();
+$product = Product::query()->where('id', $id)->lockForUpdate()->first();
 ```
 
 ## Use `mb_*` String Functions
@@ -148,7 +132,7 @@ dispatch(new LogPageView($page));
 Correct (runs after response, same process):
 
 ```php
-defer(fn () => PageView::create(['page_id' => $page->id, 'user_id' => auth()->id()]));
+defer(fn () => $logPageView($page));
 ```
 
 Use jobs when the work must survive process crashes or needs retry logic. Use `defer()` for fire-and-forget work.
@@ -175,8 +159,8 @@ Run independent operations in parallel using child processes — no async librar
 use Illuminate\Support\Facades\Concurrency;
 
 [$users, $orders] = Concurrency::run([
-    fn () => User::count(),
-    fn () => Order::where('status', 'pending')->count(),
+    fn () => User::query()->count(),
+    fn () => Order::query()->where('status', 'pending')->count(),
 ]);
 ```
 

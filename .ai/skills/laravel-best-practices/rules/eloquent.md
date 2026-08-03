@@ -5,72 +5,96 @@
 Use `hasMany`, `belongsTo`, `morphMany`, etc. with proper return type hints.
 
 ```php
+/**
+ * @return HasMany<Comment, $this>
+ */
 public function comments(): HasMany
 {
     return $this->hasMany(Comment::class);
 }
 
+/**
+ * @return BelongsTo<User, $this>
+ */
 public function author(): BelongsTo
 {
     return $this->belongsTo(User::class, 'user_id');
 }
 ```
 
-## Use Local Scopes for Reusable Queries
+## Start Queries with `query()`
 
-Extract reusable query constraints into local scopes to avoid duplication.
+Always begin a query with `Model::query()` rather than calling static query methods like `Model::where()`, `Model::all()`, or `Model::find()` directly on the model. Starting with `query()` returns an explicit `Builder` instance, which improves IDE autocompletion and static analysis, and keeps query chains consistent.
 
 Incorrect:
 
 ```php
-$active = User::where('verified', true)->whereNotNull('activated_at')->get();
-$articles = Article::whereHas('user', function ($q) {
-    $q->where('verified', true)->whereNotNull('activated_at');
+$users = User::where('is_active', true)->get();
+$user = User::find($id);
+$all = User::all();
+```
+
+Correct:
+
+```php
+$users = User::query()->where('is_active', true)->get();
+$user = User::query()->find($id);
+$all = User::query()->get();
+```
+
+## Use Tappable, Invokable Scopes for Reusable Queries
+
+Extract reusable query constraints into tappable, invokable scope classes to avoid duplication.
+
+Incorrect:
+
+```php
+$active = User::query()->where('is_verified', true)->whereNotNull('activated_at')->get();
+$articles = Article::query()->whereHas('user', function (Builder $query) {
+    $query->where('is_verified', true)->whereNotNull('activated_at');
 })->get();
 ```
 
 Correct:
 
 ```php
-public function scopeActive(Builder $query): Builder
+class ActiveArticles
 {
-    return $query->where('verified', true)->whereNotNull('activated_at');
+    public function __invoke(Builder $query): void
+    {
+        $query
+            ->where('is_verified', true)
+            ->whereNotNull('activated_at');
+    }
 }
 
 // Usage
-$active = User::active()->get();
-$articles = Article::whereHas('user', fn ($q) => $q->active())->get();
+$active = User::query()->tap(app(ActiveArticles::class))->get();
+$articles = Article::query()->whereHas('user', fn (Builder $query) => $query->tap(app(ActiveArticles::class)))->get();
 ```
 
-> **This codebase prefers dedicated scope classes over `scopeX()` methods.** Write an invokable class and apply it explicitly with `->tap(new WithoutAdmins())` on a query; for a truly universal constraint, implement the `Scope` interface and register it with `addGlobalScope(...)` in the model. Follow the existing scope classes rather than adding `scope*()` methods.
+## Name Boolean and Timestamp Columns Consistently
 
-## Apply Global Scopes Sparingly
+Prefix boolean attributes with `is_`, `can_`, or `has_` so their meaning reads as a yes/no question. Name timestamp and datetime columns in the past tense with an `_at` suffix to describe when the event happened.
 
-Global scopes silently modify every query on the model, making debugging difficult. Prefer local scopes and reserve global scopes for truly universal constraints like soft deletes or multi-tenancy.
-
-Incorrect (global scope for a conditional filter):
+Incorrect:
 
 ```php
-class PublishedScope implements Scope
-{
-    public function apply(Builder $builder, Model $model): void
-    {
-        $builder->where('published', true);
-    }
-}
-// Now admin panels, reports, and background jobs all silently skip drafts
+$table->boolean('active');
+$table->boolean('admin');
+$table->boolean('verified');
+$table->timestamp('publish');
+$table->timestamp('expiry');
 ```
 
-Correct (local scope you opt into):
+Correct:
 
 ```php
-public function scopePublished(Builder $query): Builder
-{
-    return $query->where('published', true);
-}
-
-Post::published()->paginate(); // Explicit
-Post::paginate(); // Admin sees all
+$table->boolean('is_active');
+$table->boolean('can_impersonate');
+$table->boolean('has_verified_email');
+$table->timestamp('published_at');
+$table->timestamp('expires_at');
 ```
 
 ## Define Attribute Casts
@@ -120,14 +144,14 @@ Cleaner than manually specifying foreign keys.
 Incorrect:
 
 ```php
-Post::where('user_id', $user->id)->get();
+Post::query()->where('user_id', $user->id)->get();
 ```
 
 Correct:
 
 ```php
-Post::whereBelongsTo($user)->get();
-Post::whereBelongsTo($user, 'author')->get();
+Post::query()->whereBelongsTo($user)->get();
+Post::query()->whereBelongsTo($user, 'author')->get();
 ```
 
 ## Avoid Hardcoded Table Names in Queries
@@ -137,7 +161,7 @@ Never use string literals for table names in raw queries, joins, or subqueries. 
 Incorrect:
 
 ```php
-DB::table('users')->where('active', true)->get();
+DB::table('users')->where('is_active', true)->get();
 
 $query->join('companies', 'companies.id', '=', 'users.company_id');
 
@@ -147,13 +171,41 @@ DB::select('SELECT * FROM orders WHERE status = ?', ['pending']);
 Correct — reference the model's table:
 
 ```php
-DB::table((new User)->getTable())->where('active', true)->get();
+DB::table((new User)->getTable())->where('is_active', true)->get();
 
 // Even better — use Eloquent or the query builder instead of raw SQL
-User::where('active', true)->get();
-Order::where('status', 'pending')->get();
+User::query()->where('is_active', true)->get();
+Order::query()->where('status', 'pending')->get();
 ```
 
 Prefer Eloquent queries and relationships over `DB::table()` whenever possible — they already reference the model's table. When `DB::table()` or raw joins are unavoidable, always use `(new Model)->getTable()` to keep the reference traceable.
 
-**Exception — migrations:** In migrations, hardcoded table names via `DB::table('settings')` are acceptable and preferred. Models change over time but migrations are frozen snapshots — referencing a model that is later renamed or deleted would break the migration.
+**Exception — migrations:** In migrations, hardcoded table names via `DB::table('settings')` are acceptable and required. Models change over time but migrations are frozen snapshots — referencing a model that is later renamed or deleted would break the migration.
+
+## Use `chunkById()` and `eachById()` for Large Datasets
+
+When iterating over large result sets, prefer `chunkById()` and `eachById()` over `chunk()` and `each()`. The `chunk()` and `each()` methods paginate with `offset`/`limit`, so modifying rows inside the callback (updating or deleting them) shifts the offsets and causes records to be skipped. `chunkById()` and `eachById()` paginate by the primary key instead, keeping iteration stable even while rows are changing.
+
+Incorrect:
+
+```php
+User::query()->where('is_active', true)->chunk(200, function (Collection $users) {
+    $users->each->deactivate();
+});
+
+User::query()->where('is_active', true)->each(function (User $user) {
+    $user->deactivate();
+});
+```
+
+Correct:
+
+```php
+User::query()->where('is_active', true)->chunkById(200, function (Collection $users) {
+    $users->each->deactivate();
+});
+
+User::query()->where('is_active', true)->eachById(function (User $user) {
+    $user->deactivate();
+});
+```

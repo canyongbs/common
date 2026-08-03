@@ -126,23 +126,3 @@ class UpdateSearchIndex implements ShouldQueue, ShouldBeUniqueUntilProcessing
     // Lock releases when processing begins, not when it finishes
 }
 ```
-
-## Use Horizon for Complex Queue Scenarios
-
-Use Laravel Horizon when you need monitoring, auto-scaling, failure tracking, or multiple queues with different priorities.
-
-```php
-// config/horizon.php
-'environments' => [
-    'production' => [
-        'supervisor-1' => [
-            'connection' => 'redis',
-            'queue' => ['high', 'default', 'low'],
-            'balance' => 'auto',
-            'minProcesses' => 1,
-            'maxProcesses' => 10,
-            'tries' => 3,
-        ],
-    ],
-],
-```

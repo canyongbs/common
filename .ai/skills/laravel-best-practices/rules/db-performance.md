@@ -7,7 +7,7 @@ Lazy loading causes N+1 query problems — one query per loop iteration. Always 
 Incorrect (N+1 — executes 1 + N queries):
 
 ```php
-$posts = Post::all();
+$posts = Post::query()->get();
 foreach ($posts as $post) {
     echo $post->author->name;
 }
@@ -16,7 +16,7 @@ foreach ($posts as $post) {
 Correct (2 queries total):
 
 ```php
-$posts = Post::with('author')->get();
+$posts = Post::query()->with('author')->get();
 foreach ($posts as $post) {
     echo $post->author->name;
 }
@@ -25,9 +25,9 @@ foreach ($posts as $post) {
 Constrain eager loads to select only needed columns (always include the foreign key):
 
 ```php
-$users = User::with(['posts' => function ($query) {
+$users = User::query()->with(['posts' => function ($query) {
     $query->select('id', 'user_id', 'title')
-          ->where('published', true)
+          ->where('is_published', true)
           ->latest()
           ->limit(10);
 }])->get();
@@ -53,13 +53,13 @@ Avoid `SELECT *` — especially when tables have large text or JSON columns.
 Incorrect:
 
 ```php
-$posts = Post::with('author')->get();
+$posts = Post::query()->with('author')->get();
 ```
 
 Correct:
 
 ```php
-$posts = Post::select('id', 'title', 'user_id', 'created_at')
+$posts = Post::query()->select('id', 'title', 'user_id', 'created_at')
     ->with(['author:id,name,avatar'])
     ->get();
 ```
@@ -73,7 +73,7 @@ Never load thousands of records at once. Use chunking for batch processing.
 Incorrect:
 
 ```php
-$users = User::all();
+$users = User::query()->get();
 foreach ($users as $user) {
     $user->notify(new WeeklyDigest);
 }
@@ -82,7 +82,7 @@ foreach ($users as $user) {
 Correct:
 
 ```php
-User::where('subscribed', true)->chunk(200, function ($users) {
+User::query()->where('is_subscribed', true)->chunk(200, function ($users) {
     foreach ($users as $user) {
         $user->notify(new WeeklyDigest);
     }
@@ -92,7 +92,7 @@ User::where('subscribed', true)->chunk(200, function ($users) {
 Use `chunkById()` when modifying records during iteration — standard `chunk()` uses OFFSET which shifts when rows change:
 
 ```php
-User::where('active', false)->chunkById(200, function ($users) {
+User::query()->where('is_active', false)->chunkById(200, function ($users) {
     $users->each->delete();
 });
 ```
@@ -133,7 +133,7 @@ Never load entire collections just to count them.
 Incorrect:
 
 ```php
-$posts = Post::all();
+$posts = Post::query()->get();
 foreach ($posts as $post) {
     echo $post->comments->count();
 }
@@ -142,7 +142,7 @@ foreach ($posts as $post) {
 Correct:
 
 ```php
-$posts = Post::withCount('comments')->get();
+$posts = Post::query()->withCount('comments')->get();
 foreach ($posts as $post) {
     echo $post->comments_count;
 }
@@ -151,12 +151,23 @@ foreach ($posts as $post) {
 Conditional counting:
 
 ```php
-$posts = Post::withCount([
+$posts = Post::query()->withCount([
     'comments',
     'comments as approved_comments_count' => function ($query) {
-        $query->where('approved', true);
+        $query->where('is_approved', true);
     },
 ])->get();
+```
+
+When you only need to know whether a relation has any related records — not the exact count — use `withExists()` instead. It adds a boolean `*_exists` attribute using an `EXISTS` subquery, which is cheaper than counting.
+
+```php
+$posts = Post::query()->withExists('comments')->get();
+foreach ($posts as $post) {
+    if ($post->comments_exists) {
+        // ...
+    }
+}
 ```
 
 ## Use `cursor()` for Memory-Efficient Iteration
@@ -166,13 +177,13 @@ For read-only iteration over large result sets, `cursor()` loads one record at a
 Incorrect:
 
 ```php
-$users = User::where('active', true)->get();
+$users = User::query()->where('is_active', true)->get();
 ```
 
 Correct:
 
 ```php
-foreach (User::where('active', true)->cursor() as $user) {
+foreach (User::query()->where('is_active', true)->cursor() as $user) {
     ProcessUser::dispatch($user->id);
 }
 ```
@@ -186,7 +197,7 @@ Never execute queries in Blade templates. Pass data from controllers.
 Incorrect:
 
 ```blade
-@foreach (User::all() as $user)
+@foreach (User::query()->get() as $user)
     {{ $user->profile->name }}
 @endforeach
 ```
@@ -195,7 +206,7 @@ Correct:
 
 ```php
 // Controller
-$users = User::with('profile')->get();
+$users = User::query()->with('profile')->get();
 return view('users.index', compact('users'));
 ```
 

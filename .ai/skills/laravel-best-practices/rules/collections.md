@@ -19,9 +19,9 @@ Works with `each`, `map`, `sum`, `filter`, `reject`, `contains`, etc.
 - `cursor()` — one model in memory, but cannot eager-load relationships (N+1 risk).
 - `lazy()` — chunked pagination returning a flat LazyCollection, supports eager loading.
 
-Incorrect: `User::with('roles')->cursor()` — eager loading silently ignored.
+Incorrect: `User::query()->with('roles')->cursor()` — eager loading silently ignored.
 
-Correct: `User::with('roles')->lazy()` for relationship access; `User::cursor()` for attribute-only work.
+Correct: `User::query()->with('roles')->lazy()` for relationship access; `User::query()->cursor()` for attribute-only work.
 
 ## Use `lazyById()` When Updating Records While Iterating
 
@@ -31,7 +31,7 @@ Correct: `User::with('roles')->lazy()` for relationship access; `User::cursor()`
 
 Avoids manual `whereIn` construction.
 
-Incorrect: `User::whereIn('id', $users->pluck('id'))->update([...]);`
+Incorrect: `User::query()->whereIn('id', $users->pluck('id'))->update([...]);`
 
 Correct: `$users->toQuery()->update([...]);`
 
