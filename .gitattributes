@@ -36,6 +36,7 @@
 # Build / dev environment
 /bin                        export-ignore
 /workbench                  export-ignore
+/testbench.yaml             export-ignore
 /package.json               export-ignore
 /copyright.rb               export-ignore
 /.ruby-version              export-ignore

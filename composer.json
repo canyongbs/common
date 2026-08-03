@@ -83,6 +83,15 @@
         "checks": [
             "@format-dryrun",
             "@lint"
+        ],
+        "compile-agent-guidance": [
+            "@php bin/compile-agent-guidance.php"
+        ],
+        "post-install-cmd": [
+            "@compile-agent-guidance"
+        ],
+        "post-update-cmd": [
+            "@compile-agent-guidance"
         ]
     },
     "authors": [
