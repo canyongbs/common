@@ -132,7 +132,7 @@ Check sibling files, related controllers, models, or tests for established patte
 
 ## How to Apply
 
-Always use a sub-agent to read rule files and explore this skill's content.
+Always read the relevant `rules/*.md` files referenced above before making changes, and use them as the source of truth for the specific topic.
 
 1. Identify the file type and select relevant sections (e.g., model → §1, §9; query → §2, §3; migration → §4; HTTP endpoint → §5, §9; job → §6)
 2. Check sibling files for existing patterns — follow those first per Consistency First
