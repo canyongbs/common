@@ -2,7 +2,7 @@
     /** @var \Workbench\App\Support\LocalGuidelineAssist $assist */
 @endphp
 
-# Working In The `canyongbs/common` Package (Not An App)
+## Working In The `canyongbs/common` Package (Not An App)
 
 You are editing the `canyongbs/common` package itself — the shared library that Canyon GBS applications depend on — **not** a consuming Laravel app. Keep this context in mind, because the rest of this file and the skills are authored primarily for apps.
 

@@ -2,7 +2,7 @@
     /** @var \Laravel\Boost\Install\GuidelineAssist $assist */
 @endphp
 
-# Zero-Downtime Schema & Data Changes
+## Zero-Downtime Schema & Data Changes
 
 These applications deploy with **zero downtime**: new code is released and reachable **before** migrations run, migrations run per-tenant, and one tenant's migration failing must not break others. Any code that depends on a schema or data change that may not have run yet will break in production between deploy and migration unless it is guarded.
 

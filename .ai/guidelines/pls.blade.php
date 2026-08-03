@@ -2,7 +2,7 @@
     /** @var \Laravel\Boost\Install\GuidelineAssist $assist */
 @endphp
 
-# Running Commands
+## Running Commands
 
 The application runs inside Docker containers managed by the `pls` helper. The host machine's toolchain (PHP version and extensions, Composer, Node) does not necessarily match the container, so commands run on the host may fail or behave differently.
 

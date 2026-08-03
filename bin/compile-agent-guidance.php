@@ -34,9 +34,10 @@
 </COPYRIGHT>
 */
 
-// Runs the local `common:compile-guidance` command after composer install/update.
-// Testbench is a dev dependency, so skip silently when it is absent (e.g. a
-// `--no-dev` install) rather than failing the composer run.
+// Runs the local `common:compile-guidance` command from Composer's
+// post-autoload-dump hook (fired by install, update, require, and an explicit
+// `composer dump-autoload`). Testbench is a dev dependency, so skip silently
+// when it is absent (e.g. a `--no-dev` install) rather than failing the run.
 
 $testbench = __DIR__ . '/../vendor/bin/testbench';
 

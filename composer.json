@@ -88,10 +88,7 @@
         "compile-agent-guidance": [
             "@php bin/compile-agent-guidance.php"
         ],
-        "post-install-cmd": [
-            "@compile-agent-guidance"
-        ],
-        "post-update-cmd": [
+        "post-autoload-dump": [
             "@compile-agent-guidance"
         ]
     },

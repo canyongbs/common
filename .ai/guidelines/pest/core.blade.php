@@ -2,7 +2,7 @@
     /** @var \Laravel\Boost\Install\GuidelineAssist $assist */
 @endphp
 
-# Pest
+## Pest
 
 - This project uses Pest for all tests.
 - Run tests: `{{ $assist->artisanCommand('test --compact') }}` or filter: `{{ $assist->artisanCommand('test --compact --filter=testName') }}`.
