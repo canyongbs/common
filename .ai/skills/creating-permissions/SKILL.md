@@ -12,11 +12,11 @@ Permissions use the [Spatie Laravel-permission](https://spatie.be/docs/laravel-p
 
 Run every command through the `pls` guideline (these apps run inside the `app` container).
 
-## Permission groups
+## Permission Groups
 
 Every permission **must** belong to a `PermissionGroup` — a label that organises permissions in the UI. Reuse an existing group where possible, or create a new one. Product usually defines the group name; if it is not specified, confirm with Product or leadership before inventing one.
 
-## Allowed permission names
+## Allowed Permission Names
 
 Use this format when adding permissions for a model or feature:
 
@@ -34,7 +34,7 @@ And, only when requested:
 
 Not every model needs every permission — for example, omit `*.update` for a model that is never updated. Decide the set before creating it, confirming with Product or leadership when it is unclear.
 
-## Permission migrations
+## Permission Migrations
 
 Permissions are created and managed through migrations that follow extra conventions:
 
@@ -91,4 +91,4 @@ return new class extends Migration
 
 ---
 
-Related skill: `writing-data-migrations`.
+Related: `writing-data-migrations`.

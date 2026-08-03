@@ -10,7 +10,7 @@ metadata:
 
 Feature Flags gate code that must not run — or must run differently — until a deployment's migrations have completed. They exist for **zero-downtime deploys**: code ships and is reachable before migrations run (per tenant), so any code depending on a schema or data change must be guarded. See the `zero-downtime` guideline for the deployment context.
 
-These are **class-based Laravel Pennant flags**: one class per flag under `App\Features`, extending `App\Support\AbstractFeatureFlag`. A flag is temporary by design — once its deploy succeeds, a later release removes it, tracked by a cleanup task.
+These are **class-based Laravel Pennant flags**: one class per flag under `App\Features`. A tenant-scoped flag extends `App\Support\AbstractFeatureFlag`; a landlord/central-scoped flag extends `App\Support\LandlordAbstractFeatureFlag` (which resolves against the `landlord` Pennant store). The base class provides the static `active()`, `activate()`, `deactivate()`, and `purge()` helpers. A flag is temporary by design — once its deploy succeeds, a later release removes it, tracked by a cleanup task.
 
 Run every command through the `pls` guideline (these apps run inside the `app` container).
 
@@ -20,9 +20,25 @@ Run every command through the `pls` guideline (these apps run inside the `app` c
 php artisan make:ff SomeFeature
 ```
 
-This generates the flag class and then prompts you to create or attach a **cleanup task** that tracks its removal (see the `managing-cleanup-tasks` skill). Skip that prompt with `--no-cleanup`. The class name is suffixed with `Feature` automatically, so `make:ff Some` produces `SomeFeature`.
+This generates the flag class under `App\Features` and then prompts you to create or attach a **cleanup task** that tracks its removal (see the `managing-cleanup-tasks` skill). Skip that prompt with `--no-cleanup`. The class name is suffixed with `Feature` automatically, so `make:ff Some` produces `SomeFeature`.
 
-The generated class's `resolve()` returns `false`, so the flag is **inactive** until a migration activates it. You may add conditions to `resolve()` and return `true`, but you **must still** create an activation migration — code may parse the flag before your condition is met.
+The generated class uses Pennant's default stub — a bare class whose `resolve()` returns `false`, so the flag is **inactive** until a migration activates it. You must make it **extend the project base class** yourself: `App\Support\AbstractFeatureFlag` for a tenant flag, or `App\Support\LandlordAbstractFeatureFlag` for a landlord/central flag. Static analysis enforces both the base class and the `Feature` suffix, so `composer lint` fails until you add the `extends`.
+
+```php
+namespace App\Features;
+
+use App\Support\AbstractFeatureFlag;
+
+class SomeFeature extends AbstractFeatureFlag
+{
+    public function resolve(mixed $scope): mixed
+    {
+        return false;
+    }
+}
+```
+
+You may add conditions to `resolve()` and return `true`, but you **must still** create an activation migration — code may parse the flag before your condition is met.
 
 Pennant's own `php artisan pennant:feature SomeFeature` also works but skips the cleanup-task integration; prefer `make:ff`.
 
@@ -120,4 +136,4 @@ The `TODO: Cleanup Task` root finds every cleanup site; the `(some-feature)` tag
 
 ---
 
-Related skills: `managing-cleanup-tasks`, `writing-data-migrations`.
+Related: `managing-cleanup-tasks`, `writing-data-migrations`.

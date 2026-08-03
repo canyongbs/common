@@ -1,9 +1,9 @@
 ---
 name: laravel-best-practices
 description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying models, migrations, policies, jobs, invokable controllers, Action and service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, queue and job configuration, HTTP client usage, database and PostgreSQL schema conventions (UUID keys, citext, unique indexes, soft deletes), configuration and environment access, static frontend assets (Vite), naming and code-style conventions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
-license: MIT
+license: Elastic-2.0
 metadata:
-    author: laravel
+    author: canyongbs
 ---
 
 # Laravel Best Practices
@@ -58,7 +58,6 @@ Check sibling files, related controllers, models, or tests for established patte
 - `constrained()` for foreign keys
 - Never modify migrations that have run in production
 - Add indexes in the migration (columns used in `WHERE`, `ORDER BY`, `JOIN`)
-- Mirror column defaults in the model's `$attributes`
 - Reversible `down()` by default; forward-fix intentionally irreversible changes
 - One concern per migration — never mix DDL and DML
 
@@ -95,7 +94,7 @@ Check sibling files, related controllers, models, or tests for established patte
 
 ### 9. Security → `rules/security.md`
 
-- Define `$fillable` or `$guarded` on every model, authorize every action via policies or gates
+- Define `$fillable` on every model, authorize every action via policies or gates
 - No raw SQL with user input — use Eloquent or query builder
 - `{{ }}` for output escaping, `@csrf` on hand-written POST/PUT/DELETE Blade forms, `throttle` on auth and API routes
 - Validate MIME type, extension, and size for file uploads

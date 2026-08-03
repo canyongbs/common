@@ -11,13 +11,19 @@ class CreateOrderAction
 
     public function __invoke(array $data): Order
     {
-        $order = Order::create($data);
-        $this->inventory->reserve($order);
+        return DB::transaction(function () use ($data) {
+            $order = Order::create($data);
+            $this->inventory->reserve($order);
 
-        return $order;
+            return $order;
+        });
     }
 }
 ```
+
+## Wrap Multi-Step Writes in a Transaction
+
+When one operation performs several writes that must all succeed or all fail together, wrap them in `DB::transaction()` so a failure can't leave half-written state (as in `CreateOrderAction` above). Keep transactions short — do no HTTP calls inside them, and defer side effects with `DB::afterCommit()` or by dispatching jobs after the closure returns.
 
 ## Use Dependency Injection
 

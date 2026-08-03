@@ -103,4 +103,4 @@ The cleanup task file then needs only one line pointing at the tag; the details 
 
 ---
 
-Related skills: `managing-feature-flags`, `writing-data-migrations`.
+Related: `managing-feature-flags`, `writing-data-migrations`.

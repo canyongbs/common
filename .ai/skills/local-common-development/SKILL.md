@@ -1,6 +1,6 @@
 ---
 name: local-common-development
-description: "Use when an app ticket requires changes to the canyongbs/common package and you need to work against a local, editable checkout of common instead of the released version. Trigger whenever a change must be made in common (guidelines, skills, migrations, models, Filament resources, enums, console commands, health checks, rector sets, or any src/ code) while developing or testing inside a consuming app. Covers linking common into an app via a Composer path repository with symlink, bind-mounting the local checkout into the app's Docker containers so the symlink resolves, verifying the symlink, editing common with changes reflected live, republishing common's AI content, and safely unlinking to restore the released version before committing the app. Do not trigger for changes that live entirely inside the app, or for editing an app's own app-modules."
+description: 'Use when an app ticket requires changes to the canyongbs/common package and you need to work against a local, editable checkout of common instead of the released version. Trigger whenever a change must be made in common (guidelines, skills, migrations, models, Filament resources, enums, console commands, health checks, rector sets, or any src/ code) while developing or testing inside a consuming app. Covers linking common into an app via a Composer path repository with symlink, bind-mounting the local checkout into the app''s Docker containers so the symlink resolves, verifying the symlink, editing common with changes reflected live, republishing common''s AI content, and safely unlinking to restore the released version before committing the app. Do not trigger for changes that live entirely inside the app, or for editing an app''s own app-modules.'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -141,3 +141,7 @@ The Composer path repo, the `@dev` constraint, and the Docker bind mount are **l
 - Editing files under `vendor/canyongbs/common` directly — they are overwritten on the next `composer install` unless symlinked.
 - Committing the `../common` path repo, the `@dev` constraint, or the `/var/www/common` mount to a normal app.
 - Forgetting to run `common:publish` after changing common's guidelines or skills, so the app's `AGENTS.md`/`.ai` go stale.
+
+---
+
+Related: `authoring-agent-guidance` (how guidelines, skills, and the publish/override system work).

@@ -10,7 +10,7 @@ metadata:
 
 Archiving is a soft alternative to deletion: it hides records from active use without removing them. It is modelled after `SoftDeletes` and uses an `archived_at` timestamp, with one crucial difference — **archived records are included in queries by default**. You must explicitly exclude them with `withoutArchived()` wherever they should not appear. This suits records that should no longer be selectable but must remain in historical data, reports, and existing associations.
 
-## Preparing the model
+## Preparing the Model
 
 Add a nullable `archived_at` column, then apply the trait (it may be combined with `SoftDeletes` and automatically casts `archived_at` to a datetime):
 
@@ -30,7 +30,7 @@ class Project extends Model
 }
 ```
 
-## Archiving and querying
+## Archiving and Querying
 
 ```php
 $project->archive();            // returns false if cancelled by an event listener
@@ -47,7 +47,7 @@ Project::query()->where('completed', true)->archive();   // bulk archive
 Project::query()->onlyArchived()->unarchive();            // bulk unarchive
 ```
 
-## Archived-but-still-used records
+## Archived-but-Still-Used Records
 
 Some archived records are still referenced elsewhere (e.g. a project type archived but still assigned to active projects). `withoutArchivedAndUnused()` hides records that are **both archived and unused**, while keeping archived-but-used ones visible. Define `used()` to declare what "in use" means:
 
@@ -78,7 +78,7 @@ public function isUsed(): bool
 
 In tables where `isUsed()` runs per row, eager-load the check to avoid N+1: `$table->modifyQueryUsing(fn (Builder $query) => $query->withExists('projects'))`. When the value is computed lazily it is stored as a dirty attribute, so avoid calling `save()` on that instance afterwards.
 
-## Model events
+## Model Events
 
 `archiving`, `archived`, `unarchiving`, and `unarchived` fire around the operation; returning `false` from `archiving` or `unarchiving` cancels it.
 
@@ -86,7 +86,7 @@ In tables where `isUsed()` runs per row, eager-load the check to avoid N+1: `$ta
 
 Archiving is governed by the same permission as deletion: the Filament actions call `can('delete', $record)`, so define a `delete` method on the model's policy.
 
-## Filament actions
+## Filament Actions
 
 `ArchiveAction` (from `CanyonGBS\Common\Filament\Actions\ArchiveAction`) is a header action for `EditRecord` / `ViewRecord` pages; `ArchiveBulkAction` is its table bulk-action counterpart.
 
@@ -111,4 +111,4 @@ Override `authorize()`, `successRedirectUrl()`, or `using()` when the action is 
 
 ---
 
-Related skill: `writing-tests` (for testing archivable models and the Filament actions).
+Related: `writing-tests` (for testing archivable models and the Filament actions).

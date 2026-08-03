@@ -168,4 +168,4 @@ Settings classes are not Eloquent models, so uploaded files attach to the settin
 
 ---
 
-Related skills: `handling-file-uploads` (Media Library mechanics), `writing-tests` (testing a settings page).
+Related: `handling-file-uploads` (Media Library mechanics), `writing-tests` (testing a settings page).

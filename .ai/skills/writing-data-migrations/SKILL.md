@@ -61,4 +61,4 @@ php artisan tenants:artisan "migrate"
 
 ---
 
-Related skills: `managing-feature-flags`, `managing-cleanup-tasks`, `creating-permissions`.
+Related: `managing-feature-flags`, `managing-cleanup-tasks`, `creating-permissions`.

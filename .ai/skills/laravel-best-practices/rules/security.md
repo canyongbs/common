@@ -2,7 +2,7 @@
 
 ## Mass Assignment Protection
 
-Every model must define `$fillable` (whitelist) or `$guarded` (blacklist).
+Every model must define `$fillable` (a mass-assignment whitelist).
 
 Incorrect:
 
@@ -30,7 +30,7 @@ Never use `$guarded = []` on models that accept user input.
 
 ## Authorize Every Action
 
-Use policies or gates. Never skip authorization. Filament resources authorize through their model policies automatically; in standalone controllers, call `Gate::authorize()` explicitly.
+Use policies or gates. Never skip authorization. Back each model with a policy class (`php artisan make:policy`); Filament resources authorize through their model policies automatically; in standalone controllers, call `Gate::authorize()` explicitly.
 
 Incorrect:
 
@@ -143,23 +143,7 @@ $path = $request->file('avatar')->store('avatars', 'public');
 
 ## Keep Secrets Out of Code
 
-Never commit `.env`. Access secrets via `config()` only.
-
-Incorrect:
-
-```php
-$key = env('API_KEY');
-```
-
-Correct:
-
-```php
-// config/services.php
-'api_key' => env('API_KEY'),
-
-// In application code
-$key = config('services.api_key');
-```
+Never commit `.env`. Access secrets via `config()` only, never `env()` outside config files — see `config.md`.
 
 ## Audit Dependencies
 

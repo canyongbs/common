@@ -1,6 +1,6 @@
 ---
 name: authoring-agent-guidance
-description: "Use when creating, editing, or reviewing this project's agent guidance — Laravel Boost guidelines (.ai/guidelines/**/*.blade.php), skills (.ai/skills/<name>/SKILL.md), the boost.json / mcp.json config, or the canyongbs/common publish and override system. Trigger whenever someone asks to add or change a guideline or skill, tweak what Boost injects into AGENTS.md, exclude a bundled/third-party guideline or skill, wire up an override (boost.override.json, .vscode/mcp.override.json, .ai/overrides/**), or understand how common:publish assembles a consuming app's guidance. Applies both inside the common package itself and inside apps that depend on canyongbs/common. Do not use for ordinary Laravel feature code, or for writing automated tests (use the writing-tests skill)."
+description: 'Use when creating, editing, or reviewing this project''s agent guidance — Laravel Boost guidelines (.ai/guidelines/**/*.blade.php), skills (.ai/skills/<name>/SKILL.md), the boost.json / mcp.json config, or the canyongbs/common publish and override system. Trigger whenever someone asks to add or change a guideline or skill, tweak what Boost injects into AGENTS.md, exclude a bundled/third-party guideline or skill, wire up an override (boost.override.json, .vscode/mcp.override.json, .ai/overrides/**), or understand how common:publish assembles a consuming app''s guidance. Applies both inside the common package itself and inside apps that depend on canyongbs/common. Do not use for ordinary Laravel feature code, or for writing automated tests (use the writing-tests skill).'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -123,3 +123,7 @@ Edit these lists when a change must apply to **every** app; use an app's `boost.
 - **Don't** edit generated files in an app (`.ai/skills/`, `.ai/guidelines/`, `boost.json`, `.vscode/mcp.json`, `AGENTS.md`) — they are overwritten by `common:publish`.
 - **Don't** expect an override array to replace a base array — merges are additive; exclude via the `*.exclude` config instead.
 - **Don't** forget `pls exec app` for commands in these Docker-based apps.
+
+---
+
+Related: `local-common-development` (working against a local, editable checkout of common).
