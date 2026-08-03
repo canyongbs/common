@@ -40,6 +40,7 @@ use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
+use JsonException;
 use Workbench\App\Support\LocalGuidelineAssist;
 
 /**
@@ -119,7 +120,7 @@ class CompileAgentGuidance extends Command
 
         try {
             $config = json_decode($this->files->get($path), true, flags: JSON_THROW_ON_ERROR);
-        } catch (\JsonException $exception) {
+        } catch (JsonException $exception) {
             $this->components->warn("Invalid [boost.json] ({$exception->getMessage()}); skipping bundled guidelines/skills.");
             $config = [];
         }
