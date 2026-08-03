@@ -2,7 +2,7 @@
 
 ## Use `Cache::remember()` Instead of Manual Get/Put
 
-Cleaner cache-aside pattern that removes boilerplate. use `Cache::lock()` for race conditions.
+Cleaner cache-aside pattern that removes boilerplate.
 
 Incorrect:
 
@@ -24,15 +24,27 @@ $value = Cache::remember('stats', 60, fn () => $this->computeStats());
 
 On high-traffic keys, one user always gets a slow response when the cache expires. `flexible()` serves slightly stale data while refreshing in the background.
 
-Incorrect: `Cache::remember('users', 300, fn () => User::query()->get());`
+Incorrect:
 
-Correct: `Cache::flexible('users', [300, 600], fn () => User::query()->get());` — fresh for 5 min, stale-but-served up to 10 min, refreshes via deferred function.
+```php
+Cache::remember('users', 300, fn () => User::query()->get());
+```
+
+Correct:
+
+```php
+// Fresh for 5 min, stale-but-served up to 10 min, refreshes via deferred function.
+Cache::flexible('users', [300, 600], fn () => User::query()->get());
+```
 
 ## Use `Cache::memo()` to Avoid Redundant Hits Within a Request
 
 If the same cache key is read multiple times per request (e.g., a service called from multiple places), `memo()` stores the resolved value in memory.
 
-`Cache::memo()->get('settings');` — 5 calls = 1 Redis round-trip instead of 5.
+```php
+// 5 calls = 1 Redis round-trip instead of 5.
+Cache::memo()->get('settings');
+```
 
 ## Use Cache Tags to Invalidate Related Groups
 

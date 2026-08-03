@@ -241,7 +241,7 @@ A render check does not exercise a component that resolves or formats its own va
 - **Infolist entries / form fields with custom state** (`state()`, `getStateUsing()`, `formatStateUsing()`, computed accessors, relationship state): assert with `assertSchemaStateSet([...])`. On **View pages** this is required whenever an entry has such logic.
 - **Table columns with custom state or formatting**: assert the resolved value with `assertTableColumnStateSet($column, $state, record: $record)` and the displayed value with `assertTableColumnFormattedStateSet($column, $state, record: $record)`. This is required for any column using `getStateUsing()` / `formatStateUsing()` / a custom `state()`, on **every table** — list pages, relation managers, manage-related-records pages, and table widgets.
 
-Plain columns/entries only need existence checks (`assertTableColumnExists()`); reserve state assertions for columns/entries that actually compute or format a value.
+Plain columns/entries with no custom logic need no assertion of their own — do **not** add a static `assertTableColumnExists()` list to stand in for behaviour tests. Reserve state assertions for columns/entries that actually compute or format a value.
 
 ### The `authorization` block (required on every resource page)
 
@@ -339,7 +339,7 @@ class CreateUserRequestFactory extends RequestFactory
 
 ## Running Tests
 
-Run tests with `php artisan test --compact`; narrow with `--filter=` or a path while iterating, and run the full suite before finalizing. Execute the command according to the project's command-execution guideline (these apps run commands inside the app container). Do not delete tests without approval.
+Run tests with `php artisan test --compact`; narrow with `--filter=` or a path while iterating, and run the full suite before finalizing. Execute the command according to the `pls` guideline (these apps run commands inside the app container). Do not delete tests without approval.
 
 ## Common Pitfalls
 

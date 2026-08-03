@@ -12,7 +12,7 @@ A **cleanup task** is a tracked markdown file in `.cleanup-tasks/` that records 
 
 Cleanup tasks are created alongside the things they track and deleted once every item is done.
 
-Run every command through the project's command-execution guideline (these apps run inside the `app` container).
+Run every command through the `pls` guideline (these apps run inside the `app` container).
 
 ## Creating a cleanup task
 

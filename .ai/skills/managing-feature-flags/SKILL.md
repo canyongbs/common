@@ -12,7 +12,7 @@ Feature Flags gate code that must not run — or must run differently — until 
 
 These are **class-based Laravel Pennant flags**: one class per flag under `App\Features`, extending `App\Support\AbstractFeatureFlag`. A flag is temporary by design — once its deploy succeeds, a later release removes it, tracked by a cleanup task.
 
-Run every command through the project's command-execution guideline (these apps run inside the `app` container).
+Run every command through the `pls` guideline (these apps run inside the `app` container).
 
 ## Creating a Feature Flag
 
@@ -20,7 +20,7 @@ Run every command through the project's command-execution guideline (these apps 
 php artisan make:ff SomeFeature
 ```
 
-This generates the flag class and then prompts you to create or attach a **cleanup task** that tracks its removal (see the `managing-cleanup-tasks` skill). Skip that prompt with `--no-cleanup`.
+This generates the flag class and then prompts you to create or attach a **cleanup task** that tracks its removal (see the `managing-cleanup-tasks` skill). Skip that prompt with `--no-cleanup`. The class name is suffixed with `Feature` automatically, so `make:ff Some` produces `SomeFeature`.
 
 The generated class's `resolve()` returns `false`, so the flag is **inactive** until a migration activates it. You may add conditions to `resolve()` and return `true`, but you **must still** create an activation migration — code may parse the flag before your condition is met.
 

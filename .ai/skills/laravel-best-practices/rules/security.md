@@ -71,8 +71,9 @@ Correct:
 ```php
 User::query()->where('name', $request->name)->get();
 
-// Raw expressions with bindings
-User::query()->whereRaw('LOWER(name) = ?', [strtolower($request->name)])->get();
+// Raw expressions must use bindings, never string interpolation.
+// For case-insensitive search prefer an indexable `lower()` expression (see queries.md).
+User::query()->whereRaw('created_at > ?', [$request->date('since')])->get();
 ```
 
 ## Escape Output to Prevent XSS
@@ -129,12 +130,9 @@ Route::post('/login', LoginController::class)->middleware('throttle:login');
 Validate extension, MIME type, and size. The `mimes` rule checks extensions; use `mimetypes` for actual MIME type validation. Never trust client-provided filenames.
 
 ```php
-public function rules(): array
-{
-    return [
-        'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-    ];
-}
+$validated = $request->validate([
+    'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+]);
 ```
 
 Store with generated filenames:

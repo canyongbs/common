@@ -10,7 +10,7 @@ metadata:
 
 Every change must pass the same checks CI runs before it is considered complete. Apply style fixes with `composer format`, then run `composer lint` (PHPStan/Larastan) and resolve **everything** it reports — never leave violations for CI. Because `composer checks` is just `format-dryrun` + `lint`, running `format` (which writes the fixes) and then `lint` covers the same ground without re-checking formatting you just applied — do not run `format` followed by `checks`.
 
-Run every command through the project's command-execution guideline (these apps run inside the `app` container).
+Run every command through the `pls` guideline (these apps run inside the `app` container).
 
 ## Commands
 

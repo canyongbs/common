@@ -10,7 +10,7 @@ metadata:
 
 Permissions use the [Spatie Laravel-permission](https://spatie.be/docs/laravel-permission/v5/introduction) package and are created through **permission migrations**.
 
-Run every command through the project's command-execution guideline (these apps run inside the `app` container).
+Run every command through the `pls` guideline (these apps run inside the `app` container).
 
 ## Permission groups
 

@@ -15,7 +15,7 @@ Migrations may contain schema changes, data changes, or both — there is no req
 
 Any data migration whose result the application code depends on must be paired with a Feature Flag — see the `zero-downtime` guideline and the `managing-feature-flags` skill.
 
-Run every command through the project's command-execution guideline (these apps run inside the `app` container).
+Run every command through the `pls` guideline (these apps run inside the `app` container).
 
 ## Permanent vs temporary migrations
 
