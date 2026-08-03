@@ -19,6 +19,32 @@ class CreateOrderAction
 }
 ```
 
+## Keep HTTP Endpoints Thin and Invokable
+
+This is a Filament-first codebase: most CRUD lives in Filament resources and pages, and form validation lives in the Filament schema — not in routes, controllers, or Form Request classes. For the few standalone HTTP endpoints:
+
+- Use single-action **invokable** controllers (one class with an `__invoke()` method), not resource or multi-method controllers.
+- There are **no Form Request classes** — validate inline with `$request->validate([...])` in array notation, then delegate the work to an Action class.
+- Return data through **Eloquent API Resources**.
+
+```php
+class CreateOrganizationController
+{
+    public function __invoke(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:organizations,name'],
+        ]);
+
+        $organization = Organization::create($validated);
+
+        return OrganizationResource::make($organization)
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
+    }
+}
+```
+
 ## Use Dependency Injection
 
 Always use constructor injection where available. Avoid `app()` or `resolve()` inside classes.
@@ -26,13 +52,15 @@ Always use constructor injection where available. Avoid `app()` or `resolve()` i
 Incorrect:
 
 ```php
-class CreateOrderController extends Controller
+class CreateOrderController
 {
-    public function __invoke(StoreOrderRequest $request)
+    public function __invoke(Request $request)
     {
         $service = app(OrderService::class);
 
-        return $service->create($request->validated());
+        return $service->create($request->validate([
+            'total' => ['required', 'integer', 'min:0'],
+        ]));
     }
 }
 ```
@@ -40,13 +68,15 @@ class CreateOrderController extends Controller
 Correct:
 
 ```php
-class CreateOrderController extends Controller
+class CreateOrderController
 {
     public function __construct(private OrderService $service) {}
 
-    public function __invoke(StoreOrderRequest $request)
+    public function __invoke(Request $request)
     {
-        return $this->service->create($request->validated());
+        return $this->service->create($request->validate([
+            'total' => ['required', 'integer', 'min:0'],
+        ]));
     }
 }
 ```

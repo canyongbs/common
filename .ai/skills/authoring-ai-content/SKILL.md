@@ -69,6 +69,7 @@ Boost injects first-party guidelines for detected packages (e.g. `filament/filam
 Skills are on-demand knowledge modules loaded when their `description` matches the task. Use a skill (not a guideline) for anything long, procedural, or domain-specific.
 
 - One folder per skill: `.ai/skills/<name>/SKILL.md`, with optional `rules/` and `reference/` subfolders for supporting docs the SKILL.md links to.
+- **Keep a multi-file skill's index in sync with its `rules/` files.** When a `SKILL.md` acts as an index over `rules/` (or `reference/`) files — e.g. a "Quick Reference" that summarises each file — that index is the map the agent navigates by, so it must always match the files on disk. Whenever you add, remove, rename, or restructure a rule file, update the `SKILL.md` in the **same change**: add or drop its entry, keep any section numbering contiguous, make each summary bullet reflect the file's actual headings, and fix cross-references (e.g. "§N") plus the frontmatter `description`. A stale index that points at a deleted file or misdescribes a rule sends the agent to the wrong place.
 - Required YAML frontmatter (common's own skills use these values):
     ```yaml
     ---

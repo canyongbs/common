@@ -30,34 +30,29 @@ Never use `$guarded = []` on models that accept user input.
 
 ## Authorize Every Action
 
-Use policies or gates in controllers. Never skip authorization.
+Use policies or gates. Never skip authorization. Filament resources authorize through their model policies automatically; in standalone controllers, call `Gate::authorize()` explicitly.
 
 Incorrect:
 
 ```php
-public function update(UpdatePostRequest $request, Post $post)
+public function __invoke(Request $request, Post $post)
 {
-    $post->update($request->validated());
+    $post->update($request->validate([
+        'title' => ['required', 'string', 'max:255'],
+    ]));
 }
 ```
 
 Correct:
 
 ```php
-public function update(UpdatePostRequest $request, Post $post)
+public function __invoke(Request $request, Post $post)
 {
     Gate::authorize('update', $post);
 
-    $post->update($request->validated());
-}
-```
-
-Or via Form Request:
-
-```php
-public function authorize(): bool
-{
-    return $this->user()->can('update', $this->route('post'));
+    $post->update($request->validate([
+        'title' => ['required', 'string', 'max:255'],
+    ]));
 }
 ```
 
@@ -98,7 +93,7 @@ Correct:
 
 ## CSRF Protection
 
-Include `@csrf` in all POST/PUT/DELETE Blade forms. In Inertia apps, the `@csrf` directive is automatically applied.
+Include `@csrf` in every hand-written POST/PUT/DELETE Blade form. Livewire and Filament forms handle CSRF automatically, so this applies only to plain Blade `<form>` elements.
 
 Incorrect:
 
