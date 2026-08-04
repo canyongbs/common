@@ -37,6 +37,7 @@ Don't rely on a hardcoded file list — run `ls .ai/guidelines` and `ls .ai/skil
 Guidelines are **Blade templates** that Laravel Boost compiles into the app's single `AGENTS.md`. They are always in the agent's context, so keep them short and high-signal — reserve long, on-demand material for a skill.
 
 - **Key = path** relative to `.ai/guidelines/` without extension, and may be nested (e.g. `pls`, `laravel/core`, `pest/core`). These keys are what `boost.guidelines.exclude` and the service provider reference.
+- To drop a common-authored guideline from a **single** app, add its key to `boost.guidelines.exclude` — `common:publish` then skips copying it, so it never reaches `AGENTS.md`.
 - Start every template with the `$assist` type hint and use its helpers so commands render correctly per app:
     ```blade
     @php
@@ -98,7 +99,7 @@ Boost then compiles the published guidelines into `AGENTS.md`. Because the publi
 
 Remember array-merge semantics: to _disable_ something you exclude it via the appropriate `*.exclude` array, since arrays merge additively rather than being replaced.
 
-Excluding a **common-authored** skill works the same way: `boost.skills.exclude` now also drops shared skills at publish time (`common:publish` skips copying them), not only Boost's bundled ones.
+Excluding **common-authored** content works the same way: `boost.skills.exclude` drops shared skills and `boost.guidelines.exclude` drops shared guidelines at publish time (`common:publish` skips copying them), not only Boost's bundled content. `CommonBoostServiceProvider` reads these arrays from the app's `boost.override.json` into `config('boost.*.exclude')`, so an app needs no extra config wiring.
 
 ## Removing bundled/third-party content across all apps
 
