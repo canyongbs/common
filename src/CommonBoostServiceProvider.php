@@ -84,7 +84,13 @@ class CommonBoostServiceProvider extends ServiceProvider
             return;
         }
 
-        $excludedGuidelines = [...config('boost.guidelines.exclude', []), ...$this->excludedGuidelines];
+        $override = $this->appOverrideExcludes();
+
+        $excludedGuidelines = [
+            ...config('boost.guidelines.exclude', []),
+            ...$override['guidelines'],
+            ...$this->excludedGuidelines,
+        ];
 
         foreach ($this->overridablePackageGuidelines as $guideline) {
             foreach (['blade.php', 'md'] as $extension) {
@@ -98,7 +104,46 @@ class CommonBoostServiceProvider extends ServiceProvider
 
         config([
             'boost.guidelines.exclude' => array_values(array_unique($excludedGuidelines)),
-            'boost.skills.exclude' => array_values(array_unique([...config('boost.skills.exclude', []), ...$this->excludedSkills])),
+            'boost.skills.exclude' => array_values(array_unique([
+                ...config('boost.skills.exclude', []),
+                ...$override['skills'],
+                ...$this->excludedSkills,
+            ])),
         ]);
+    }
+
+    /**
+     * Excludes an app declares in its `boost.override.json`. Boost regenerates
+     * the merged `boost.json`, so we read the durable override input directly
+     * and feed it into config, sparing apps from wiring their own config file.
+     *
+     * @return array{guidelines: list<string>, skills: list<string>}
+     */
+    protected function appOverrideExcludes(): array
+    {
+        $path = base_path('boost.override.json');
+
+        $decoded = is_file($path)
+            ? json_decode((string) file_get_contents($path), associative: true)
+            : null;
+
+        $override = is_array($decoded) ? $decoded : [];
+
+        return [
+            'guidelines' => $this->stringList($override['guidelines']['exclude'] ?? []),
+            'skills' => $this->stringList($override['skills']['exclude'] ?? []),
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function stringList(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter($value, 'is_string'));
     }
 }

@@ -110,7 +110,10 @@ class Publish extends Command
 
     protected function publishAiContent(): void
     {
-        $excludedSkills = $this->excludedCommonSkills();
+        $excluded = [
+            'skills' => $this->excludedCommonSkills(),
+            'guidelines' => $this->excludedCommonGuidelines(),
+        ];
 
         foreach ($this->aiContentTypes as $type) {
             $output = base_path('.ai/' . $type);
@@ -120,9 +123,10 @@ class Publish extends Command
             $this->copyAiFiles(
                 __DIR__ . '/../../../.ai/' . $type,
                 $output,
-                $type === 'skills' ? $excludedSkills : [],
+                $type,
+                $excluded[$type] ?? [],
             );
-            $this->copyAiFiles(base_path('.ai/overrides/' . $type), $output);
+            $this->copyAiFiles(base_path('.ai/overrides/' . $type), $output, $type);
 
             $this->components->info("The [.ai/{$type}] directory was published successfully.");
         }
@@ -145,9 +149,25 @@ class Publish extends Command
     }
 
     /**
-     * @param list<string> $excludedSkills
+     * Common guidelines the app has opted out of via `boost.guidelines.exclude`.
+     *
+     * @return list<string>
      */
-    protected function copyAiFiles(string $source, string $output, array $excludedSkills = []): void
+    protected function excludedCommonGuidelines(): array
+    {
+        $excluded = config('boost.guidelines.exclude', []);
+
+        if (! is_array($excluded)) {
+            return [];
+        }
+
+        return array_values(array_filter($excluded, 'is_string'));
+    }
+
+    /**
+     * @param list<string> $excluded
+     */
+    protected function copyAiFiles(string $source, string $output, string $type, array $excluded = []): void
     {
         if (! $this->files->isDirectory($source)) {
             return;
@@ -160,7 +180,7 @@ class Publish extends Command
 
             $relativePath = str_replace('\\', '/', $file->getRelativePathname());
 
-            if ($excludedSkills !== [] && in_array(Str::before($relativePath, '/'), $excludedSkills, true)) {
+            if ($excluded !== [] && in_array($this->contentKey($type, $relativePath), $excluded, true)) {
                 continue;
             }
 
@@ -170,6 +190,19 @@ class Publish extends Command
 
             $this->files->copy($file->getPathname(), $destination);
         }
+    }
+
+    /**
+     * A skill is keyed by its top-level directory; a guideline by its path
+     * relative to the type directory, without the template extension.
+     */
+    protected function contentKey(string $type, string $relativePath): string
+    {
+        if ($type === 'skills') {
+            return Str::before($relativePath, '/');
+        }
+
+        return (string) preg_replace('/\.(blade\.php|md)$/', '', $relativePath);
     }
 
     protected function publishOverrideDirectories(): void

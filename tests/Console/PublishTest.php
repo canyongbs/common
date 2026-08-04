@@ -72,3 +72,20 @@ it('does not apply skill exclusions to guidelines', function () {
 
     expect(file_exists($this->guidelinesDir . '/zero-downtime.blade.php'))->toBeTrue();
 });
+
+it('skips common guidelines listed in boost.guidelines.exclude', function () {
+    config()->set('boost.guidelines.exclude', ['zero-downtime']);
+
+    $this->artisan('common:publish')->assertSuccessful();
+
+    expect(file_exists($this->guidelinesDir . '/zero-downtime.blade.php'))->toBeFalse()
+        ->and(file_exists($this->guidelinesDir . '/code-style.blade.php'))->toBeTrue();
+});
+
+it('does not apply guideline exclusions to skills', function () {
+    config()->set('boost.guidelines.exclude', ['managing-feature-flags']);
+
+    $this->artisan('common:publish')->assertSuccessful();
+
+    expect(is_dir($this->skillsDir . '/managing-feature-flags'))->toBeTrue();
+});
