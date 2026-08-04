@@ -12,3 +12,4 @@ tests/**/Fixtures/
 
 # Blade guidelines are Markdown compiled by Boost; the Blade parser reflows prose and breaks their structure.
 .ai/guidelines/
+.ai/local/guidelines/

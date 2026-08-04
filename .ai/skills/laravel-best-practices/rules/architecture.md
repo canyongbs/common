@@ -9,30 +9,38 @@ class CreateOrderAction
 {
     public function __construct(private InventoryService $inventory) {}
 
-    public function handle(array $data): Order
+    public function __invoke(array $data): Order
     {
-        $order = Order::create($data);
-        $this->inventory->reserve($order);
+        return DB::transaction(function () use ($data) {
+            $order = Order::create($data);
+            $this->inventory->reserve($order);
 
-        return $order;
+            return $order;
+        });
     }
 }
 ```
 
+## Wrap Multi-Step Writes in a Transaction
+
+When one operation performs several writes that must all succeed or all fail together, wrap them in `DB::transaction()` so a failure can't leave half-written state (as in `CreateOrderAction` above). Keep transactions short — do no HTTP calls inside them, and defer side effects with `DB::afterCommit()` or by dispatching jobs after the closure returns.
+
 ## Use Dependency Injection
 
-Always use constructor injection. Avoid `app()` or `resolve()` inside classes.
+Always use constructor injection where available. Avoid `app()` or `resolve()` inside classes.
 
 Incorrect:
 
 ```php
-class OrderController extends Controller
+class CreateOrderController
 {
-    public function store(StoreOrderRequest $request)
+    public function __invoke(Request $request)
     {
         $service = app(OrderService::class);
 
-        return $service->create($request->validated());
+        return $service->create($request->validate([
+            'total' => ['required', 'integer', 'min:0'],
+        ]));
     }
 }
 ```
@@ -40,13 +48,15 @@ class OrderController extends Controller
 Correct:
 
 ```php
-class OrderController extends Controller
+class CreateOrderController
 {
     public function __construct(private OrderService $service) {}
 
-    public function store(StoreOrderRequest $request)
+    public function __invoke(Request $request)
     {
-        return $this->service->create($request->validated());
+        return $this->service->create($request->validate([
+            'total' => ['required', 'integer', 'min:0'],
+        ]));
     }
 }
 ```
@@ -84,33 +94,17 @@ Bind in a service provider:
 $this->app->bind(PaymentGateway::class, StripeGateway::class);
 ```
 
-## Default Sort by Descending
-
-When no explicit order is specified, sort by `id` or `created_at` descending. Without an explicit `ORDER BY`, row order is undefined.
-
-Incorrect:
-
-```php
-$posts = Post::paginate();
-```
-
-Correct:
-
-```php
-$posts = Post::latest()->paginate();
-```
-
 ## Use Atomic Locks for Race Conditions
 
 Prevent race conditions with `Cache::lock()` or `lockForUpdate()`.
 
 ```php
-Cache::lock('order-processing-'.$order->id, 10)->block(5, function () use ($order) {
+Cache::lock("order-processing-{$order->id}", 10)->block(5, function () use ($order) {
     $order->process();
 });
 
 // Or at query level
-$product = Product::where('id', $id)->lockForUpdate()->first();
+$product = Product::query()->where('id', $id)->lockForUpdate()->first();
 ```
 
 ## Use `mb_*` String Functions
@@ -148,7 +142,7 @@ dispatch(new LogPageView($page));
 Correct (runs after response, same process):
 
 ```php
-defer(fn () => PageView::create(['page_id' => $page->id, 'user_id' => auth()->id()]));
+defer(fn () => $logPageView($page));
 ```
 
 Use jobs when the work must survive process crashes or needs retry logic. Use `defer()` for fire-and-forget work.
@@ -175,12 +169,41 @@ Run independent operations in parallel using child processes — no async librar
 use Illuminate\Support\Facades\Concurrency;
 
 [$users, $orders] = Concurrency::run([
-    fn () => User::count(),
-    fn () => Order::where('status', 'pending')->count(),
+    fn () => User::query()->count(),
+    fn () => Order::query()->where('status', 'pending')->count(),
 ]);
 ```
 
 Each closure runs in a separate process with full Laravel access. Use for independent database queries, API calls, or computations that would otherwise run sequentially.
+
+## Exception Reporting and Rendering
+
+**Prefer co-locating `report()` and `render()` on the exception class.** Keeping the behaviour alongside the exception definition makes it easy to find and keeps `bootstrap/app.php` uncluttered:
+
+```php
+class InvalidOrderException extends Exception
+{
+    public function report(): void { /* custom reporting */ }
+
+    public function render(Request $request): Response
+    {
+        return response()->view('errors.invalid-order', status: 422);
+    }
+}
+```
+
+Only centralize handling in `bootstrap/app.php` when co-location doesn't fit — for example, handling a third-party exception you can't modify, or applying one rule across many exception types:
+
+```php
+->withExceptions(function (Exceptions $exceptions) {
+    $exceptions->report(function (InvalidOrderException $e) { /* ... */ });
+    $exceptions->render(function (InvalidOrderException $e, Request $request) {
+        return response()->view('errors.invalid-order', status: 422);
+    });
+})
+```
+
+Whichever you use, follow the pattern already established in the codebase for consistency.
 
 ## Convention Over Configuration
 

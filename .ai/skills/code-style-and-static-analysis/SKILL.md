@@ -1,6 +1,6 @@
 ---
 name: code-style-and-static-analysis
-description: "Use when running or fixing code style and static analysis for a Canyon GBS app — the `composer format` / `lint` / `checks` scripts and the tools behind them (PHP CS Fixer, Prettier including Blade, PHPStan/Larastan, Rector, Laravel IDE Helper). Trigger whenever you need to format code, resolve a style or static-analysis failure, run the pre-completion checks before finishing a change, or regenerate IDE helper files after model or schema changes. Do not use for: writing tests (use writing-tests) or authoring AI guidelines and skills (use authoring-ai-content). For editor/IDE setup, see the app's local-setup docs rather than this skill."
+description: "Use when running or fixing code style and static analysis for a Canyon GBS app — the `composer format` / `lint` / `checks` scripts and the tools behind them (PHP CS Fixer, Prettier including Blade, PHPStan/Larastan, Rector, Laravel IDE Helper). Trigger whenever you need to format code, resolve a style or static-analysis failure, run the pre-completion checks before finishing a change, or regenerate IDE helper files after model or schema changes. Do not use for: writing tests (use `writing-tests`) or authoring guidelines and skills (use `authoring-agent-guidance`). For editor/IDE setup, see the app's local-setup docs rather than this skill."
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -10,7 +10,7 @@ metadata:
 
 Every change must pass the same checks CI runs before it is considered complete. Apply style fixes with `composer format`, then run `composer lint` (PHPStan/Larastan) and resolve **everything** it reports — never leave violations for CI. Because `composer checks` is just `format-dryrun` + `lint`, running `format` (which writes the fixes) and then `lint` covers the same ground without re-checking formatting you just applied — do not run `format` followed by `checks`.
 
-Run every command through the project's command-execution guideline (these apps run inside the `app` container).
+Run every command through the `pls` guideline (these apps run inside the `app` container).
 
 ## Commands
 

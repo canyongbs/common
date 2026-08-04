@@ -5,10 +5,11 @@
 Instead of eager-loading an entire has-many relationship for a single value (like the latest timestamp), use a correlated subquery via `addSelect()`. This pulls the value directly in the main SQL query — zero extra queries.
 
 ```php
-public function scopeWithLastLoginAt($query): void
+public function __invoke(Builder $query): void
 {
     $query->addSelect([
-        'last_login_at' => Login::select('created_at')
+        'last_login_at' => Login::query()
+            ->select('created_at')
             ->whereColumn('user_id', 'users.id')
             ->latest()
             ->take(1),
@@ -26,10 +27,11 @@ public function lastLogin(): BelongsTo
     return $this->belongsTo(Login::class);
 }
 
-public function scopeWithLastLogin($query): void
+public function __invoke(Builder $query): void
 {
     $query->addSelect([
-        'last_login_id' => Login::select('id')
+        'last_login_id' => Login::query()
+            ->select('id')
             ->whereColumn('user_id', 'users.id')
             ->latest()
             ->take(1),
@@ -42,7 +44,7 @@ public function scopeWithLastLogin($query): void
 Replace N separate `count()` queries with a single query using `CASE WHEN` inside `selectRaw()`. Use `toBase()` to skip model hydration when you only need scalar values.
 
 ```php
-$statuses = Feature::toBase()
+$statuses = Feature::query()->toBase()
     ->selectRaw("count(case when status = 'Requested' then 1 end) as requested")
     ->selectRaw("count(case when status = 'Planned' then 1 end) as planned")
     ->selectRaw("count(case when status = 'Completed' then 1 end) as completed")
@@ -65,13 +67,13 @@ $feature->comments->each->setRelation('feature', $feature);
 Incorrect (correlated EXISTS re-executes per row):
 
 ```php
-$query->whereHas('company', fn ($q) => $q->where('name', 'like', $term));
+$query->whereHas('company', fn (Builder $query) => $query->where('name', 'like', $term));
 ```
 
 Correct (index-friendly subquery, no PHP memory overhead):
 
 ```php
-$query->whereIn('company_id', Company::where('name', 'like', $term)->select('id'));
+$query->whereIn('company_id', Company::query()->where('name', 'like', $term)->select('id'));
 ```
 
 ## Sometimes Two Simple Queries Beat One Complex Query
@@ -95,9 +97,10 @@ User::query()->orderBy('last_name')->orderBy('first_name')->paginate();
 When sorting by a value from a has-many relationship, avoid joins (they duplicate rows). Use a correlated subquery inside `orderBy()` instead, paired with an `addSelect` scope for eager loading.
 
 ```php
-public function scopeOrderByLastLogin($query): void
+public function __invoke(Builder $query): void
 {
-    $query->orderByDesc(Login::select('created_at')
+    $query->orderByDesc(Login::query()
+        ->select('created_at')
         ->whereColumn('user_id', 'users.id')
         ->latest()
         ->take(1)

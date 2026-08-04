@@ -128,7 +128,7 @@ def vue(filePath)
 end
 
 def handle(filePath)
-  if filePath.start_with?('.ai/guidelines/', '.ai/skills/')
+  if filePath.start_with?('.ai/guidelines/', '.ai/skills/', '.ai/local/')
     puts "Skipping AI content: #{filePath}...".gray
     return
   end

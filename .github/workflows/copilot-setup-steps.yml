@@ -1,0 +1,78 @@
+name: Copilot Setup Steps
+
+# Runs before the Copilot cloud (coding) agent starts working, to prepare its
+# ephemeral development environment. This is a package (not an app), so it only
+# installs PHP and Composer, then runs Composer's post-autoload-dump hook so the
+# generated AGENTS.md and .github/skills (common's own guidelines plus the Boost
+# guidelines/skills an app would receive) are available to the agent.
+on: # zizmor: ignore[concurrency-limits]
+    workflow_dispatch:
+    push:
+        paths:
+            - .github/workflows/copilot-setup-steps.yml
+    pull_request:
+        paths:
+            - .github/workflows/copilot-setup-steps.yml
+
+permissions: {}
+
+jobs:
+    # The job MUST be named `copilot-setup-steps` or Copilot will not pick it up.
+    copilot-setup-steps:
+        name: Copilot Setup Steps
+        runs-on: ubuntu-22.04
+
+        permissions:
+            contents: read
+
+        timeout-minutes: 15
+
+        env:
+            php-extensions: gd, gmp, redis, mailparse
+            php-extensions-key: ext-cache-copilot-v1
+            php-version: '8.5'
+
+        steps:
+            - name: Setup cache environment
+              id: extcache
+              uses: shivammathur/cache-extensions@9b476298b44f2e4d4268dd103ff4c3e216314e27 # 1.14.6
+              with:
+                  php-version: ${{ env.php-version }}
+                  extensions: ${{ env.php-extensions }}
+                  key: ${{ env.php-extensions-key }}
+
+            - name: Cache extensions
+              uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+              with:
+                  path: ${{ steps.extcache.outputs.dir }}
+                  key: ${{ runner.os }}-phpext-${{ env.php-version }}-${{ env.php-extensions-key }}
+                  restore-keys: ${{ runner.os }}-phpext-${{ env.php-version }}
+
+            - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+              with:
+                  php-version: ${{ env.php-version }}
+                  coverage: none
+                  extensions: ${{ env.php-extensions }}
+
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Cache dependencies
+              id: cache-composer
+              uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+              with:
+                  path: vendor
+                  key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
+            - if: ${{ steps.cache-composer.outputs.cache-hit != 'true' }}
+              name: Install Dependencies
+              run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
+              shell: bash
+
+            # Fires the post-autoload-dump hook (common:compile-guidance) which
+            # generates AGENTS.md and .github/skills used by the agent. Dev
+            # dependencies (Testbench, Boost) are required, so this runs
+            # without --no-dev.
+            - name: Publish agent guidance
+              run: composer dump-autoload

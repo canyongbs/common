@@ -191,6 +191,10 @@ For landlord/tenant suite placement and tricks (making a tenant current, asserti
 - Use `Exceptions::fake()` to assert an exception was reported while the request still completes normally, instead of `withoutExceptionHandling()`.
 - Fake external boundaries and assert on them: `Http::fake()` with `Http::preventStrayRequests()`, `Notification::fake()`, `Queue::fake()`. Set the fake up before the code under test runs, then assert what was (or was not) sent.
 
+## Feature Flags
+
+The suite runs your migrations (`RefreshDatabase`), and, most of the time, the activation migration already activates each Feature Flag — so **every flag is active in tests by default**. **Never call `SomeFeature::activate()`** in a test, `beforeEach()`, or helper to enable a flag: it is redundant and masks a broken activation migration (which must make the test fail). Only call `SomeFeature::deactivate()`, and only in the specific case that exercises the inactive (pre-migration) branch. See the `managing-feature-flags` skill.
+
 ## Filament Resource Testing
 
 Instantiate the page/relation-manager component with `livewire()` and drive it with Filament's testing helpers.
@@ -241,7 +245,7 @@ A render check does not exercise a component that resolves or formats its own va
 - **Infolist entries / form fields with custom state** (`state()`, `getStateUsing()`, `formatStateUsing()`, computed accessors, relationship state): assert with `assertSchemaStateSet([...])`. On **View pages** this is required whenever an entry has such logic.
 - **Table columns with custom state or formatting**: assert the resolved value with `assertTableColumnStateSet($column, $state, record: $record)` and the displayed value with `assertTableColumnFormattedStateSet($column, $state, record: $record)`. This is required for any column using `getStateUsing()` / `formatStateUsing()` / a custom `state()`, on **every table** — list pages, relation managers, manage-related-records pages, and table widgets.
 
-Plain columns/entries only need existence checks (`assertTableColumnExists()`); reserve state assertions for columns/entries that actually compute or format a value.
+Plain columns/entries with no custom logic need no assertion of their own — do **not** add a static `assertTableColumnExists()` list to stand in for behaviour tests. Reserve state assertions for columns/entries that actually compute or format a value.
 
 ### The `authorization` block (required on every resource page)
 
@@ -339,7 +343,7 @@ class CreateUserRequestFactory extends RequestFactory
 
 ## Running Tests
 
-Run tests with `php artisan test --compact`; narrow with `--filter=` or a path while iterating, and run the full suite before finalizing. Execute the command according to the project's command-execution guideline (these apps run commands inside the app container). Do not delete tests without approval.
+Run tests with `php artisan test --compact`; narrow with `--filter=` or a path while iterating, and run the full suite before finalizing. Execute the command according to the `pls` guideline (these apps run commands inside the app container). Do not delete tests without approval.
 
 ## Common Pitfalls
 
@@ -351,4 +355,10 @@ Run tests with `php artisan test --compact`; narrow with `--filter=` or a path w
 - `assertStatus(200)` instead of `assertSuccessful()`; forgetting `Notification::fake()` / `Http::fake()` before asserting they were (not) sent.
 - Forgetting the `authorization` `describe()` block on Filament resource pages.
 - Asserting a column or field merely exists (a static `assertTableColumnExists()` list) instead of testing behaviour — reserve existence/visibility assertions for conditional columns via `assertTableColumnVisible()` / `assertTableColumnHidden()`.
+- Calling `SomeFeature::activate()` in a test — flags are already active because migrations run; only `deactivate()` (for the inactive-branch case) belongs in a test.
+
+---
+
+Related: `structuring-filament-code` (for the code under test), `handling-file-uploads` (for testing media).
+
 - Leaving a user-supplied closure (`visible()`, `getStateUsing()`, `formatStateUsing()`, action `visible()`, a table query modification, etc.) untested.

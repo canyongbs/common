@@ -2,7 +2,7 @@
     /** @var \Laravel\Boost\Install\GuidelineAssist $assist */
 @endphp
 
-# Code Style & Static Analysis
+## Code Style & Static Analysis
 
 Before considering any change complete, make it pass the project's automated checks — do not leave style or analysis violations for CI:
 

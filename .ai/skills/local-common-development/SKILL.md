@@ -141,3 +141,7 @@ The Composer path repo, the `@dev` constraint, and the Docker bind mount are **l
 - Editing files under `vendor/canyongbs/common` directly — they are overwritten on the next `composer install` unless symlinked.
 - Committing the `../common` path repo, the `@dev` constraint, or the `/var/www/common` mount to a normal app.
 - Forgetting to run `common:publish` after changing common's guidelines or skills, so the app's `AGENTS.md`/`.ai` go stale.
+
+---
+
+Related: `authoring-agent-guidance` (how guidelines, skills, and the publish/override system work).

@@ -17,15 +17,75 @@ php artisan make:migration create_posts_table
 php artisan make:migration add_slug_to_posts_table
 ```
 
+## PostgreSQL Schema Conventions
+
+These apps run on PostgreSQL via `tpetry/laravel-postgresql-enhanced`. Import the package's `Blueprint` and `Schema` facade in every migration so the enhanced methods are available:
+
+```php
+use Tpetry\PostgresqlEnhanced\Schema\Blueprint;
+use Tpetry\PostgresqlEnhanced\Support\Facades\Schema;
+```
+
+- **UUID primary keys** on every table — never auto-increment. Pair with `use HasUuids` on the model (see `models.md`). For foreign keys and polymorphic columns, use the UUID helpers (`foreignUuid()`, `uuidMorphs()` / `nullableUuidMorphs()`) — never `foreignId()`/`morphs()`/`nullableMorphs()` (which are integer-based) or hand-rolled `*_id` + `*_type` columns.
+
+    ```php
+    $table->uuid('id')->primary();
+    $table->foreignUuid('property_id')->constrained()->cascadeOnDelete();
+    $table->uuidMorphs('subject');
+    $table->nullableUuidMorphs('commentable');
+    ```
+
+- **`caseInsensitiveText()` (citext) for case-insensitive columns** — names, emails, slugs, anything compared without case. Enable the extension once in its own migration (`DB::statement('CREATE EXTENSION IF NOT EXISTS citext')`). A `citext` column makes lookups and `unique` validation case-insensitive automatically, with no extra rule configuration.
+
+    ```php
+    $table->caseInsensitiveText('name');
+    ```
+
+- **Always `uniqueIndex()`, never `unique()`** — the enhanced builder's `uniqueIndex()` supports the partial indexes and NULL handling below that `unique()` cannot.
+
+    ```php
+    $table->uniqueIndex(['organization_id', 'name']);
+    ```
+
+- **Scope unique indexes to live rows on soft-deleting tables**, so a soft-deleted row does not keep blocking the value:
+
+    ```php
+    $table->uniqueIndex(['property_id', 'name'])
+        ->where(fn (Builder $condition) => $condition->whereNull('deleted_at'));
+    ```
+
+- **NULLs are distinct by default** — PostgreSQL permits multiple NULLs in a unique index. Use `->nullsNotDistinct()` when NULLs must collide (e.g. only one row may have a NULL `parent_id`), or a partial `->where(fn (Builder $condition) => $condition->whereNotNull('col'))` to constrain only non-NULL values.
+
+- **Match unique validation to the index.** When the index is scoped to `whereNull('deleted_at')`, the validation rule must be too, or soft-deleted rows cause false conflicts:
+    - Filament / model-resolved rules: `->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->withoutTrashed())`.
+    - Raw-table `Rule::unique('table', 'column')`: `->whereNull('deleted_at')` (plus `->ignore($record)` on update).
+    - Add `->where('other_column', $get('other_column'))` for composite / scoped indexes.
+
+## Never Use `->after()`
+
+Never add `->after('column')` (or `->first()`) to any column definition. PostgreSQL does not support positioning columns, so the enhanced builder silently ignores it — the column is always appended to the end of the table regardless. Including it adds no value and misleads readers into thinking the column order is controlled.
+
+Incorrect:
+
+```php
+$table->string('slug')->after('title'); // ->after() is ignored on PostgreSQL
+```
+
+Correct:
+
+```php
+$table->string('slug');
+```
+
 ## Use `constrained()` for Foreign Keys
 
 Automatic naming and referential integrity.
 
 ```php
-$table->foreignId('user_id')->constrained()->cascadeOnDelete();
+$table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
 
 // Non-standard names
-$table->foreignId('author_id')->constrained('users');
+$table->foreignUuid('author_id')->constrained('users');
 ```
 
 ## Never Modify Deployed Migrations
@@ -36,7 +96,7 @@ Incorrect (editing a deployed migration):
 
 ```php
 // 2024_01_01_create_posts_table.php — already in production
-$table->string('slug')->unique(); // ← added after deployment
+$table->string('slug'); // ← added after deployment
 ```
 
 Correct (new migration to alter):
@@ -44,9 +104,16 @@ Correct (new migration to alter):
 ```php
 // 2024_03_15_add_slug_to_posts_table.php
 Schema::table('posts', function (Blueprint $table) {
-    $table->string('slug')->unique()->after('title');
+    $table->string('slug');
+    $table->uniqueIndex('slug');
 });
 ```
+
+Immutability applies to the migration's schema/data logic, not to these deletions that are part of the normal lifecycle:
+
+- **Deleting a temporary (`tmp_`) data migration** once it has run across all environments — that is the point of the `tmp_` prefix. Track the deletion in a cleanup task (see the `writing-data-migrations` and `managing-cleanup-tasks` skills).
+- **Removing a Feature Flag's activation/deactivation** when the flag is cleaned up after a successful deploy — delete the activation migration along with the flag class (see the `managing-feature-flags` skill).
+- **Removing a one-off data change embedded in an otherwise permanent migration** when a cleanup task (or a cleanup-task note) marks it as no longer needed — e.g. a step that back-fills or fixes existing data mid-migration. Delete only that data step once it has run everywhere; the migration's schema/structural logic must remain intact.
 
 ## Add Indexes in the Migration
 
@@ -56,8 +123,8 @@ Incorrect:
 
 ```php
 Schema::create('orders', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('user_id')->constrained();
+    $table->uuid('id')->primary();
+    $table->foreignUuid('user_id')->constrained();
     $table->string('status');
     $table->timestamps();
 });
@@ -67,26 +134,20 @@ Correct:
 
 ```php
 Schema::create('orders', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('user_id')->constrained()->index();
+    $table->uuid('id')->primary();
+    $table->foreignUuid('user_id')->constrained()->index();
     $table->string('status')->index();
     $table->timestamp('shipped_at')->nullable()->index();
     $table->timestamps();
 });
 ```
 
-## Mirror Defaults in Model `$attributes`
+## Mirror Column Defaults in the Model
 
-When a column has a database default, mirror it in the model so new instances have correct values before saving.
+When a migration adds a column with a database default, mirror that default in the model's `$attributes` so new instances have the correct value before saving — see `models.md`.
 
 ```php
-// Migration
 $table->string('status')->default('pending');
-
-// Model
-protected $attributes = [
-    'status' => 'pending',
-];
 ```
 
 ## Write Reversible `down()` Methods by Default

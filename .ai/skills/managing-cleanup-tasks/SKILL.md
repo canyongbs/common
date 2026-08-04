@@ -1,6 +1,6 @@
 ---
 name: managing-cleanup-tasks
-description: 'Use when creating, updating, or completing a cleanup task file in `.cleanup-tasks/` — the tracked record of post-deployment cleanup work (Feature Flags to remove, temporary `tmp_` migrations to delete, and other follow-up). Trigger whenever you run or reason about `make:cleanup`, `make:ff`, or `make:tmp-migration` and their cleanup prompts, add an entry to a cleanup task, write an inline `TODO: Cleanup Task` comment, or perform the cleanup after a deploy. Covers the file format and sections, the three entry types, the inline comment convention (stable root plus unique tag), and what must NOT go in the Additional Cleanup section. Do not use for: creating the Feature Flag class (use managing-feature-flags) or writing the migration (use writing-data-migrations); this skill is about the cleanup tracking itself.'
+description: 'Use when creating, updating, or completing a cleanup task file in `.cleanup-tasks/` — the tracked record of post-deployment cleanup work (Feature Flags to remove, temporary `tmp_` migrations to delete, and other follow-up). Trigger whenever you run or reason about `make:cleanup`, `make:ff`, or `make:tmp-migration` and their cleanup prompts, add an entry to a cleanup task, write an inline `TODO: Cleanup Task` comment, or perform the cleanup after a deploy. Covers the file format and sections, the three entry types, the inline comment convention (stable root plus unique tag), and what must NOT go in the Additional Cleanup section. Do not use for: creating the Feature Flag class (use `managing-feature-flags`) or writing the migration (use `writing-data-migrations`); this skill is about the cleanup tracking itself.'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -12,7 +12,7 @@ A **cleanup task** is a tracked markdown file in `.cleanup-tasks/` that records 
 
 Cleanup tasks are created alongside the things they track and deleted once every item is done.
 
-Run every command through the project's command-execution guideline (these apps run inside the `app` container).
+Run every command through the `pls` guideline (these apps run inside the `app` container).
 
 ## Creating a cleanup task
 
@@ -103,4 +103,4 @@ The cleanup task file then needs only one line pointing at the tag; the details 
 
 ---
 
-Related skills: `managing-feature-flags`, `writing-data-migrations`.
+Related: `managing-feature-flags`, `writing-data-migrations`.

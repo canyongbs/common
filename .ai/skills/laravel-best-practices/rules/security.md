@@ -2,7 +2,7 @@
 
 ## Mass Assignment Protection
 
-Every model must define `$fillable` (whitelist) or `$guarded` (blacklist).
+Every model must define `$fillable` (a mass-assignment whitelist).
 
 Incorrect:
 
@@ -30,34 +30,29 @@ Never use `$guarded = []` on models that accept user input.
 
 ## Authorize Every Action
 
-Use policies or gates in controllers. Never skip authorization.
+Use policies or gates. Never skip authorization. Back each model with a policy class (`php artisan make:policy`); Filament resources authorize through their model policies automatically; in standalone controllers, call `Gate::authorize()` explicitly.
 
 Incorrect:
 
 ```php
-public function update(UpdatePostRequest $request, Post $post)
+public function __invoke(Request $request, Post $post)
 {
-    $post->update($request->validated());
+    $post->update($request->validate([
+        'title' => ['required', 'string', 'max:255'],
+    ]));
 }
 ```
 
 Correct:
 
 ```php
-public function update(UpdatePostRequest $request, Post $post)
+public function __invoke(Request $request, Post $post)
 {
     Gate::authorize('update', $post);
 
-    $post->update($request->validated());
-}
-```
-
-Or via Form Request:
-
-```php
-public function authorize(): bool
-{
-    return $this->user()->can('update', $this->route('post'));
+    $post->update($request->validate([
+        'title' => ['required', 'string', 'max:255'],
+    ]));
 }
 ```
 
@@ -74,10 +69,11 @@ DB::select("SELECT * FROM users WHERE name = '{$request->name}'");
 Correct:
 
 ```php
-User::where('name', $request->name)->get();
+User::query()->where('name', $request->name)->get();
 
-// Raw expressions with bindings
-User::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->get();
+// Raw expressions must use bindings, never string interpolation.
+// For case-insensitive search prefer an indexable `lower()` expression (see queries.md).
+User::query()->whereRaw('created_at > ?', [$request->date('since')])->get();
 ```
 
 ## Escape Output to Prevent XSS
@@ -98,7 +94,7 @@ Correct:
 
 ## CSRF Protection
 
-Include `@csrf` in all POST/PUT/DELETE Blade forms. In Inertia apps, the `@csrf` directive is automatically applied.
+Include `@csrf` in every hand-written POST/PUT/DELETE Blade form. Livewire and Filament forms handle CSRF automatically, so this applies only to plain Blade `<form>` elements.
 
 Incorrect:
 
@@ -134,12 +130,9 @@ Route::post('/login', LoginController::class)->middleware('throttle:login');
 Validate extension, MIME type, and size. The `mimes` rule checks extensions; use `mimetypes` for actual MIME type validation. Never trust client-provided filenames.
 
 ```php
-public function rules(): array
-{
-    return [
-        'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-    ];
-}
+$validated = $request->validate([
+    'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+]);
 ```
 
 Store with generated filenames:
@@ -150,23 +143,7 @@ $path = $request->file('avatar')->store('avatars', 'public');
 
 ## Keep Secrets Out of Code
 
-Never commit `.env`. Access secrets via `config()` only.
-
-Incorrect:
-
-```php
-$key = env('API_KEY');
-```
-
-Correct:
-
-```php
-// config/services.php
-'api_key' => env('API_KEY'),
-
-// In application code
-$key = config('services.api_key');
-```
+Never commit `.env`. Access secrets via `config()` only, never `env()` outside config files — see `config.md`.
 
 ## Audit Dependencies
 

@@ -34,3 +34,8 @@ public/api-docs/*
 .vault-password
 /rr
 /.bash_history
+
+# BEGIN canyongbs/common (common:compile-guidance) — do not edit this block manually.
+/AGENTS.md
+/.github/skills/
+# END canyongbs/common (common:compile-guidance)

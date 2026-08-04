@@ -1,6 +1,6 @@
 ---
 name: writing-data-migrations
-description: 'Use when writing or altering a Laravel migration that changes data (not only schema) in a Canyon GBS app — data back-fills, transformations, clean-ups, seeding, or activating a Feature Flag. Trigger whenever you create a migration with `make:migration` or `make:tmp-migration`, decide between a permanent and a temporary (`tmp_`) migration, need a migration to be idempotent and safe to re-run, add a required `down()`, or target the landlord versus tenant databases. Covers permanent-migration rules (DB facade only, no removable classes), temporary-migration rules and the `tmp_` prefix with its cleanup task, and running migrations. Do not use for: permission seeding (use creating-permissions), creating the Feature Flag class (use managing-feature-flags), or cleanup task file mechanics (use managing-cleanup-tasks).'
+description: 'Use when writing or altering a Laravel migration that changes data (not only schema) in a Canyon GBS app — data back-fills, transformations, clean-ups, seeding, or activating a Feature Flag. Trigger whenever you create a migration with `make:migration` or `make:tmp-migration`, decide between a permanent and a temporary (`tmp_`) migration, need a migration to be idempotent and safe to re-run, add a required `down()`, or target the landlord versus tenant databases. Covers permanent-migration rules (DB facade only, no removable classes), temporary-migration rules and the `tmp_` prefix with its cleanup task, and running migrations. Do not use for: permission seeding (use `creating-permissions`), creating the Feature Flag class (use `managing-feature-flags`), or cleanup task file mechanics (use `managing-cleanup-tasks`).'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -15,7 +15,7 @@ Migrations may contain schema changes, data changes, or both — there is no req
 
 Any data migration whose result the application code depends on must be paired with a Feature Flag — see the `zero-downtime` guideline and the `managing-feature-flags` skill.
 
-Run every command through the project's command-execution guideline (these apps run inside the `app` container).
+Run every command through the `pls` guideline (these apps run inside the `app` container).
 
 ## Permanent vs temporary migrations
 
@@ -61,4 +61,4 @@ php artisan tenants:artisan "migrate"
 
 ---
 
-Related skills: `managing-feature-flags`, `managing-cleanup-tasks`, `creating-permissions`.
+Related: `managing-feature-flags`, `managing-cleanup-tasks`, `creating-permissions`.

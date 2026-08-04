@@ -1,6 +1,6 @@
 ---
 name: archiving-records
-description: 'Use when adding or working with archiving in a Canyon GBS app — a soft alternative to deletion using an `archived_at` timestamp where archived records are INCLUDED in queries by default (unlike SoftDeletes). Trigger whenever you add the `CanBeArchived` trait to a model, add an `archived_at` column, use archive()/unarchive()/isArchived() or the withoutArchived / onlyArchived / withoutArchivedAndUnused query scopes, define used()/isUsed() for archived-but-still-used records, wire the Filament ArchiveAction / ArchiveBulkAction, or handle archiving model events and authorization. Do not use for: Laravel SoftDeletes (a different feature), or writing tests for archiving (use writing-tests).'
+description: 'Use when adding or working with archiving in a Canyon GBS app — a soft alternative to deletion using an `archived_at` timestamp where archived records are INCLUDED in queries by default (unlike SoftDeletes). Trigger whenever you add the `CanBeArchived` trait to a model, add an `archived_at` column, use archive()/unarchive()/isArchived() or the withoutArchived / onlyArchived / withoutArchivedAndUnused query scopes, define used()/isUsed() for archived-but-still-used records, wire the Filament ArchiveAction / ArchiveBulkAction, or handle archiving model events and authorization. Do not use for: Laravel SoftDeletes (a different feature), or writing tests for archiving (use `writing-tests`).'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -10,7 +10,7 @@ metadata:
 
 Archiving is a soft alternative to deletion: it hides records from active use without removing them. It is modelled after `SoftDeletes` and uses an `archived_at` timestamp, with one crucial difference — **archived records are included in queries by default**. You must explicitly exclude them with `withoutArchived()` wherever they should not appear. This suits records that should no longer be selectable but must remain in historical data, reports, and existing associations.
 
-## Preparing the model
+## Preparing the Model
 
 Add a nullable `archived_at` column, then apply the trait (it may be combined with `SoftDeletes` and automatically casts `archived_at` to a datetime):
 
@@ -30,7 +30,7 @@ class Project extends Model
 }
 ```
 
-## Archiving and querying
+## Archiving and Querying
 
 ```php
 $project->archive();            // returns false if cancelled by an event listener
@@ -47,7 +47,7 @@ Project::query()->where('completed', true)->archive();   // bulk archive
 Project::query()->onlyArchived()->unarchive();            // bulk unarchive
 ```
 
-## Archived-but-still-used records
+## Archived-but-Still-Used Records
 
 Some archived records are still referenced elsewhere (e.g. a project type archived but still assigned to active projects). `withoutArchivedAndUnused()` hides records that are **both archived and unused**, while keeping archived-but-used ones visible. Define `used()` to declare what "in use" means:
 
@@ -69,6 +69,8 @@ ProjectType::query()->withoutArchivedAndUnused()->get();
 
 An optional `isUsed()` is the record-level counterpart. It must agree with `used()`, and it changes the Filament `ArchiveAction` to delete unused records instead of archiving them (below). Keep it efficient — read the value eager-loaded by `withExists()` and memoize it, so it never runs more than one query:
 
+> **Adding `isUsed()` is what grants users the ability to delete.** Whether a model can be archived, deleted, or both must always be a deliberate, conscious decision — never a default. Defining `isUsed()` opts the model into deletion of unused records; omitting it means the `ArchiveAction` can _only ever archive_, never delete. So if Product asks for archiving and does not mention deletion, do **not** add `isUsed()` — leave it off so users can only archive. Add `isUsed()` only when deletion of unused records has been explicitly requested.
+
 ```php
 public function isUsed(): bool
 {
@@ -78,15 +80,15 @@ public function isUsed(): bool
 
 In tables where `isUsed()` runs per row, eager-load the check to avoid N+1: `$table->modifyQueryUsing(fn (Builder $query) => $query->withExists('projects'))`. When the value is computed lazily it is stored as a dirty attribute, so avoid calling `save()` on that instance afterwards.
 
-## Model events
+## Model Events
 
 `archiving`, `archived`, `unarchiving`, and `unarchived` fire around the operation; returning `false` from `archiving` or `unarchiving` cancels it.
 
 ## Authorization
 
-Archiving is governed by the same permission as deletion: the Filament actions call `can('delete', $record)`, so define a `delete` method on the model's policy.
+Archiving authorizes against the model's policy `delete` method — `ArchiveAction` calls `can('delete', $record)`, whether it archives or falls back to deleting an unused record. Always define a `delete` method.
 
-## Filament actions
+## Filament Actions
 
 `ArchiveAction` (from `CanyonGBS\Common\Filament\Actions\ArchiveAction`) is a header action for `EditRecord` / `ViewRecord` pages; `ArchiveBulkAction` is its table bulk-action counterpart.
 
@@ -105,10 +107,10 @@ protected function getHeaderActions(): array
 
 - Is hidden when the record is already archived.
 - Authorizes via the policy's `delete` method and redirects to the index on success.
-- Becomes a **delete** action (Filament `DeleteAction` behaviour — "Delete" label, danger colour, `$record->delete()`) when the model defines `isUsed()` and it returns `false`; otherwise it archives. Closures can branch on `shouldDeleteInsteadOfArchive()`.
+- Becomes a **delete** action (Filament `DeleteAction` behaviour — "Delete" label, danger colour, `$record->delete()`) when the model defines `isUsed()` and it returns `false`; otherwise it archives. Closures can branch on `shouldDeleteInsteadOfArchive()`. If the model does not define `isUsed()`, `shouldDeleteInsteadOfArchive()` always returns `false` and the action only ever archives — deletion is opt-in and must be a conscious decision (see above).
 
 Override `authorize()`, `successRedirectUrl()`, or `using()` when the action is used outside a standard Edit/View page or needs custom behaviour.
 
 ---
 
-Related skill: `writing-tests` (for testing archivable models and the Filament actions).
+Related: `writing-tests` (for testing archivable models and the Filament actions).

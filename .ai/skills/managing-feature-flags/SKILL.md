@@ -1,6 +1,6 @@
 ---
 name: managing-feature-flags
-description: 'Use when creating, activating, gating code behind, or removing a class-based Feature Flag in a Canyon GBS app — Laravel Pennant flags under `App\Features` extending `App\Support\AbstractFeatureFlag`, generated with `make:ff`. Trigger whenever you introduce a schema or data change that code depends on and must be guarded for zero-downtime deploys, add or edit an `active()` / `resolve()` check, activate a flag inside a migration, or clean up a flag after a deployment. Covers the make:ff command and its cleanup-task prompt, the resolve() default, activation-in-migration patterns, the active/inactive code split, and documenting non-obvious flag removals with inline cleanup comments. Do not use for: the mechanics of cleanup task files themselves (use managing-cleanup-tasks), writing the migrations that carry the change (use writing-data-migrations), subscription/license feature ADDON gating (app-specific), or Pennant scoped/config-driven flags.'
+description: 'Use when creating, activating, gating code behind, or removing a class-based Feature Flag in a Canyon GBS app — Laravel Pennant flags under `App\Features` extending `App\Support\AbstractFeatureFlag`, generated with `make:ff`. Trigger whenever you introduce a schema or data change that code depends on and must be guarded for zero-downtime deploys, add or edit an `active()` / `resolve()` check, activate a flag inside a migration, or clean up a flag after a deployment. Covers the make:ff command and its cleanup-task prompt, the resolve() default, activation-in-migration patterns, the active/inactive code split, and documenting non-obvious flag removals with inline cleanup comments. Do not use for: the mechanics of cleanup task files themselves (use `managing-cleanup-tasks`), writing the migrations that carry the change (use `writing-data-migrations`), subscription/license feature ADDON gating (app-specific), or Pennant scoped/config-driven flags.'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -10,9 +10,9 @@ metadata:
 
 Feature Flags gate code that must not run — or must run differently — until a deployment's migrations have completed. They exist for **zero-downtime deploys**: code ships and is reachable before migrations run (per tenant), so any code depending on a schema or data change must be guarded. See the `zero-downtime` guideline for the deployment context.
 
-These are **class-based Laravel Pennant flags**: one class per flag under `App\Features`, extending `App\Support\AbstractFeatureFlag`. A flag is temporary by design — once its deploy succeeds, a later release removes it, tracked by a cleanup task.
+These are **class-based Laravel Pennant flags**: one class per flag under `App\Features`. A tenant-scoped flag extends `App\Support\AbstractFeatureFlag`; a landlord/central-scoped flag extends `App\Support\LandlordAbstractFeatureFlag` (which resolves against the `landlord` Pennant store). The base class provides the static `active()`, `activate()`, `deactivate()`, and `purge()` helpers. A flag is temporary by design — once its deploy succeeds, a later release removes it, tracked by a cleanup task.
 
-Run every command through the project's command-execution guideline (these apps run inside the `app` container).
+Run every command through the `pls` guideline (these apps run inside the `app` container).
 
 ## Creating a Feature Flag
 
@@ -20,9 +20,25 @@ Run every command through the project's command-execution guideline (these apps 
 php artisan make:ff SomeFeature
 ```
 
-This generates the flag class and then prompts you to create or attach a **cleanup task** that tracks its removal (see the `managing-cleanup-tasks` skill). Skip that prompt with `--no-cleanup`.
+This generates the flag class under `App\Features` and then prompts you to create or attach a **cleanup task** that tracks its removal (see the `managing-cleanup-tasks` skill). Skip that prompt with `--no-cleanup`. The class name is suffixed with `Feature` automatically, so `make:ff Some` produces `SomeFeature`.
 
-The generated class's `resolve()` returns `false`, so the flag is **inactive** until a migration activates it. You may add conditions to `resolve()` and return `true`, but you **must still** create an activation migration — code may parse the flag before your condition is met.
+The generated class uses Pennant's default stub — a bare class whose `resolve()` returns `false`, so the flag is **inactive** until a migration activates it. You must make it **extend the project base class** yourself: `App\Support\AbstractFeatureFlag` for a tenant flag, or `App\Support\LandlordAbstractFeatureFlag` for a landlord/central flag. Static analysis enforces both the base class and the `Feature` suffix, so `composer lint` fails until you add the `extends`.
+
+```php
+namespace App\Features;
+
+use App\Support\AbstractFeatureFlag;
+
+class SomeFeature extends AbstractFeatureFlag
+{
+    public function resolve(mixed $scope): mixed
+    {
+        return false;
+    }
+}
+```
+
+You may add conditions to `resolve()` and return `true`, but you **must still** create an activation migration — code may parse the flag before your condition is met.
 
 Pennant's own `php artisan pennant:feature SomeFeature` also works but skips the cleanup-task integration; prefer `make:ff`.
 
@@ -96,6 +112,20 @@ public function down(): void
 
 See the `writing-data-migrations` skill for migration rules (idempotency, required `down()`, permanent vs `tmp_`).
 
+### Never activate a flag in a test
+
+The test suite runs your migrations (`RefreshDatabase`), so the activation migration **already activates the flag** — it is active in every test by default. **Do not call `SomeFeature::activate()` in a test, `beforeEach()`, or a helper** to "turn on" a flag; it is redundant and hides a broken activation migration (if the migration fails to activate, the test must fail).
+
+To exercise the **inactive** (pre-migration) branch, call `SomeFeature::deactivate()` for that case only:
+
+```php
+it('uses the old behaviour when the flag is inactive', function () {
+    SomeFeature::deactivate();
+
+    // assert the inactive-path behaviour
+});
+```
+
 ## Cleaning up a Feature Flag
 
 After the deploy has succeeded everywhere, a later release removes the flag:
@@ -120,4 +150,4 @@ The `TODO: Cleanup Task` root finds every cleanup site; the `(some-feature)` tag
 
 ---
 
-Related skills: `managing-cleanup-tasks`, `writing-data-migrations`.
+Related: `managing-cleanup-tasks`, `writing-data-migrations`.

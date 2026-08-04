@@ -20,29 +20,6 @@ Correct:
 $key = config('services.key');
 ```
 
-## Use Encrypted Env or External Secrets
-
-Never store production secrets in plain `.env` files in version control.
-
-Incorrect:
-
-```bash
-
-# .env committed to repo or shared in Slack
-
-STRIPE_SECRET=sk_live_abc123
-AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI
-```
-
-Correct:
-
-```bash
-php artisan env:encrypt --env=production --readable
-php artisan env:decrypt --env=production
-```
-
-For cloud deployments, prefer the platform's native secret store (AWS Secrets Manager, Vault, etc.) and inject at runtime.
-
 ## Use `App::environment()` for Environment Checks
 
 Incorrect:
