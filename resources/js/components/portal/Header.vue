@@ -99,6 +99,8 @@
         </header>
 
         <nav class="flex grow flex-col gap-y-7 overflow-x-hidden overflow-y-auto px-4 py-4">
+            <slot name="mobile-actions" :close-sidebar="() => (sidebarOpen = false)" />
+
             <ul class="flex flex-col gap-y-1">
                 <li v-for="item in menuItems" :key="item.label">
                     <router-link :to="{ name: item.routeName }" custom v-slot="{ navigate, isActive, isExactActive }">
@@ -109,7 +111,7 @@
                             "
                             class="relative flex items-center gap-x-3 rounded-lg p-2 outline-none transition duration-75 cursor-pointer"
                             :class="
-                                isActive || isExactActive
+                                isActive || isExactActive || item.activeRoutes?.includes($route.name)
                                     ? 'bg-gray-100'
                                     : 'hover:bg-gray-100 focus-visible:bg-gray-100'
                             "
@@ -117,11 +119,19 @@
                             <component
                                 :is="item.icon"
                                 class="size-6"
-                                :class="isActive || isExactActive ? 'text-brand-700' : 'text-gray-400'"
+                                :class="
+                                    isActive || isExactActive || item.activeRoutes?.includes($route.name)
+                                        ? 'text-brand-700'
+                                        : 'text-gray-400'
+                                "
                             />
                             <span
                                 class="flex-1 truncate text-sm font-medium"
-                                :class="isActive || isExactActive ? 'text-brand-700' : 'text-gray-700'"
+                                :class="
+                                    isActive || isExactActive || item.activeRoutes?.includes($route.name)
+                                        ? 'text-brand-700'
+                                        : 'text-gray-700'
+                                "
                             >
                                 {{ item.label }}
                             </span>
@@ -171,11 +181,17 @@
                         <a
                             @click="navigate"
                             class="flex items-center justify-center gap-x-2 rounded-lg px-3 py-2 outline-none transition duration-75 hover:bg-gray-50 focus-visible:bg-gray-50 cursor-pointer"
-                            :class="(isActive || isExactActive) && 'bg-gray-50'"
+                            :class="
+                                (isActive || isExactActive || item.activeRoutes?.includes($route.name)) && 'bg-gray-50'
+                            "
                         >
                             <span
                                 class="text-sm font-medium"
-                                :class="isActive || isExactActive ? 'text-brand-600' : 'text-gray-700'"
+                                :class="
+                                    isActive || isExactActive || item.activeRoutes?.includes($route.name)
+                                        ? 'text-brand-600'
+                                        : 'text-gray-700'
+                                "
                             >
                                 {{ item.label }}
                             </span>
@@ -216,6 +232,8 @@
                         </div>
                     </div>
                 </form>
+
+                <slot name="actions" />
 
                 <!-- Sign in / Sign out -->
                 <div v-if="requiresAuthentication">
