@@ -70,9 +70,10 @@ if ($value !== null && $value !== '') { /* ... */ }
 if (filled($value)) { /* ... */ }
 ```
 
-Two semantics to keep in mind — both are intentional and idiomatic here, so do **not** treat code that relies on them as a bug:
+Two things to keep in mind — both intentional and idiomatic here, so do **not** flag code that relies on them as a bug:
 
-- **`isset()`, `??`, `empty()`, `blank()`, and `filled()` never throw on `null`.** They use `isset()` semantics, so a property chain wrapped in one is safe even when a link is `null` — e.g. `Application::where(...)->first()->id ?? $default` returns `$default` instead of erroring, no `?->` needed. It is a null-safe pattern, not a latent crash.
+- **`isset()`, `empty()`, and `??` are language constructs with isset-semantics** — they tolerate `null` links in a property chain with no `?->` and no error, e.g. `Application::where(...)->first()->id ?? $default` returns `$default`. Not a latent crash.
+- **`blank()` and `filled()` are ordinary functions**, so their argument is evaluated *before* the call — they do **not** get isset-semantics. Guard nullable links with `?->`: write `filled($model->relation?->field)`, not `filled($model->relation->field)` (a method call on `null` would even throw).
 - **`blank()` / `filled()` treat booleans and numerics as filled** — `filled(false)` and `filled(0)` are `true`, so `false`/`0` survive a `filled()` filter. Prefer `filled()` over a `$value !== ''` check when they must be preserved.
 
 ## Use Laravel String & Array Helpers
