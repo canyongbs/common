@@ -73,7 +73,7 @@ if (filled($value)) { /* ... */ }
 Two things to keep in mind — both intentional and idiomatic here, so do **not** flag code that relies on them as a bug:
 
 - **`isset()`, `empty()`, and `??` are language constructs with isset-semantics** — they tolerate `null` links in a property chain with no `?->` and no error, e.g. `Application::where(...)->first()->id ?? $default` returns `$default`. Not a latent crash.
-- **`blank()` and `filled()` are ordinary functions**, so their argument is evaluated *before* the call — they do **not** get isset-semantics. Guard nullable links with `?->`: write `filled($model->relation?->field)`, not `filled($model->relation->field)` (a method call on `null` would even throw).
+- **`blank()` and `filled()` are ordinary functions**, so their argument is evaluated _before_ the call — they do **not** get isset-semantics. Guard nullable links with `?->`: write `filled($model->relation?->field)`, not `filled($model->relation->field)` (a method call on `null` would even throw).
 - **`blank()` / `filled()` treat booleans and numerics as filled** — `filled(false)` and `filled(0)` are `true`, so `false`/`0` survive a `filled()` filter. Prefer `filled()` over a `$value !== ''` check when they must be preserved.
 
 ## Use Laravel String & Array Helpers
