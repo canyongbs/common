@@ -1,6 +1,6 @@
 ---
 name: laravel-best-practices
-description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying models, migrations, policies, jobs, invokable controllers, Action and service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, queue and job configuration, HTTP client usage, database and PostgreSQL schema conventions (UUID keys, citext, unique indexes, soft deletes), configuration and environment access, static frontend assets (Vite), naming and code-style conventions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
+description: 'Apply this skill whenever writing, reviewing, or refactoring Laravel PHP code. This includes creating or modifying models, relationships, migrations, policies, observers, jobs, invokable controllers, Action and service classes, and Eloquent queries. Triggers for N+1 and query performance issues, caching strategies, authorization and security patterns, choosing between an observer and an action, writing model attributes and relationships without mass assignment, queue and job configuration, HTTP client usage, database and PostgreSQL schema conventions (UUID keys, citext, unique indexes, soft deletes), configuration and environment access, static frontend assets (Vite), naming and code-style conventions, and architectural decisions. Also use for Laravel code reviews and refactoring existing Laravel code to follow best practices. Covers any task involving Laravel backend PHP code patterns.'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -24,6 +24,8 @@ Check sibling files, related controllers, models, or tests for established patte
 - UUID keys via `HasUuids`; `SoftDeletes` on domain models (not pivots / meta tables); custom pivots extend `Pivot`
 - Attribute casts in the `casts()` method; cast date columns to Carbon
 - Define `$fillable` on every model to guard mass assignment
+- Write individual records with explicit `->attribute =` + `->save()`, never `create()` / `update()` / `fill()` (bulk query-builder updates are fine)
+- Assign relationships, never foreign keys: `belongsTo` / `morphTo` via `->associate()`, and persist `hasOne` / `hasMany` / `morph*` children via `->save()` / `->saveMany()`
 - Mirror database column defaults in the model's `$attributes`
 - `#[CollectedBy]` for custom collection classes
 
@@ -67,7 +69,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - Single-action invokable controllers (no base `Controller`) for the few standalone endpoints
 - Validate inline with `$request->validate([...])` — no Form Request classes
 - Authorize with `Gate::authorize()`; return Eloquent API Resources
-- Keep controllers thin — validate, authorize, delegate to an Action, respond
+- Controllers never perform operations — validate, authorize, read (no side effects), build the response; all writes go in an Action. Group by subject (`Controllers/Orders/CreateOrderController.php`)
 
 ### 6. Queue & Jobs → `rules/queue-jobs.md`
 
@@ -105,8 +107,9 @@ Check sibling files, related controllers, models, or tests for established patte
 
 ### 10. Architecture → `rules/architecture.md`
 
-- Single-purpose invokable Action classes for business operations
-- Constructor dependency injection over the `app()` helper; code to interfaces at system boundaries
+- Single-purpose invokable Action classes for business operations, grouped by subject with no `Action` suffix (`Actions/Orders/CreateOrder.php`); accept typed, named parameters, never an untyped array of user input
+- Observers only for caller-agnostic model invariants (backfill sort order, audit entries); business logic goes in Actions — logic in an observer forces `quietly()` writes that disable *all* events
+- Constructor dependency injection over the `app()` helper (controllers method-inject dependencies via `__invoke()`); code to interfaces at system boundaries
 - Atomic locks (`Cache::lock()` / `lockForUpdate()`) for race conditions
 - `mb_*` string functions for UTF-8 safety
 - `defer()` for post-response work; `Context` for request-scoped data; `Concurrency::run()` for parallel execution

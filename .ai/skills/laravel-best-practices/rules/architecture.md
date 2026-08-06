@@ -2,17 +2,23 @@
 
 ## Single-Purpose Action Classes
 
-Extract discrete business operations into invokable Action classes.
+Extract discrete business operations into invokable Action classes. Name an action for the operation it performs — **no `Action` suffix** — and group it under a subject directory: `Actions/Orders/CreateOrder.php`. Accept **typed, individually named parameters** — never an untyped `array` of user input — so the signature documents exactly what the operation needs.
 
 ```php
-class CreateOrderAction
+namespace App\Actions\Orders;
+
+class CreateOrder
 {
     public function __construct(private InventoryService $inventory) {}
 
-    public function __invoke(array $data): Order
+    public function __invoke(Customer $customer, int $total): Order
     {
-        return DB::transaction(function () use ($data) {
-            $order = Order::create($data);
+        return DB::transaction(function () use ($customer, $total) {
+            $order = new Order();
+            $order->total = $total;
+            $order->customer()->associate($customer);
+            $order->save();
+
             $this->inventory->reserve($order);
 
             return $order;
@@ -21,13 +27,22 @@ class CreateOrderAction
 }
 ```
 
+## Observers vs. Actions: Where Logic Belongs
+
+Default to an **Action** for business logic; reach for an **Observer** only for invariants that must hold on *every* write of a model, no matter who triggers it.
+
+- **Observer — caller-agnostic model invariants.** Use one only for logic that must run whenever the record is persisted, independent of the call site: backfilling a missing `sort` / `order` number on a new record, stamping an audit / history entry, deriving a column from another. These are small, deterministic, and part of the model's lifecycle — no caller should be able to forget them.
+- **Action — business operations.** Anything a caller *decides* to do — orchestrating steps, calling other services, sending notifications, conditional workflows — belongs in an invokable Action. It is explicit at the call site, testable in isolation, and easy to *not* run when it shouldn't.
+
+**Why the line matters:** the moment business logic creeps into an observer, some code paths won't want it — and the only escape hatch is a `quietly()` write (`saveQuietly()`, `updateQuietly()`, `archiveQuietly()`), which suppresses **every** event on that model, not just the one you meant to skip. That silently disables unrelated observers (auditing, search indexing, other invariants) and becomes very hard to maintain and reason about. Keep observers thin enough that no caller ever needs to bypass them.
+
 ## Wrap Multi-Step Writes in a Transaction
 
-When one operation performs several writes that must all succeed or all fail together, wrap them in `DB::transaction()` so a failure can't leave half-written state (as in `CreateOrderAction` above). Keep transactions short — do no HTTP calls inside them, and defer side effects with `DB::afterCommit()` or by dispatching jobs after the closure returns.
+When one operation performs several writes that must all succeed or all fail together, wrap them in `DB::transaction()` so a failure can't leave half-written state (as in `CreateOrder` above). Keep transactions short — do no HTTP calls inside them, and defer side effects with `DB::afterCommit()` or by dispatching jobs after the closure returns.
 
 ## Use Dependency Injection
 
-Always use constructor injection where available. Avoid `app()` or `resolve()` inside classes.
+Inject dependencies rather than reaching for `app()` or `resolve()` inside a class. Use constructor injection everywhere except controllers, which inject their per-request dependencies — the action and route-bound models — into the `__invoke()` method.
 
 Incorrect:
 
@@ -36,11 +51,13 @@ class CreateOrderController
 {
     public function __invoke(Request $request)
     {
-        $service = app(OrderService::class);
+        $createOrder = app(CreateOrder::class);
 
-        return $service->create($request->validate([
+        $validated = $request->validate([
             'total' => ['required', 'integer', 'min:0'],
-        ]));
+        ]);
+
+        return $createOrder(customer: $request->user()->customer, total: $validated['total']);
     }
 }
 ```
@@ -50,13 +67,13 @@ Correct:
 ```php
 class CreateOrderController
 {
-    public function __construct(private OrderService $service) {}
-
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, CreateOrder $createOrder)
     {
-        return $this->service->create($request->validate([
+        $validated = $request->validate([
             'total' => ['required', 'integer', 'min:0'],
-        ]));
+        ]);
+
+        return $createOrder(customer: $request->user()->customer, total: $validated['total']);
     }
 }
 ```

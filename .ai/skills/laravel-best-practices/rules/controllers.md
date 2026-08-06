@@ -18,7 +18,7 @@ class RunAdapterController
 
 ## Validate Inline — No Form Request Classes
 
-There are no Form Request classes. Validate inline with `$request->validate([...])` in array notation, then hand the validated data to an Action class.
+There are no Form Request classes. Validate inline with `$request->validate([...])` in array notation, then hand the validated data to an Action class as **typed, named arguments** — never a raw array of user input.
 
 ```php
 $validated = $request->validate([
@@ -44,16 +44,21 @@ return OrganizationResource::make($organization)
     ->setStatusCode(Response::HTTP_CREATED);
 ```
 
-## Keep Controllers Thin
+## Keep Controllers Thin — Never Perform Operations
 
-A controller should validate, authorize, delegate to an Action or service, and return a response — nothing more. Put business logic in an Action class (see `architecture.md`), injected via the constructor.
+A controller **never performs an operation or write itself**. Its only responsibilities are:
+
+- **validate** the request (inline, as above);
+- **authorize** via `Gate::authorize()`;
+- **fetch data with no side effects** (read-only queries);
+- **build the response** — a view, a response object, an Eloquent API Resource, or a plain array.
+
+Every write or side effect belongs in an invokable Action class (see `architecture.md`), injected into the `__invoke()` method. A controller that mutates state directly is a bug.
 
 ```php
 class CreateOrganizationController
 {
-    public function __construct(private CreateOrganization $create) {}
-
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, CreateOrganization $createOrganization): JsonResponse
     {
         Gate::authorize('create', Organization::class);
 
@@ -61,9 +66,13 @@ class CreateOrganizationController
             'name' => ['required', 'string', 'max:255', 'unique:organizations,name'],
         ]);
 
-        return OrganizationResource::make(($this->create)($validated))
+        return OrganizationResource::make($createOrganization(name: $validated['name']))
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }
 }
 ```
+
+## Group by Subject
+
+Group controllers under a subject-named subdirectory and keep the `Controller` suffix: `Http/Controllers/Orders/CreateOrderController.php`. Actions follow the same subject grouping but are named for the operation with **no** suffix: `Actions/Orders/CreateOrder.php` (see `architecture.md`).

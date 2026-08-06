@@ -35,24 +35,28 @@ Use policies or gates. Never skip authorization. Back each model with a policy c
 Incorrect:
 
 ```php
-public function __invoke(Request $request, Post $post)
+public function __invoke(Request $request, Post $post, UpdatePost $updatePost)
 {
-    $post->update($request->validate([
+    $validated = $request->validate([
         'title' => ['required', 'string', 'max:255'],
-    ]));
+    ]);
+
+    $updatePost($post, title: $validated['title']);
 }
 ```
 
 Correct:
 
 ```php
-public function __invoke(Request $request, Post $post)
+public function __invoke(Request $request, Post $post, UpdatePost $updatePost)
 {
     Gate::authorize('update', $post);
 
-    $post->update($request->validate([
+    $validated = $request->validate([
         'title' => ['required', 'string', 'max:255'],
-    ]));
+    ]);
+
+    $updatePost($post, title: $validated['title']);
 }
 ```
 

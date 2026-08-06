@@ -32,6 +32,25 @@ public function users(): BelongsToMany
 }
 ```
 
+## Assign Relationships, Not Foreign Keys
+
+Never write a foreign key column in application code — let the relationship own it. Set a `belongsTo` / `morphTo` with `associate()` (`dissociate()` to clear); a `morphTo`'s `associate()` sets both the id and type columns. Persist an unsaved `hasOne` / `hasMany` / `morphOne` / `morphMany` child through the relationship with `->save($model)` (or `->saveMany([...])`), which sets the foreign key (and morph type) for you.
+
+```php
+// Incorrect — foreign key assigned in code
+$order->customer_id = $customer->id;
+$comment->post_id = $post->id;
+
+// Correct — belongsTo / morphTo via associate()
+$order->customer()->associate($customer);
+$order->save();
+$comment->commentable()->associate($post); // morphTo: sets id + type
+
+// Correct — persist an unsaved hasMany / hasOne / morph* child via the relationship
+$post->comments()->save($comment);           // sets comment.post_id
+$post->comments()->saveMany([$first, $second]);
+```
+
 ## Use UUID Keys, Soft Deletes & Pivots
 
 - **UUID primary keys** — every model uses `HasUuids` (the migration declares a `uuid('id')` primary key; see `migrations.md`).
@@ -96,6 +115,24 @@ Every model must define `$fillable` (whitelist) — never `$guarded = []` on a m
 /** @var list<string> */
 protected $fillable = ['name', 'email'];
 ```
+
+## Write Attributes Explicitly, Not by Mass Assignment
+
+In application code (Actions, jobs, listeners) do **not** use `Model::create()`, `->update()`, `->fill()`, `updateOrCreate()`, or other mass-assignment writes for an individual record. Instantiate the model (or fetch an existing one), set each attribute explicitly with `->attribute =`, then `->save()`. This keeps every write typed, greppable, and independent of `$fillable`.
+
+```php
+// Incorrect — mass assignment
+$order = Order::create(['total' => $total, 'status' => OrderStatus::Pending]);
+
+// Correct — explicit attributes
+$order = new Order();
+$order->total = $total;
+$order->status = OrderStatus::Pending;
+$order->customer()->associate($customer);
+$order->save();
+```
+
+`$fillable` is still required because Filament and other framework paths mass-assign (see above). Set-based bulk writes through the query builder (`Model::query()->where(...)->update([...])`) remain fine — this rule is about writing a single model's attributes, not bulk operations.
 
 ## Mirror Database Defaults in `$attributes`
 

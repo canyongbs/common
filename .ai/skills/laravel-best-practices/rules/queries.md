@@ -4,7 +4,7 @@ Rules for reading and writing data with Eloquent and the query builder, and for 
 
 ## Start Queries with `query()`
 
-Always begin a query with `Model::query()` rather than calling static query methods like `Model::where()`, `Model::all()`, or `Model::find()` directly. Starting with `query()` returns an explicit `Builder` instance, which improves IDE autocompletion and static analysis and keeps query chains consistent. (`Model::create()` and other write helpers are fine as-is.)
+Always begin a query with `Model::query()` rather than calling static query methods like `Model::where()`, `Model::all()`, or `Model::find()` directly. Starting with `query()` returns an explicit `Builder` instance, which improves IDE autocompletion and static analysis and keeps query chains consistent. (For writes, assign attributes explicitly and `save()` rather than `Model::create()` — see `models.md`.)
 
 Incorrect:
 
