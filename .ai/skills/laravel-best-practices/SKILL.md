@@ -117,6 +117,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - Follow Laravel naming conventions for all entities (classes, tables, columns, FKs, routes…)
 - Name boolean columns `is_` / `has_` / `can_` and timestamps past-tense `_at`
 - Prefer shorter, readable syntax (`now()`, `session()`, `back()`, `->latest()`)
+- Prefer `blank()` / `filled()`; wrapping a property chain in them (or `??` / `empty()` / `isset()`) stops at the first `null` instead of throwing, so it is not a null-access bug; they also treat booleans/numerics as filled (`false`/`0` survive `filled()`)
 - Prefer Laravel helpers (`Str`, `Arr`, `Number`, `Uri`, `Str::of()`, `$request->string()`) over raw PHP functions
 - No JS/CSS in Blade, no HTML in PHP classes; comments only for config files
 

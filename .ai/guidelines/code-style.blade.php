@@ -19,7 +19,7 @@ Migrate first so the generator reads the new schema. In a single-database app ru
 
 ### Narrow types with `assert()`, never inline `@var`
 
-When PHPStan needs a narrower type for a variable than it can infer, use a runtime `assert()` call — **never** an inline `/** @var ... */` docblock. Assertions are enabled in production, so they both satisfy the analyser and fail loudly if the assumption is ever wrong; an inline `@var` silently lies to PHPStan and hides real bugs. This does not apply to property/const `@var` docblocks (e.g. on `$fillable`), which remain the correct way to type declarations.
+When PHPStan needs a narrower type for a variable than it can infer, use a runtime `assert()` call — **never** an inline `/** @var ... */` docblock. Assertions are enabled in production, so they both satisfy the analyser and fail loudly if the assumption is ever wrong; an inline `@var` silently lies to PHPStan and hides real bugs. Because assertions run in production here, do **not** treat `assert()` as a no-op or assume it is disabled. This does not apply to property/const `@var` docblocks (e.g. on `$fillable`), which remain the correct way to type declarations.
 
 @verbatim
 ```php

@@ -58,6 +58,23 @@ $table->timestamp('expires_at');
 | `->orderBy('created_at', 'asc')`   | `->oldest()`           |
 | `->first()->name`                  | `->value('name')`      |
 
+## Prefer `blank()` / `filled()`, and Know isset-Semantics
+
+Always prefer Laravel's `blank()` / `filled()` over hand-rolled emptiness checks. They express intent clearly and behave correctly across every type.
+
+```php
+// Incorrect
+if ($value !== null && $value !== '') { /* ... */ }
+
+// Correct
+if (filled($value)) { /* ... */ }
+```
+
+Two semantics to keep in mind — both are intentional and idiomatic here, so do **not** treat code that relies on them as a bug:
+
+- **`isset()`, `??`, `empty()`, `blank()`, and `filled()` never throw on `null`.** They use `isset()` semantics, so a property chain wrapped in one is safe even when a link is `null` — e.g. `Application::where(...)->first()->id ?? $default` returns `$default` instead of erroring, no `?->` needed. It is a null-safe pattern, not a latent crash.
+- **`blank()` / `filled()` treat booleans and numerics as filled** — `filled(false)` and `filled(0)` are `true`, so `false`/`0` survive a `filled()` filter. Prefer `filled()` over a `$value !== ''` check when they must be preserved.
+
 ## Use Laravel String & Array Helpers
 
 Laravel provides `Str`, `Arr`, `Number`, and `Uri` helper classes that are more readable, chainable, and UTF-8 safe than raw PHP functions. Always prefer them.
