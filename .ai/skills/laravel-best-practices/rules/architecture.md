@@ -217,9 +217,12 @@ class Customer extends Model
     protected $table = 'Customer';
     protected $primaryKey = 'customer_id';
 
+    /**
+     * @return BelongsToMany<Role, $this, CustomerRole>
+     */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'role_customer', 'customer_id', 'role_id');
+        return $this->belongsToMany(Role::class)->using(CustomerRole::class)->withTimestamps();
     }
 }
 ```
@@ -229,9 +232,12 @@ Correct:
 ```php
 class Customer extends Model
 {
+    /**
+     * @return BelongsToMany<Role, $this, CustomerRole>
+     */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(Role::class)->using(CustomerRole::class)->withTimestamps();
     }
 }
 ```

@@ -22,6 +22,9 @@ public function __invoke(Builder $query): void
 Extend the `addSelect()` pattern to fetch a foreign key via subquery, then define a `belongsTo` relationship on that virtual attribute. This provides a fully-hydrated related model without loading the entire collection.
 
 ```php
+/**
+ * @return BelongsTo<Login, $this>
+ */
 public function lastLogin(): BelongsTo
 {
     return $this->belongsTo(Login::class);
