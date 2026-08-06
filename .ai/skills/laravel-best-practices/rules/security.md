@@ -56,6 +56,12 @@ public function __invoke(Request $request, Post $post)
 }
 ```
 
+## Record-Dependent Policy Methods Need Per-Record Bulk Authorization
+
+**Whenever you write or modify a `delete` / `restore` / `forceDelete` policy method with record-dependent logic** — logic that depends on the specific record, so it diverges from its `deleteAny` / `restoreAny` / `forceDeleteAny` counterpart — you must also update the model's Filament bulk actions (all apps use Filament). A bulk action checks the `*Any` method **once** and does **not** run the per-record method for each selected record unless you add `->authorizeIndividualRecords('<method>')`. Omitting it lets users bulk-process records they may not act on individually. Return Filament's `DenyResponse` from the policy method so the failure notification reflects how many records were denied.
+
+This is bidirectional: writing or reviewing a **policy** method, or a **Filament bulk action**, is the trigger to check the other side. Full pattern in the `structuring-filament-code` skill (“Bulk Actions: Authorize Individual Records”).
+
 ## Prevent SQL Injection
 
 Always use parameter binding. Never interpolate user input into queries.

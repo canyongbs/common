@@ -96,6 +96,7 @@ Check sibling files, related controllers, models, or tests for established patte
 ### 9. Security → `rules/security.md`
 
 - Define `$fillable` on every model, authorize every action via policies or gates
+- Record-dependent `delete`/`restore`/`forceDelete` policy logic → add `->authorizeIndividualRecords()` to the model's Filament bulk actions (see `structuring-filament-code`)
 - No raw SQL with user input — use Eloquent or query builder
 - `{{ }}` for output escaping, `@csrf` on hand-written POST/PUT/DELETE Blade forms, `throttle` on auth and API routes
 - Validate MIME type, extension, and size for file uploads

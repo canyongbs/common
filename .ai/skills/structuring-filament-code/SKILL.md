@@ -1,6 +1,6 @@
 ---
 name: structuring-filament-code
-description: "Use when writing or reviewing Filament v4+ code in a Canyon GBS app and want it maintainable and small — organizing a resource's form, infolist, and table into separate `configure()` classes; extracting fields, columns, filters, or actions into their own classes; deciding between a static `make()` factory and extending a component base class; or splitting a schema per page instead of branching by operation/context. Trigger whenever a Filament schema/table/action definition grows beyond a few lines or gains a complex closure, when adding a resource page schema, or when you see per-page branching (`hiddenOn`/`visibleOn`/`disabledOn`, `$operation`, `$livewire instanceof`). Do not use for: non-Filament PHP (use `laravel-best-practices`), Filament file uploads (use `handling-file-uploads`), settings-page wiring (use `managing-settings`), or writing tests (use `writing-tests`)."
+description: "Use when writing or reviewing Filament v4+ code in a Canyon GBS app and want it maintainable and small — organizing a resource's form, infolist, and table into separate `configure()` classes; extracting fields, columns, filters, or actions into their own classes; deciding between a static `make()` factory and extending a component base class; or splitting a schema per page instead of branching by operation/context. Trigger whenever a Filament schema/table/action definition grows beyond a few lines or gains a complex closure, when adding a resource page schema, when you add record-dependent logic to a `delete`/`restore`/`forceDelete` policy method and must authorize individual records on the model's Filament bulk actions, or when you see per-page branching (`hiddenOn`/`visibleOn`/`disabledOn`, `$operation`, `$livewire instanceof`). Do not use for: non-Filament PHP (use `laravel-best-practices`), Filament file uploads (use `handling-file-uploads`), settings-page wiring (use `managing-settings`), or writing tests (use `writing-tests`)."
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -164,6 +164,49 @@ Used out of the box as `DeactivateAction::make()`, or configured with `Deactivat
 
 Common already ships an action built exactly this way — `CanyonGBS\Common\Filament\Actions\ArchiveAction` — so reuse it rather than re-implementing archiving (see the `archiving-records` skill).
 
+## Bulk Actions: Authorize Individual Records
+
+A bulk action authorizes **once** against the `*Any` policy method (`deleteAny` / `restoreAny` / `forceDeleteAny`) to decide whether its button shows. It does **not** run the per-record `delete` / `restore` / `forceDelete` method for each selected record. So when a per-record method holds **record-dependent logic its `*Any` counterpart does not**, a plain bulk action will process records the user may not act on individually.
+
+**Whenever you add record-dependent logic to a `delete` / `restore` / `forceDelete` policy method** (making it diverge from `deleteAny` / `restoreAny` / `forceDeleteAny`), find every Filament bulk action for that model — all apps use Filament — and add `->authorizeIndividualRecords('<method>')`. It runs the policy method per record and drops denied records from `$records`:
+
+```php
+BulkAction::make('delete')
+    ->requiresConfirmation()
+    ->authorizeIndividualRecords('delete')
+    ->action(fn (Collection $records) => $records->each->delete());
+```
+
+Denied records are dropped silently, so report the outcome. Return Filament's `DenyResponse` from the policy method (not a bare `false`) so the message reflects how many records were affected, and set the notification titles so the user sees the count actually processed:
+
+```php
+use Filament\Support\Authorization\DenyResponse;
+use Illuminate\Auth\Access\Response;
+
+public function delete(User $user, User $model): bool | Response
+{
+    if (! $model->is_admin) {
+        return true;
+    }
+
+    return DenyResponse::make('cannot_delete_admin', message: fn (int $failureCount, int $totalCount): string => $failureCount === $totalCount
+        ? 'All selected users were admins.'
+        : "{$failureCount} of the selected users were admins.");
+}
+```
+
+```php
+BulkAction::make('delete')
+    ->authorizeIndividualRecords('delete')
+    ->action(fn (Collection $records) => $records->each->delete())
+    ->successNotificationTitle('Deleted users')
+    ->failureNotificationTitle(fn (int $successCount, int $totalCount): string => $successCount
+        ? "{$successCount} of {$totalCount} users deleted"
+        : 'Failed to delete any users');
+```
+
+For failures that occur **after** authorization passes (e.g. `$record->delete()` returns `false`), inject `BulkAction $action` and call `$action->reportBulkProcessingFailure('key', message: ...)` once per record, then stop processing that record.
+
 ## Put a Single-Use Schema on the Page
 
 Extract a schema into its own class only when it is **shared** across more than one place, or when it would otherwise be one of several definitions in the same class (the reason a resource's form, infolist, and table each get a class). A page that declares **only one** schema does not need a separate file for it — define it **inline** on the page. Don't create a `CreateRoleForm` / `EditRoleForm` class that is referenced in a single place.
@@ -215,6 +258,7 @@ public function form(Schema $schema): Schema
 - Any multi-line or complex-closure field / column / filter / action → its own class.
 - `public static function make(<mandatory params>)` factory by default; `extends` + `setUp()` only for OOTB, no-required-param, optionally-configurable components.
 - No `hiddenOn` / `visibleOn` / `disabledOn` / `$operation` / `$livewire instanceof` / `$context` branching — each page owns its schema, reusing shared component classes.
+- Added record-dependent logic to a `delete` / `restore` / `forceDelete` policy method? Add `->authorizeIndividualRecords('<method>')` to every Filament bulk action for that model, and return `DenyResponse` from the policy method for accurate failure notifications.
 
 ---
 
