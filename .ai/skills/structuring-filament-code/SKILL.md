@@ -171,10 +171,8 @@ A bulk action authorizes **once** against the `*Any` policy method (`deleteAny` 
 **Whenever you add record-dependent logic to a `delete` / `restore` / `forceDelete` policy method** (making it diverge from `deleteAny` / `restoreAny` / `forceDeleteAny`), find every Filament bulk action for that model — all apps use Filament — and add `->authorizeIndividualRecords('<method>')`. It runs the policy method per record and drops denied records from `$records`:
 
 ```php
-BulkAction::make('delete')
-    ->requiresConfirmation()
-    ->authorizeIndividualRecords('delete')
-    ->action(fn (Collection $records) => $records->each->delete());
+DeleteBulkAction::make()
+    ->authorizeIndividualRecords('delete');
 ```
 
 Denied records are dropped silently, so report the outcome. Return Filament's `DenyResponse` from the policy method (not a bare `false`) so the message reflects how many records were affected, and set the notification titles so the user sees the count actually processed:
@@ -196,9 +194,8 @@ public function delete(User $user, User $model): bool | Response
 ```
 
 ```php
-BulkAction::make('delete')
+DeleteBulkAction::make()
     ->authorizeIndividualRecords('delete')
-    ->action(fn (Collection $records) => $records->each->delete())
     ->successNotificationTitle('Deleted users')
     ->failureNotificationTitle(fn (int $successCount, int $totalCount): string => $successCount
         ? "{$successCount} of {$totalCount} users deleted"
