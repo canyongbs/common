@@ -29,10 +29,10 @@ class CreateOrder
 
 ## Observers vs. Actions: Where Logic Belongs
 
-Default to an **Action** for business logic; reach for an **Observer** only for invariants that must hold on *every* write of a model, no matter who triggers it.
+Default to an **Action** for business logic; reach for an **Observer** only for invariants that must hold on _every_ write of a model, no matter who triggers it.
 
 - **Observer — caller-agnostic model invariants.** Use one only for logic that must run whenever the record is persisted, independent of the call site: backfilling a missing `sort` / `order` number on a new record, stamping an audit / history entry, deriving a column from another. These are small, deterministic, and part of the model's lifecycle — no caller should be able to forget them.
-- **Action — business operations.** Anything a caller *decides* to do — orchestrating steps, calling other services, sending notifications, conditional workflows — belongs in an invokable Action. It is explicit at the call site, testable in isolation, and easy to *not* run when it shouldn't.
+- **Action — business operations.** Anything a caller _decides_ to do — orchestrating steps, calling other services, sending notifications, conditional workflows — belongs in an invokable Action. It is explicit at the call site, testable in isolation, and easy to _not_ run when it shouldn't.
 
 **Why the line matters:** the moment business logic creeps into an observer, some code paths won't want it — and the only escape hatch is a `quietly()` write (`saveQuietly()`, `updateQuietly()`, `archiveQuietly()`), which suppresses **every** event on that model, not just the one you meant to skip. That silently disables unrelated observers (auditing, search indexing, other invariants) and becomes very hard to maintain and reason about. Keep observers thin enough that no caller ever needs to bypass them.
 

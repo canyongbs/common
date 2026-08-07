@@ -108,7 +108,7 @@ Check sibling files, related controllers, models, or tests for established patte
 ### 10. Architecture → `rules/architecture.md`
 
 - Single-purpose invokable Action classes for business operations, grouped by subject with no `Action` suffix (`Actions/Orders/CreateOrder.php`); accept typed, named parameters, never an untyped array of user input
-- Observers only for caller-agnostic model invariants (backfill sort order, audit entries); business logic goes in Actions — logic in an observer forces `quietly()` writes that disable *all* events
+- Observers only for caller-agnostic model invariants (backfill sort order, audit entries); business logic goes in Actions — logic in an observer forces `quietly()` writes that disable _all_ events
 - Constructor dependency injection over the `app()` helper (controllers method-inject dependencies via `__invoke()`); code to interfaces at system boundaries
 - Atomic locks (`Cache::lock()` / `lockForUpdate()`) for race conditions
 - `mb_*` string functions for UTF-8 safety
