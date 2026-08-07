@@ -1,6 +1,7 @@
 ---
 name: managing-cleanup-tasks
 description: 'Use when creating, updating, or completing a cleanup task file in `.cleanup-tasks/` — the tracked record of post-deployment cleanup work (Feature Flags to remove, temporary `tmp_` migrations to delete, and other follow-up). Trigger whenever you run or reason about `make:cleanup`, `make:ff`, or `make:tmp-migration` and their cleanup prompts, add an entry to a cleanup task, write an inline `TODO: Cleanup Task` comment, or perform the cleanup after a deploy. Covers the file format and sections, the three entry types, the inline comment convention (stable root plus unique tag), and what must NOT go in the Additional Cleanup section. Do not use for: creating the Feature Flag class (use `managing-feature-flags`) or writing the migration (use `writing-data-migrations`); this skill is about the cleanup tracking itself.'
+user-invocable: false
 license: Elastic-2.0
 metadata:
     author: canyongbs

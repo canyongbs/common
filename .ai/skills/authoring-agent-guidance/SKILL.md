@@ -1,6 +1,7 @@
 ---
 name: authoring-agent-guidance
 description: "Use when creating, editing, or reviewing this project's agent guidance — Laravel Boost guidelines (.ai/guidelines/**/*.blade.php), skills (.ai/skills/<name>/SKILL.md), the boost.json / mcp.json config, or the canyongbs/common publish and override system. Trigger whenever someone asks to add or change a guideline or skill, tweak what Boost injects into AGENTS.md, exclude a bundled/third-party guideline or skill, wire up an override (boost.override.json, .vscode/mcp.override.json, .ai/overrides/**), or understand how common:publish assembles a consuming app's guidance. Applies both inside the common package itself and inside apps that depend on canyongbs/common. Do not use for ordinary Laravel feature code, or for writing automated tests (use the writing-tests skill)."
+user-invocable: false
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -67,11 +68,16 @@ Skills are on-demand knowledge modules loaded when their `description` matches t
     ---
     name: <kebab-case-name> # must match the folder name
     description: 'Use when …' # the activation trigger — see below
+    user-invocable: false # for model-only skills; hides from the `/` menu (see invocation axes below)
     license: Elastic-2.0
     metadata:
         author: canyongbs
     ---
     ```
+- **Two independent invocation axes — set them by who the skill is for.** `user-invocable` (default `true`) controls whether the skill shows in the `/` slash-command menu; `disable-model-invocation` (default `false`) controls whether the agent may auto-load it by `description` match. Choose per skill:
+    - _Model-only convention/guideline skill_ (the common case today — the agent loads it automatically and no human runs it): set `user-invocable: false` and leave model invocation on. This is why every current common skill sets it.
+    - _Human-invoked "run this" skill_ (a person deliberately triggers it via `/` and the model should **not** pull it in on its own): keep `user-invocable: true` and set `disable-model-invocation: true`. That opts the skill out of automatic `description`-match loading, leaving the `/` slash command as its only trigger.
+    - A skill may of course be both model- and human-invocable — then set neither. Decide deliberately rather than copying a sibling.
 - **The `description` is the most important line.** It decides whether the agent activates the skill. Write it as trigger conditions: when to use, what tasks/files it covers, and explicit "do not use for …" boundaries to avoid overlap with sibling skills. Study `writing-tests` and `local-common-development` for the expected shape.
 - No `boost.json` entry is needed for a common-authored skill — presence in `.ai/skills/` is what publishes and activates it. The `boost.json` `skills` array is only for enabling **Boost's bundled** skills.
 - To drop a common-authored skill from a **single** app, add its `name` to `boost.skills.exclude` — the same exclude list used for Boost's bundled skills. `common:publish` skips copying any common skill whose name appears there, so an app can opt out of shared skills it does not need (for example, an alpha app that does not yet use feature flags).

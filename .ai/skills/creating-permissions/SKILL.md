@@ -1,6 +1,7 @@
 ---
 name: creating-permissions
 description: 'Use when creating, seeding, renaming, or deleting Spatie Laravel-permission permissions in a Canyon GBS app via a permission migration. Trigger whenever you add permissions for a model or feature, run `make:permission-migration`, use the `CanModifyPermissions` trait (createPermissions / deletePermissions / renamePermissions / renamePermissionGroups), choose a permission group, or decide which of the allowed permission names a model needs. Covers the `seed_permissions_` naming, permission groups, the allowed permission-name format, guards, and the `--module` flag. Do not use for: general data migrations (use `writing-data-migrations`), or writing the policies / authorization checks that consume the permissions.'
+user-invocable: false
 license: Elastic-2.0
 metadata:
     author: canyongbs
