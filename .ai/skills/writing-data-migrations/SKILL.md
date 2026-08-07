@@ -1,6 +1,6 @@
 ---
 name: writing-data-migrations
-description: 'Use when writing or altering a Laravel migration that changes data (not only schema) in a Canyon GBS app — data back-fills, transformations, clean-ups, seeding, or activating a Feature Flag. Trigger whenever you create a migration with `make:migration` or `make:tmp-migration`, decide between a permanent and a temporary (`tmp_`) migration, need a migration to be idempotent and safe to re-run, add a required `down()`, or target the landlord versus tenant databases. Covers permanent-migration rules (DB facade only, no removable classes), temporary-migration rules and the `tmp_` prefix with its cleanup task, and running migrations. Do not use for: permission seeding (use `creating-permissions`), creating the Feature Flag class (use `managing-feature-flags`), cleanup task file mechanics (use `managing-cleanup-tasks`), or a migration that only changes schema (adding, modifying, or dropping columns or tables — even alongside a Feature Flag activation) with no data transformation — write those as plain, unconditional migrations with no existence guards.'
+description: 'Use when writing or altering a Laravel migration that changes data (not only schema) in a Canyon GBS app — data back-fills, transformations, clean-ups, seeding, or activating a Feature Flag. Trigger whenever you create a migration with `make:migration` or `make:tmp-migration`, decide between a permanent and a temporary (`tmp_`) migration, need a migration to be idempotent and safe to re-run, add a required `down()`, or target the landlord versus tenant databases. Covers permanent-migration rules (DB facade only, no removable classes), temporary-migration rules and the `tmp_` prefix with its cleanup task, and running migrations. Do not use for: permission seeding (use `creating-permissions`), creating the Feature Flag class (use `managing-feature-flags`), cleanup task file mechanics (use `managing-cleanup-tasks`), or a migration whose only substantive change is to the schema — adding, modifying, or dropping columns or tables, optionally activating a Feature Flag to guard that change — with no accompanying data back-fill or transformation; write those as plain, unconditional migrations with no existence guards.'
 user-invocable: false
 license: Elastic-2.0
 metadata:
@@ -46,7 +46,7 @@ Temporary migrations **may** use Eloquent and other removable classes because th
 ## Creating a migration
 
 ```bash
-php artisan make:migration backfill_order_totals
+php artisan make:migration convert_orders_reference_to_citext
 php artisan make:tmp-migration seed_default_settings_for_existing_tenants
 ```
 
