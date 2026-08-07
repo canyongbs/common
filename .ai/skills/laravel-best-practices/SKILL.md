@@ -63,7 +63,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - Never modify migrations that have run in production
 - Add indexes in the migration (columns used in `WHERE`, `ORDER BY`, `JOIN`)
 - Reversible `down()` by default; forward-fix intentionally irreversible changes
-- One concern per migration — never mix DDL and DML
+- Keep each migration focused; mixing DDL and DML is expected for inseparable changes (rename-with-copy, flag activation) if transaction-wrapped — only split create-and-seed of a new table
 
 ### 5. Controllers & HTTP Endpoints → `rules/controllers.md`
 

@@ -167,9 +167,17 @@ For intentionally irreversible migrations (e.g., destructive data backfills), le
 
 ## Keep Migrations Focused
 
-One concern per migration. Never mix DDL (schema changes) and DML (data manipulation).
+Keep each migration to a single concern. Mixing schema changes (DDL) and data changes (DML) is expected when they are **inseparable parts of the same change** — and when they are, wrap the whole `up()` (and `down()`) in a `DB::transaction` so a partial failure rolls back cleanly. See the `writing-data-migrations` skill for the data-change rules that apply.
 
-Incorrect (partial failure creates unrecoverable state):
+Legitimately mixed migrations include:
+
+- **Renaming or re-typing a column while preserving its data** — add the new column, `UPDATE` to copy the values across, then drop the old one. These steps cannot be split without leaving a broken intermediate state.
+- **Fixing dependent data after a structural change** — e.g. `Schema::rename` a table, then `UPDATE` the polymorphic `auditable_type` strings that referenced the old name.
+- **Activating a Feature Flag alongside the schema change it guards** — the zero-downtime convention activates the flag from the same migration that makes the change (see `managing-feature-flags`).
+
+The one split worth keeping is **creating a brand-new table and seeding it** — separate the `create` from the `insert`, because there is no atomicity requirement and the seed belongs in its own (often temporary `tmp_`) data migration.
+
+Incorrect (create and seed in one migration — split these):
 
 ```php
 public function up(): void
