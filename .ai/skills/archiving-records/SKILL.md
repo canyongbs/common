@@ -88,6 +88,8 @@ In tables where `isUsed()` runs per row, eager-load the check to avoid N+1: `$ta
 
 Archiving authorizes against the model's policy `delete` method — `ArchiveAction` calls `can('delete', $record)`, whether it archives or falls back to deleting an unused record. Always define a `delete` method.
 
+When the `delete` method gains **record-dependent logic** (logic beyond what `deleteAny` checks), add `->authorizeIndividualRecords('delete')` to the `ArchiveBulkAction` — a bulk action only checks `deleteAny` once, so per-record `delete` rules are otherwise bypassed for bulk archiving. Have `delete` return Filament's `DenyResponse` so the bulk action's notifications report how many records were skipped and why. Always reference the `delete` method here. See the `structuring-filament-code` skill (Bulk Actions) for the full pattern.
+
 ## Filament Actions
 
 `ArchiveAction` (from `CanyonGBS\Common\Filament\Actions\ArchiveAction`) is a header action for `EditRecord` / `ViewRecord` pages; `ArchiveBulkAction` is its table bulk-action counterpart.
@@ -111,6 +113,8 @@ protected function getHeaderActions(): array
 
 Override `authorize()`, `successRedirectUrl()`, or `using()` when the action is used outside a standard Edit/View page or needs custom behaviour.
 
+`ArchiveBulkAction` authorizes `deleteAny` and already reports archived/deleted counts and per-record processing failures in its notifications. When the policy's `delete` method carries record-dependent logic, add `->authorizeIndividualRecords('delete')` so it is enforced per selected record (see **Authorization** above).
+
 ---
 
-Related: `writing-tests` (for testing archivable models and the Filament actions).
+Related: `structuring-filament-code` (bulk action authorization and notifications) and `writing-tests` (for testing archivable models and the Filament actions).

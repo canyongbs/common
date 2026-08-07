@@ -18,7 +18,7 @@ Run every command through the `pls` guideline (these apps run inside the `app` c
 - `composer format-dryrun` — reports the same without changing files.
 - `composer lint` — PHPStan/Larastan static analysis.
 - `composer checks` — `format-dryrun` + `lint`; this is the gate CI enforces.
-- `composer generate-helper-files` — regenerates Laravel IDE Helper files; run after changing models or schema so static analysis stays accurate.
+- `composer generate-helper-files` — regenerates Laravel IDE Helper files (including the per-model attribute/relation docblocks) from the **live schema**; run it after changing models or schema so static analysis stays accurate. Run the migrations first so the generator sees the new columns and relationships: `php artisan migrate` in a single-database app, or — if the app has separate landlord and tenant databases — `php artisan migrate:landlord` for the landlord and `php artisan tenant:artisan "migrate"` for the tenants, not `php artisan migrate`.
 
 ## The tools
 
@@ -32,7 +32,8 @@ Run every command through the `pls` guideline (these apps run inside the `app` c
 
 - **Style** (PHP CS Fixer / Prettier): run `composer format` to auto-fix.
 - **Static analysis** (PHPStan/Larastan): fix the actual type problem — add precise type hints, generics, or PHPDoc. Do not silence errors with blanket ignores or `mixed`; a baseline or ignore is a last resort and should be deliberate.
-- **Model magic not recognised**: run `composer generate-helper-files` and re-run `composer lint` before investigating further.
+- **Narrowing a variable's type**: use a runtime `assert()` call (e.g. `assert($record instanceof User)`), never an inline `/** @var ... */` docblock. Assertions are enabled in production, so they satisfy PHPStan _and_ fail loudly if the assumption breaks, whereas an inline `@var` is an unchecked claim that hides real bugs. Property/const `@var` docblocks (e.g. on `$fillable`) are unaffected — they remain the correct way to type declarations.
+- **Model magic not recognised / phantom errors on changed models**: this usually means the IDE-helper docblocks are stale after a schema change. Run the migrations — `php artisan migrate` in a single-database app, or `php artisan migrate:landlord` (landlord) plus `php artisan tenant:artisan "migrate"` (tenants) and _not_ `php artisan migrate` in a multi-tenant app — then `composer generate-helper-files`, and re-run `composer lint` before investigating further. Do not hand-edit the generated model docblocks to silence these — regenerate them.
 
 ---
 

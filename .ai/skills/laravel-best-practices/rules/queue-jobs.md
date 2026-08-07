@@ -73,7 +73,8 @@ Handle errors explicitly — don't rely on silent failure. Send the exception to
 ```php
 public function failed(?Throwable $exception): void
 {
-    $this->podcast->update(['status' => 'failed']);
+    $this->podcast->status = 'failed';
+    $this->podcast->save();
 
     if ($exception) {
         report($exception);
