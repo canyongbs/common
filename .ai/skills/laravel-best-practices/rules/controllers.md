@@ -48,8 +48,8 @@ return OrganizationResource::make($organization)
 
 A controller **never performs an operation or write itself**. Its only responsibilities are:
 
-- **validate** the request (inline, as above);
 - **authorize** via `Gate::authorize()`;
+- **validate** the request (inline, as above);
 - **fetch data with no side effects** (read-only queries);
 - **build the response** — a view, a response object, an Eloquent API Resource, or a plain array.
 
