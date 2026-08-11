@@ -66,7 +66,7 @@ it('has a `name` no longer than 64 characters', function (string $name, string $
     $value = skillFrontmatter($path)['name'] ?? null;
 
     expect($value)->toBeString()
-        ->and(mb_strlen((string) $value))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(64);
+        ->and(mb_strlen((string) $value, 'UTF-8'))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(64);
 })->with('skills');
 
 it('has a `name` containing only lowercase letters, numbers, and hyphens', function (string $name, string $path) {
@@ -95,7 +95,7 @@ it('has a non-empty `description` within the 1024-character limit', function (st
     $value = skillFrontmatter($path)['description'] ?? null;
 
     expect($value)->toBeString()
-        ->and(mb_strlen((string) $value))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(1024);
+        ->and(mb_strlen((string) $value, 'UTF-8'))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(1024);
 })->with('skills');
 
 it('has a `compatibility` value within the 500-character limit', function (string $name, string $path) {
@@ -108,5 +108,5 @@ it('has a `compatibility` value within the 500-character limit', function (strin
     }
 
     expect($frontmatter['compatibility'])->toBeString()
-        ->and(mb_strlen((string) $frontmatter['compatibility']))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(500);
+        ->and(mb_strlen((string) $frontmatter['compatibility'], 'UTF-8'))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(500);
 })->with('skills');

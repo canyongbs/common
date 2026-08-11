@@ -72,7 +72,7 @@ function skillFrontmatter(string $path): array
 dataset('skills', function () {
     $skills = [];
 
-    foreach (glob(dirname(__DIR__) . '/.ai/skills/*', GLOB_ONLYDIR) as $directory) {
+    foreach (glob(dirname(__DIR__) . '/.ai/skills/*', GLOB_ONLYDIR) ?: [] as $directory) {
         $name = basename($directory);
 
         $skills[$name] = [$name, $directory . '/SKILL.md'];
