@@ -115,3 +115,19 @@ it('has a `compatibility` value within the 500-character limit', function (strin
     expect($frontmatter['compatibility'])->toBeString()
         ->and(mb_strlen((string) $frontmatter['compatibility']))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(500);
 })->with('skills');
+
+it('is licensed under `Elastic-2.0`', function (string $name, string $path) {
+    $frontmatter = skillFrontmatter($path);
+
+    expect($frontmatter)->toHaveKey('license')
+        ->and($frontmatter['license'])->toBe('Elastic-2.0');
+})->with('skills');
+
+it('is authored by `canyongbs`', function (string $name, string $path) {
+    $frontmatter = skillFrontmatter($path);
+
+    expect($frontmatter)->toHaveKey('metadata')
+        ->and($frontmatter['metadata'])->toBeArray()
+        ->and($frontmatter['metadata'])->toHaveKey('author')
+        ->and($frontmatter['metadata']['author'])->toBe('canyongbs');
+})->with('skills');
