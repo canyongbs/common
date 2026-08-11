@@ -88,12 +88,33 @@ it('has a `name` that matches its directory', function (string $name, string $pa
         ->and($frontmatter['name'])->toBe($name);
 })->with('skills');
 
-it('has a `name` that follows the Agent Skills format', function (string $name, string $path) {
+it('has a `name` no longer than 64 characters', function (string $name, string $path) {
     $value = skillFrontmatter($path)['name'] ?? null;
 
     expect($value)->toBeString()
-        ->and(mb_strlen((string) $value))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(64)
-        ->and($value)->toMatch('/^[a-z0-9]+(-[a-z0-9]+)*$/');
+        ->and(mb_strlen((string) $value))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(64);
+})->with('skills');
+
+it('has a `name` containing only lowercase letters, numbers, and hyphens', function (string $name, string $path) {
+    $value = skillFrontmatter($path)['name'] ?? null;
+
+    expect($value)->toBeString()
+        ->and($value)->toMatch('/^[a-z0-9-]+$/');
+})->with('skills');
+
+it('has a `name` that does not start or end with a hyphen', function (string $name, string $path) {
+    $value = skillFrontmatter($path)['name'] ?? null;
+
+    expect($value)->toBeString()
+        ->and(str_starts_with((string) $value, '-'))->toBeFalse()
+        ->and(str_ends_with((string) $value, '-'))->toBeFalse();
+})->with('skills');
+
+it('has a `name` that does not contain consecutive hyphens', function (string $name, string $path) {
+    $value = skillFrontmatter($path)['name'] ?? null;
+
+    expect($value)->toBeString()
+        ->and(str_contains((string) $value, '--'))->toBeFalse();
 })->with('skills');
 
 it('has a non-empty `description` within the 1024-character limit', function (string $name, string $path) {
