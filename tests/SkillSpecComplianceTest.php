@@ -37,12 +37,16 @@
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Guards the common-authored skills in `.ai/skills` against the objective
- * limits of the Agent Skills specification (https://agentskills.io/specification).
+ * Guards the common-authored skills in `.ai/skills` against two things:
  *
- * The Copilot CLI silently drops any skill whose frontmatter violates these
- * limits — a too-long `description` disables the whole skill with no error
- * surfaced — so we fail here, before the guidance is ever published.
+ * 1. The objective limits of the Agent Skills specification
+ *    (https://agentskills.io/specification). The Copilot CLI silently drops any
+ *    skill whose frontmatter violates these — a too-long `description` disables
+ *    the whole skill with no error surfaced — so we fail here, before the
+ *    guidance is ever published.
+ * 2. Canyon GBS' own frontmatter conventions (the `license` and
+ *    `metadata.author` every common-authored skill is expected to set). These
+ *    are our preferences, not spec requirements.
  *
  * Lengths are measured in characters (`mb_strlen`), i.e. Unicode code points.
  * This was verified empirically against the Copilot CLI skill loader: a
@@ -137,18 +141,20 @@ it('has a `compatibility` value within the 500-character limit', function (strin
         ->and(mb_strlen((string) $frontmatter['compatibility']))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(500);
 })->with('skills');
 
-it('is licensed under `Elastic-2.0`', function (string $name, string $path) {
-    $frontmatter = skillFrontmatter($path);
+describe('Canyon GBS conventions', function () {
+    it('is licensed under `Elastic-2.0`', function (string $name, string $path) {
+        $frontmatter = skillFrontmatter($path);
 
-    expect($frontmatter)->toHaveKey('license')
-        ->and($frontmatter['license'])->toBe('Elastic-2.0');
-})->with('skills');
+        expect($frontmatter)->toHaveKey('license')
+            ->and($frontmatter['license'])->toBe('Elastic-2.0');
+    })->with('skills');
 
-it('is authored by `canyongbs`', function (string $name, string $path) {
-    $frontmatter = skillFrontmatter($path);
+    it('is authored by `canyongbs`', function (string $name, string $path) {
+        $frontmatter = skillFrontmatter($path);
 
-    expect($frontmatter)->toHaveKey('metadata')
-        ->and($frontmatter['metadata'])->toBeArray()
-        ->and($frontmatter['metadata'])->toHaveKey('author')
-        ->and($frontmatter['metadata']['author'])->toBe('canyongbs');
-})->with('skills');
+        expect($frontmatter)->toHaveKey('metadata')
+            ->and($frontmatter['metadata'])->toBeArray()
+            ->and($frontmatter['metadata'])->toHaveKey('author')
+            ->and($frontmatter['metadata']['author'])->toBe('canyongbs');
+    })->with('skills');
+});
