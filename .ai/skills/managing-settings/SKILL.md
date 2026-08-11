@@ -1,6 +1,7 @@
 ---
 name: managing-settings
 description: 'Use when creating or changing application settings in a Canyon GBS app built on spatie/laravel-settings — adding a settings class or property, writing a settings migration, choosing the settings group or repository, encrypting settings, building a Filament `SettingsPage`, or attaching an uploaded file to a settings page. Trigger whenever you add or edit a class extending Spatie `Settings`, a `SettingsMigration`, a Filament `SettingsPage`, or the `SettingsProperty` media bridge. Do not use for: generic config files / env access (see the `config` rule in the `laravel-best-practices` skill), general file uploads not tied to settings (use `handling-file-uploads`), or writing tests (use `writing-tests`).'
+user-invocable: false
 license: Elastic-2.0
 metadata:
     author: canyongbs

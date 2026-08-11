@@ -1,6 +1,7 @@
 ---
 name: managing-feature-flags
 description: 'Use when creating, activating, gating code behind, or removing a class-based Feature Flag in a Canyon GBS app — Laravel Pennant flags under `App\Features` extending `App\Support\AbstractFeatureFlag`, generated with `make:ff`. Trigger whenever you introduce a schema or data change that code depends on and must be guarded for zero-downtime deploys, add or edit an `active()` / `resolve()` check, activate a flag inside a migration, or clean up a flag after a deployment. Covers the make:ff command and its cleanup-task prompt, the resolve() default, activation-in-migration patterns, the active/inactive code split, and documenting non-obvious flag removals with inline cleanup comments. Do not use for: the mechanics of cleanup task files themselves (use `managing-cleanup-tasks`), writing the migrations that carry the change (use `writing-data-migrations`), subscription/license feature ADDON gating (app-specific), or Pennant scoped/config-driven flags.'
+user-invocable: false
 license: Elastic-2.0
 metadata:
     author: canyongbs

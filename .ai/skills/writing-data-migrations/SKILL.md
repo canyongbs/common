@@ -1,6 +1,7 @@
 ---
 name: writing-data-migrations
 description: 'Use when writing or altering a Laravel migration that changes data (not only schema) in a Canyon GBS app — data back-fills, transformations, clean-ups, seeding, or activating a Feature Flag. Trigger whenever you create a migration with `make:migration` or `make:tmp-migration`, decide between a permanent and a temporary (`tmp_`) migration, need a migration to be idempotent and safe to re-run, add a required `down()`, or target the landlord versus tenant databases. Covers permanent-migration rules (DB facade only, no removable classes), temporary-migration rules and the `tmp_` prefix with its cleanup task, and running migrations. Do not use for: permission seeding (use `creating-permissions`), creating the Feature Flag class (use `managing-feature-flags`), or cleanup task file mechanics (use `managing-cleanup-tasks`).'
+user-invocable: false
 license: Elastic-2.0
 metadata:
     author: canyongbs

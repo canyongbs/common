@@ -1,6 +1,7 @@
 ---
 name: structuring-filament-code
 description: "Use when writing or reviewing Filament v4+ code in a Canyon GBS app and want it maintainable and small — organizing a resource's form, infolist, and table into separate `configure()` classes; extracting fields, columns, filters, or actions into their own classes; deciding between a static `make()` factory and extending a component base class; or splitting a schema per page instead of branching by operation/context. Trigger whenever a Filament schema/table/action definition grows beyond a few lines or gains a complex closure, when adding a resource page schema, when you add record-dependent logic to a `delete`/`restore`/`forceDelete` policy method and must authorize individual records on the model's Filament bulk actions, or when you see per-page branching (`hiddenOn`/`visibleOn`/`disabledOn`, `$operation`, `$livewire instanceof`). Do not use for: non-Filament PHP (use `laravel-best-practices`), Filament file uploads (use `handling-file-uploads`), settings-page wiring (use `managing-settings`), or writing tests (use `writing-tests`)."
+user-invocable: false
 license: Elastic-2.0
 metadata:
     author: canyongbs

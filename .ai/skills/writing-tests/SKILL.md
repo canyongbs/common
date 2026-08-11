@@ -1,6 +1,7 @@
 ---
 name: writing-tests
 description: 'Use this skill whenever writing, editing, fixing, or refactoring automated tests in a Canyon GBS Laravel application — including tests for Filament resources, pages, relation managers, actions, jobs, models, enums, console commands, and HTTP controllers. Trigger whenever a test is created or changed, a test breaks after a code change, assertions or datasets are added, or PHPUnit is converted to Pest. Covers test file placement and naming (mirroring the source namespace), one-file-per-class organization, describe() grouping, it()/expect() style, datasets, Filament Livewire testing helpers, Worksome RequestFactory usage, shared Pest.php helpers, and Pest 4 features. This is the single authoritative testing skill for these apps — it supersedes generic Pest guidance. Do not use for non-test PHP code, factories that are not request factories, seeders, or migrations.'
+user-invocable: false
 license: Elastic-2.0
 metadata:
     author: canyongbs

@@ -1,6 +1,7 @@
 ---
 name: handling-file-uploads
 description: 'Use when storing, uploading, or serving user files and images in a Canyon GBS app with Spatie Media Library — adding a file/image upload, defining media collections and conversions, choosing the S3 disk (private vs public), or outputting a stored image (temporary URLs, WebP conversions). Trigger whenever a model implements `HasMedia`, you register a media collection or conversion, add a Filament `SpatieMediaLibraryFileUpload`, or output a stored file/image. Do not use for: static images shipped with the app (logos/illustrations via Vite — see the `assets` rule in the `laravel-best-practices` skill), attaching files to settings pages (use `managing-settings` for the wiring), or writing tests (use `writing-tests`).'
+user-invocable: false
 license: Elastic-2.0
 metadata:
     author: canyongbs
