@@ -34,49 +34,29 @@
 </COPYRIGHT>
 */
 
-/*
-|--------------------------------------------------------------------------
-| Test Case
-|--------------------------------------------------------------------------
-|
-| The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
-| need to change it using the "pest()" function to bind a different classes or traits.
-|
-*/
-
-use CanyonGBS\Common\Tests\TestCase;
-use Symfony\Component\Yaml\Yaml;
-
-uses(TestCase::class)->in(__DIR__);
-
 /**
- * Parse the YAML frontmatter of a skill's `SKILL.md` into an array.
+ * Enforces Canyon GBS' own conventions for the common-authored skills in
+ * `.ai/skills` — the frontmatter values every skill we ship is expected to set.
+ *
+ * These are our preferences, not requirements of the Agent Skills specification
+ * (those objective limits live in the `SkillSpecCompliance` test). Expect this
+ * file to grow as we add more house rules.
+ *
+ * The `skillFrontmatter()` helper and the `skills` dataset are shared from
+ * `tests/Pest.php`.
  */
-function skillFrontmatter(string $path): array
-{
-    $contents = file_get_contents($path);
+it('is licensed under `Elastic-2.0`', function (string $name, string $path) {
+    $frontmatter = skillFrontmatter($path);
 
-    expect($contents)->not->toBeFalse();
+    expect($frontmatter)->toHaveKey('license')
+        ->and($frontmatter['license'])->toBe('Elastic-2.0');
+})->with('skills');
 
-    expect(preg_match('/^---\n(.*?)\n---/s', (string) $contents, $matches))
-        ->toBe(1, "The skill at [{$path}] must start with YAML frontmatter.");
+it('is authored by `canyongbs`', function (string $name, string $path) {
+    $frontmatter = skillFrontmatter($path);
 
-    $frontmatter = Yaml::parse($matches[1]);
-
-    expect($frontmatter)->toBeArray();
-
-    return $frontmatter;
-}
-
-dataset('skills', function () {
-    $skills = [];
-
-    foreach (glob(dirname(__DIR__) . '/.ai/skills/*', GLOB_ONLYDIR) as $directory) {
-        $name = basename($directory);
-
-        $skills[$name] = [$name, $directory . '/SKILL.md'];
-    }
-
-    return $skills;
-});
+    expect($frontmatter)->toHaveKey('metadata')
+        ->and($frontmatter['metadata'])->toBeArray()
+        ->and($frontmatter['metadata'])->toHaveKey('author')
+        ->and($frontmatter['metadata']['author'])->toBe('canyongbs');
+})->with('skills');
