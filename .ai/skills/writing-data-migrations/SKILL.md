@@ -1,6 +1,6 @@
 ---
 name: writing-data-migrations
-description: 'Use when writing or altering a Laravel migration that changes data (not only schema) in a Canyon GBS app — data back-fills, transformations, clean-ups, seeding, or activating a Feature Flag. Trigger whenever you create a migration with `make:migration` or `make:tmp-migration`, decide between a permanent and a temporary (`tmp_`) migration, need a migration to be idempotent and safe to re-run, add a required `down()`, or target the landlord versus tenant databases. Covers permanent-migration rules (DB facade only, no removable classes), temporary-migration rules and the `tmp_` prefix with its cleanup task, and running migrations. Do not use for: permission seeding (use `creating-permissions`), creating the Feature Flag class (use `managing-feature-flags`), or cleanup task file mechanics (use `managing-cleanup-tasks`).'
+description: 'Use when writing or altering a Laravel migration that changes data (not only schema) in a Canyon GBS app — data back-fills, transformations, clean-ups, seeding, or activating a Feature Flag. Trigger whenever you create a migration with `make:migration` or `make:tmp-migration`, decide between a permanent and a temporary (`tmp_`) migration, need a migration to be idempotent and safe to re-run, add a required `down()`, or target the landlord versus tenant databases. Covers permanent-migration rules (DB facade only, no removable classes), temporary-migration rules and the `tmp_` prefix with its cleanup task, and running migrations. Do not use for: permission seeding (use `creating-permissions`), creating the Feature Flag class (use `managing-feature-flags`), cleanup task file mechanics (use `managing-cleanup-tasks`), or a migration whose only substantive change is to the schema — adding, modifying, or dropping columns or tables, optionally activating a Feature Flag to guard that change — with no accompanying data back-fill or transformation; write those as plain, unconditional migrations with no existence guards.'
 user-invocable: false
 license: Elastic-2.0
 metadata:
@@ -26,7 +26,7 @@ Permanent migrations stay in the codebase indefinitely. When they include data c
 
 - **Do not reference classes that may later be removed** — no Eloquent models, no app facades. The only classes permitted are `Illuminate\Support\Facades\DB` and Feature Flag classes under `App\Features` (extending `App\Support\AbstractFeatureFlag`).
 - **Handle every possible SQL error** (e.g. `UniqueConstraintViolationException`) and wrap changes in a transaction so a failure cannot corrupt the query connection.
-- **Be idempotent** — check table and column existence, catch and handle SQL errors, and verify data state before changing it, so the migration can safely run more than once.
+- **Make _data_ writes idempotent by checking data state; keep _schema_ changes unconditional.** A permanent migration is recorded and runs exactly once per database, so "safe to re-run" / idempotency concerns only data writes that could be re-applied — never the schema. Before a data write, check the state of the data (e.g. `whereNull(...)`, match only the rows still needing conversion, skip already-migrated rows) so a re-run cannot duplicate or corrupt rows. Do **not** make a schema change conditional to "protect" a re-run: no `hasTable`/`hasColumn` existence guards, and never wrap a schema change in a `try`/`catch` that swallows "already exists" / "does not exist" errors — both silently skip a real problem. A migration owns the schema of the tables it manages: its schema changes are unconditional, and if the structure is not what you expect, let it fail loudly.
 - **Always include `down()`.** Production migrations run once and are not rolled back; if a shipped migration is wrong, write a new migration to fix it. `down()` is still required to support testing.
 
 ### Temporary migrations
@@ -46,7 +46,7 @@ Temporary migrations **may** use Eloquent and other removable classes because th
 ## Creating a migration
 
 ```bash
-php artisan make:migration add_status_column_to_orders_table
+php artisan make:migration convert_orders_reference_to_citext
 php artisan make:tmp-migration seed_default_settings_for_existing_tenants
 ```
 
