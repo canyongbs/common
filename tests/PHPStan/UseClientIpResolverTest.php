@@ -48,6 +48,20 @@ it('reports request getClientIp() usage', function () {
     expect($result['output'])->toContain('Common.useClientIpResolver');
 });
 
+it('reports request helper ip() usage', function () {
+    $result = runPhpStanOnUseClientIpResolverFixture('tests/PHPStan/Fixtures/RequestHelperIpFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.useClientIpResolver');
+});
+
+it('reports request facade ip() usage', function () {
+    $result = runPhpStanOnUseClientIpResolverFixture('tests/PHPStan/Fixtures/RequestFacadeIpFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.useClientIpResolver');
+});
+
 it('does not report ClientIp::resolve() usage', function () {
     $result = runPhpStanOnUseClientIpResolverFixture('tests/PHPStan/Fixtures/RequestIpAllowedFixture.php');
 

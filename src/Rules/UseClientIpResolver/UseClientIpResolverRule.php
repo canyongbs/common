@@ -38,8 +38,12 @@ namespace CanyonGBS\Common\Rules\UseClientIpResolver;
 
 use CanyonGBS\Common\Support\ClientIp;
 use PhpParser\Node;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
@@ -48,13 +52,14 @@ use PHPStan\Type\ObjectType;
 
 /**
  * Flags direct request IP accessor usage so consumers consistently resolve client IPs through
- * ClientIp::resolve(), which accounts for Cloudflare + ALB forwarding.
+ * ClientIp::resolve(), which accounts for Cloudflare + ALB forwarding, including request()
+ * helper calls and Request facade access.
  *
- * @implements Rule<MethodCall>
+ * @implements Rule<Expr>
  */
 class UseClientIpResolverRule implements Rule
 {
-    public const string ERROR_MESSAGE = 'Avoid direct request IP accessors (ip(), ips(), getClientIp(), getClientIps()). Use CanyonGBS\\Common\\Support\\ClientIp::resolve() instead so client IP resolution remains Cloudflare and ALB aware. If you are certain this usage is required, add an inline ignore for this rule (// @phpstan-ignore Common.useClientIpResolver).';
+    public const string ERROR_MESSAGE = 'Avoid direct request IP accessors (ip(), ips(), getClientIp(), getClientIps()). Use CanyonGBS\\Common\\Support\\ClientIp::resolve() instead so client IP resolution remains Cloudflare and ALB aware.';
 
     /** @var array<int, string> */
     private const array BLOCKED_METHODS = ['ip', 'ips', 'getclientip', 'getclientips'];
@@ -64,17 +69,25 @@ class UseClientIpResolverRule implements Rule
      */
     public function getNodeType(): string
     {
-        return MethodCall::class;
+        return Expr::class;
     }
 
     /**
-     * @param MethodCall $node
+     * @param Expr $node
      *
      * @return array<RuleError>
      */
     public function processNode(Node $node, Scope $scope): array
     {
+        if (! $node instanceof MethodCall && ! $node instanceof StaticCall) {
+            return [];
+        }
+
         if (! $node->name instanceof Identifier) {
+            return [];
+        }
+
+        if ($scope->getClassReflection()?->getName() === ClientIp::class) {
             return [];
         }
 
@@ -82,11 +95,10 @@ class UseClientIpResolverRule implements Rule
             return [];
         }
 
-        if (! (new ObjectType('Illuminate\\Http\\Request'))->isSuperTypeOf($scope->getType($node->var))->yes()) {
-            return [];
-        }
-
-        if ($scope->getClassReflection()?->getName() === ClientIp::class) {
+        if (
+            ! $this->isRequestMethodCall($node, $scope)
+            && ! $this->isRequestFacadeStaticCall($node, $scope)
+        ) {
             return [];
         }
 
@@ -95,5 +107,32 @@ class UseClientIpResolverRule implements Rule
                 ->identifier('Common.useClientIpResolver')
                 ->build(),
         ];
+    }
+
+    private function isRequestMethodCall(MethodCall|StaticCall $node, Scope $scope): bool
+    {
+        if (! $node instanceof MethodCall) {
+            return false;
+        }
+
+        if ($node->var instanceof FuncCall && $node->var->name instanceof Name && $node->var->name->toLowerString() === 'request') {
+            return true;
+        }
+
+        $requestType = new ObjectType('Illuminate\\Http\\Request');
+        $symfonyRequestType = new ObjectType('Symfony\\Component\\HttpFoundation\\Request');
+        $receiverType = $scope->getType($node->var);
+
+        return $requestType->isSuperTypeOf($receiverType)->yes()
+            || $symfonyRequestType->isSuperTypeOf($receiverType)->yes();
+    }
+
+    private function isRequestFacadeStaticCall(MethodCall|StaticCall $node, Scope $scope): bool
+    {
+        if (! $node instanceof StaticCall || ! $node->class instanceof Name) {
+            return false;
+        }
+
+        return $scope->resolveName($node->class) === 'Illuminate\\Support\\Facades\\Request';
     }
 }
