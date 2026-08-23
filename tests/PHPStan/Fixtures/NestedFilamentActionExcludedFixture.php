@@ -34,7 +34,7 @@
 </COPYRIGHT>
 */
 
-namespace AidingApp\Portal\Filament\Actions\Tables;
+namespace App\Filament\Actions\Tables;
 
 class NestedFilamentActionExcludedFixture
 {

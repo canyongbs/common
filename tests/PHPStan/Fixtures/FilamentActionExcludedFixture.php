@@ -34,7 +34,7 @@
 </COPYRIGHT>
 */
 
-namespace AidingApp\Portal\Filament\Actions;
+namespace App\Filament\Actions;
 
 class FilamentActionExcludedFixture
 {
