@@ -71,8 +71,7 @@ class ActionClassesMustBeInvokableRule implements Rule
     public function __construct(
         private array $includePatterns,
         private array $excludePatterns,
-    ) {
-    }
+    ) {}
 
     /**
      * @return class-string<Node>
