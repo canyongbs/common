@@ -16,6 +16,13 @@ services:
         tags:
             - phpstan.rules.rule
     -
+        class: CanyonGBS\Common\Rules\ActionClassesMustBeInvokable\ActionClassesMustBeInvokableRule
+        arguments:
+            includePatterns: %actionNamespaceIncludePatterns%
+            excludePatterns: %actionNamespaceExcludePatterns%
+        tags:
+            - phpstan.rules.rule
+    -
         class: CanyonGBS\Common\Rules\FeatureFlagConventions\FeatureFlagConventionsRule
         arguments:
             baseClasses: %featureFlagBaseClasses%
@@ -64,11 +71,19 @@ services:
             - phpstan.rules.rule
 
 parameters:
+    actionNamespaceIncludePatterns:
+        - App\Actions
+        - *\*\Actions
+    actionNamespaceExcludePatterns:
+        - *\Filament\Actions
+        - *\Filament\Actions\*
     featureFlagBaseClasses:
         - App\Support\AbstractFeatureFlag
         - App\Support\LandlordAbstractFeatureFlag
     featuresNamespace: App\Features
 
 parametersSchema:
+    actionNamespaceIncludePatterns: listOf(string())
+    actionNamespaceExcludePatterns: listOf(string())
     featureFlagBaseClasses: listOf(string())
     featuresNamespace: string()

@@ -1,0 +1,15 @@
+parameters:
+    level: 6
+
+services:
+    -
+        class: CanyonGBS\Common\Rules\ActionClassesMustBeInvokable\ActionClassesMustBeInvokableRule
+        arguments:
+            includePatterns:
+                - App\Actions
+                - *\*\Actions
+            excludePatterns:
+                - *\Filament\Actions
+                - *\Filament\Actions\*
+        tags:
+            - phpstan.rules.rule
