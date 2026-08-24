@@ -1,3 +1,5 @@
+<?php
+
 /*
 <COPYRIGHT>
 
@@ -31,34 +33,44 @@
 
 </COPYRIGHT>
 */
-import * as esbuild from 'esbuild';
 
-async function compile(options) {
-    const context = await esbuild.context(options);
-    await context.rebuild();
-    await context.dispose();
+namespace CanyonGBS\Common\Filament\Plugins;
+
+use Filament\Contracts\Plugin;
+use Filament\Panel;
+use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\HtmlString;
+
+class BrowserNotificationsPlugin implements Plugin
+{
+    public static function make(): static
+    {
+        return app(static::class);
+    }
+
+    public function getId(): string
+    {
+        return 'common-browser-notifications';
+    }
+
+    public function register(Panel $panel): void
+    {
+        FilamentAsset::register([
+            Js::make(
+                'common-browser-notifications',
+                __DIR__ . '/../../../resources/js/dist/filament/browser-notifications.js',
+            )->loadedOnRequest(),
+        ], 'common');
+
+        $panel->renderHook(
+            PanelsRenderHook::BODY_END,
+            fn (): HtmlString => new HtmlString(
+                '<script type="module" src="' . FilamentAsset::getScriptSrc('common-browser-notifications', 'common') . '"></script>',
+            ),
+        );
+    }
+
+    public function boot(Panel $panel): void {}
 }
-
-const baseOptions = {
-    define: { 'process.env.NODE_ENV': `'production'` },
-    bundle: true,
-    mainFields: ['module', 'main'],
-    platform: 'neutral',
-    sourcemap: false,
-    sourcesContent: false,
-    treeShaking: true,
-    target: ['es2020'],
-    minify: true,
-};
-
-compile({
-    ...baseOptions,
-    entryPoints: ['./resources/js/filament/rich-content-plugins/video-embed.js'],
-    outdir: './resources/js/dist/filament/rich-content-plugins',
-});
-
-compile({
-    ...baseOptions,
-    entryPoints: ['./resources/js/filament/browser-notifications.js'],
-    outdir: './resources/js/dist/filament',
-});
