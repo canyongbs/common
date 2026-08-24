@@ -62,6 +62,10 @@ services:
         tags:
             - phpstan.rules.rule
     -
+        class: CanyonGBS\Common\Rules\UseClientIpResolver\UseClientIpResolverRule
+        tags:
+            - phpstan.rules.rule
+    -
         class: CanyonGBS\Common\Rules\SettingsPropertiesMustHaveDefaults\SettingsPropertiesMustHaveDefaultsRule
         tags:
             - phpstan.rules.rule
