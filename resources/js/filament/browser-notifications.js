@@ -40,11 +40,19 @@
 const NOTIFICATION_CTN_SELECTOR = '.fi-no-notification-unread-ctn';
 const WIRE_KEY_SUFFIX = '.database-notifications.ctn';
 
+// Filament lazy-loads and teleports the database-notifications component, so the
+// existing unread items are injected shortly after page load rather than being present
+// when we start observing. Anything observed within this window after start is treated
+// as pre-existing and only recorded, never announced. The window must stay comfortably
+// below the notifications polling interval so genuinely new notifications (which arrive
+// on the next poll) are never swallowed as seed.
+const SEED_WINDOW_MS = 3000;
+
 // Ids we have already accounted for, so a notification is never shown twice across
 // polls, Livewire DOM morphs, or read/unread state changes.
 const seenNotificationIds = new Set();
 
-let hasInitialized = false;
+let isSeeding = true;
 
 function isSupported() {
     return typeof window !== 'undefined' && 'Notification' in window;
@@ -80,15 +88,20 @@ function extractDestination(node) {
 
 function showDesktopNotification(node) {
     const title = extractTitle(node);
+    const body = extractBody(node);
 
-    if (!title) {
+    if (!title && !body) {
         return;
     }
 
+    // Filament allows a notification with a body but no title, so fall back to the page
+    // title rather than dropping an otherwise valid notification.
+    const heading = title || document.title || 'Notification';
+
     const destination = extractDestination(node);
 
-    const notification = new Notification(title, {
-        body: extractBody(node),
+    const notification = new Notification(heading, {
+        body,
         icon: '/favicon.ico',
     });
 
@@ -110,17 +123,22 @@ function handleNotificationNode(node) {
         return;
     }
 
-    seenNotificationIds.add(id);
+    // While seeding we only record existing notifications so items already present when
+    // the lazily mounted list first renders never trigger a desktop notification.
+    if (isSeeding) {
+        seenNotificationIds.add(id);
 
-    // During the first pass we only record existing notifications so that items
-    // already present on page load do not trigger a desktop notification.
-    if (!hasInitialized) {
         return;
     }
 
+    // Do not mark the notification as seen until it has actually been shown; otherwise a
+    // notification that arrives before permission is granted would be lost when the user
+    // later grants it on their first gesture (which re-scans and flushes these).
     if (Notification.permission !== 'granted') {
         return;
     }
+
+    seenNotificationIds.add(id);
 
     showDesktopNotification(node);
 }
@@ -146,9 +164,16 @@ function requestPermissionOnFirstGesture() {
         window.removeEventListener('click', request);
         window.removeEventListener('keydown', request);
 
-        if (Notification.permission === 'default') {
-            Notification.requestPermission();
+        if (Notification.permission !== 'default') {
+            return;
         }
+
+        Notification.requestPermission().then((permission) => {
+            // Flush any notifications that arrived while permission was still pending.
+            if (permission === 'granted') {
+                scan(document.body);
+            }
+        });
     };
 
     window.addEventListener('click', request, { once: true });
@@ -160,9 +185,14 @@ function start() {
         return;
     }
 
-    // Seed the seen set with whatever is already rendered before we begin observing.
+    // Seed whatever is already rendered, then keep seeding for a short window so the
+    // lazily mounted and teleported notifications list is captured before we begin
+    // announcing genuinely new notifications.
     scan(document.body);
-    hasInitialized = true;
+
+    window.setTimeout(() => {
+        isSeeding = false;
+    }, SEED_WINDOW_MS);
 
     requestPermissionOnFirstGesture();
 
