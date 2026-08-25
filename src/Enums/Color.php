@@ -39,10 +39,17 @@ namespace CanyonGBS\Common\Enums;
 use Filament\Support\Colors\Color as ColorHelper;
 use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Facades\FilamentColor;
+use Illuminate\Support\Str;
 
 enum Color: string implements HasLabel
 {
+    case Black = 'black';
+
+    case LightGray = 'light-gray';
+
     case Gray = 'gray';
+
+    case DarkGray = 'dark-gray';
 
     case Red = 'red';
 
@@ -66,6 +73,8 @@ enum Color: string implements HasLabel
 
     case Blue = 'blue';
 
+    case Navy = 'navy';
+
     case Indigo = 'indigo';
 
     case Violet = 'violet';
@@ -80,7 +89,7 @@ enum Color: string implements HasLabel
 
     public function getLabel(): string
     {
-        return $this->name;
+        return Str::headline($this->name);
     }
 
     public function getRgb(): string
