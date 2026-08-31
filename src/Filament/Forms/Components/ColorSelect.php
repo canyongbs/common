@@ -37,25 +37,54 @@
 namespace CanyonGBS\Common\Filament\Forms\Components;
 
 use CanyonGBS\Common\Enums\Color;
+use Closure;
 use Filament\Forms\Components\Select;
 
-class ColorSelect
+class ColorSelect extends Select
 {
-    public static function make(string $name = 'color'): Select
+    protected bool | Closure $hasShadeOptions = false;
+
+    protected function setUp(): void
     {
-        return Select::make($name)
-            ->allowHtml()
+        parent::setUp();
+
+        $this->allowHtml()
             ->native(false)
-            ->options(collect(Color::cases())
-                ->mapWithKeys(fn (Color $color): array => [
-                    $color->value => <<<HTML
-                        <div style="display: flex; align-items: center; gap: 0.5rem">
-                            <div style="display: block; height: 1.25rem; width: 1.25rem; border-radius: 100%; background: {$color->getRgb()}"></div>
-                            <span>{$color->getLabel()}</span>
-                        </div>
-                        HTML,
-                ])
-                ->all())
+            ->options(function (ColorSelect $component): array {
+                $colors = collect(Color::cases());
+
+                if (! $component->hasShadeOptions()) {
+                    $colors = $colors->reject(fn (Color $color): bool => $color->isShade());
+                }
+
+                return $colors
+                    ->mapWithKeys(fn (Color $color): array => [
+                        $color->value => <<<HTML
+                            <div style="display: flex; align-items: center; gap: 0.5rem">
+                                <div style="display: block; height: 1.25rem; width: 1.25rem; border-radius: 100%; background: {$color->getRgb()}"></div>
+                                <span>{$color->getLabel()}</span>
+                            </div>
+                            HTML,
+                    ])
+                    ->all();
+            })
             ->enum(Color::class);
+    }
+
+    public static function getDefaultName(): ?string
+    {
+        return 'color';
+    }
+
+    public function shadeOptions(bool | Closure $condition = true): static
+    {
+        $this->hasShadeOptions = $condition;
+
+        return $this;
+    }
+
+    public function hasShadeOptions(): bool
+    {
+        return (bool) $this->evaluate($this->hasShadeOptions);
     }
 }
