@@ -104,8 +104,8 @@ enum Color: string implements HasLabel
     {
         return match ($this) {
             self::Black => 'rgb(0, 0, 0)',
-            self::LightGray => ColorHelper::convertToRgb(FilamentColor::getColors()['gray'][300]),
-            self::DarkGray => ColorHelper::convertToRgb(FilamentColor::getColors()['gray'][700]),
+            self::LightGray => ColorHelper::convertToRgb(FilamentColor::getColors()[self::Gray->value][300]),
+            self::DarkGray => ColorHelper::convertToRgb(FilamentColor::getColors()[self::Gray->value][700]),
             self::Navy => 'rgb(0, 0, 128)',
             default => ColorHelper::convertToRgb(FilamentColor::getColors()[$this->value][500]),
         };
