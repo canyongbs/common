@@ -77,8 +77,8 @@ abstract class TestCase extends Orchestra
         $app['config']->set('webpush.model', PushSubscription::class);
         $app['config']->set('webpush.table_name', 'push_subscriptions');
         $app['config']->set('webpush.vapid.subject', 'mailto:test@example.com');
-        $app['config']->set('webpush.vapid.public_key', 'test-public-key');
-        $app['config']->set('webpush.vapid.private_key', 'test-private-key');
+        $app['config']->set('webpush.vapid.public_key', 'BNpzFZCbX22h2eEuMMl_exDy0-_OTamryZNhYxQsQ3O6E_mRs9EpNG0ZvYBkhLPbdzLM5ucn1l673qV5IWiby4A');
+        $app['config']->set('webpush.vapid.private_key', 'kL2Ic-7viNVOz_DKCnmOWdP8fv3Xxsbubt_fmP-C_6s');
     }
 
     protected function defineDatabaseMigrations(): void
