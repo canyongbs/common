@@ -110,7 +110,7 @@ it('does not transfer an endpoint between users', function () {
     $endpoint = 'https://push.example.com/subscriptions/' . Str::uuid();
     $owner = BrowserNotificationUser::create(['name' => 'Owner', 'email' => Str::uuid() . '@example.com']);
     $otherUser = BrowserNotificationUser::create(['name' => 'Other', 'email' => Str::uuid() . '@example.com']);
-    $ownerKeys = browserNotificationSubscriptionKeys();
+    $ownerKeys = browserNotificationSubscriptionKeys('owner-auth-token');
 
     $owner->updatePushSubscription($endpoint, $ownerKeys['p256dh'], $ownerKeys['auth'], ContentEncoding::aes128gcm);
 
@@ -118,7 +118,7 @@ it('does not transfer an endpoint between users', function () {
 
     postJson(route('common.browser-notifications.subscriptions.store'), [
         'endpoint' => $endpoint,
-        'keys' => browserNotificationSubscriptionKeys(),
+        'keys' => browserNotificationSubscriptionKeys('other-auth-token'),
     ])->assertUnprocessable()
         ->assertJsonValidationErrors(['endpoint']);
 
@@ -155,21 +155,11 @@ it('does not accept subscriptions when the consuming app disables the feature', 
 });
 
 /** @return array{p256dh: string, auth: string} */
-function browserNotificationSubscriptionKeys(): array
+function browserNotificationSubscriptionKeys(string $authToken = 'browser-auth-key'): array
 {
-    $opensslKey = openssl_pkey_new([
-        'curve_name' => 'prime256v1',
-        'private_key_type' => OPENSSL_KEYTYPE_EC,
-        'private_key_bits' => 2048,
-    ]);
-    assert($opensslKey !== false);
-
-    $details = openssl_pkey_get_details($opensslKey);
-    assert(is_array($details));
-
     return [
-        'p256dh' => browserNotificationBase64UrlEncode("\x04" . $details['ec']['x'] . $details['ec']['y']),
-        'auth' => browserNotificationBase64UrlEncode(random_bytes(16)),
+        'p256dh' => 'BNpzFZCbX22h2eEuMMl_exDy0-_OTamryZNhYxQsQ3O6E_mRs9EpNG0ZvYBkhLPbdzLM5ucn1l673qV5IWiby4A',
+        'auth' => browserNotificationBase64UrlEncode($authToken),
     ];
 }
 
