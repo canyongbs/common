@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "devDependencies": {
-        "@tiptap/core": "^3.22.0",
+        "@tiptap/core": "^3.30.4",
         "@tiptap/pm": "^3.22.0",
         "esbuild": "^0.28.1",
         "prettier": "^3.0.0",
