@@ -36,6 +36,8 @@
 
 namespace Workbench\App\Providers;
 
+use CanyonGBS\Common\BrowserNotifications\BrowserNotificationsManager;
+use CanyonGBS\Common\BrowserNotifications\Filament\BrowserNotificationsPlugin;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Illuminate\Support\Facades\Gate;
@@ -60,12 +62,22 @@ use Workbench\App\Policies\TaskPolicy;
 
 class TestingPanelProvider extends PanelProvider
 {
+    public function register(): void
+    {
+        parent::register();
+
+        app(BrowserNotificationsManager::class)
+            ->availableUsing(fn (): bool => true)
+            ->allowSubscriptionEndpointsUsing(fn (string $endpoint): bool => str_starts_with($endpoint, 'https://push.example.com/'));
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
             ->id('testing')
             ->path('testing')
             ->default()
+            ->plugin(BrowserNotificationsPlugin::make())
             ->resources([
                 ArticleResource::class,
                 AttachmentResource::class,
