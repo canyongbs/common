@@ -36,6 +36,12 @@
 
 namespace CanyonGBS\Common;
 
+use CanyonGBS\Common\BrowserNotifications\BrowserNotificationsManager;
+use CanyonGBS\Common\BrowserNotifications\Http\Controllers\DeletePushSubscriptionController;
+use CanyonGBS\Common\BrowserNotifications\Http\Controllers\ServiceWorkerController;
+use CanyonGBS\Common\BrowserNotifications\Http\Controllers\StorePushSubscriptionController;
+use CanyonGBS\Common\BrowserNotifications\Listeners\SendBrowserNotificationForDatabaseNotification;
+use CanyonGBS\Common\BrowserNotifications\Support\BrowserNotificationReportHandler;
 use CanyonGBS\Common\Console\Commands\CreatePermissionMigration;
 use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
 use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
@@ -48,7 +54,12 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Composer;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
+use NotificationChannels\WebPush\ReportHandlerInterface;
+use NotificationChannels\WebPush\WebPushChannel;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Tapp\FilamentTimezoneField\Forms\Components\TimezoneSelect;
@@ -74,6 +85,10 @@ class CommonServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        config()->set('webpush.client_options.allow_redirects', false);
+
+        $this->app->singleton(BrowserNotificationsManager::class);
+
         $this->app->singleton(PermissionIndex::class);
 
         $this->app->scoped(PermissionResolver::class);
@@ -98,7 +113,26 @@ class CommonServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        $browserNotifications = app(BrowserNotificationsManager::class);
+
+        if ($browserNotifications->isEnabled()) {
+            Event::listen(
+                'eloquent.created: ' . DatabaseNotification::class,
+                SendBrowserNotificationForDatabaseNotification::class,
+            );
+
+            $this->registerBrowserNotificationRoutes($browserNotifications);
+        }
+
+        $this->app->booted(function (): void {
+            $this->app->when(WebPushChannel::class)
+                ->needs(ReportHandlerInterface::class)
+                ->give(BrowserNotificationReportHandler::class);
+        });
+
         FilamentAsset::register([
+            Js::make('browser-notifications', __DIR__ . '/../resources/js/dist/filament/browser-notifications.js')
+                ->loadedOnRequest(),
             Js::make('rich-content-plugins/video-embed', __DIR__ . '/../resources/js/dist/filament/rich-content-plugins/video-embed.js')
                 ->loadedOnRequest(),
         ], 'common');
@@ -126,5 +160,23 @@ class CommonServiceProvider extends PackageServiceProvider
         TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
             $component->searchable();
         });
+    }
+
+    protected function registerBrowserNotificationRoutes(BrowserNotificationsManager $browserNotifications): void
+    {
+        Route::middleware($browserNotifications->getRouteMiddleware())
+            ->group(function () use ($browserNotifications): void {
+                Route::get('/browser-notifications/service-worker.js', ServiceWorkerController::class)
+                    ->name('common.browser-notifications.service-worker');
+
+                Route::middleware($browserNotifications->getAuthMiddleware())
+                    ->group(function (): void {
+                        Route::post('/browser-notifications/subscriptions', StorePushSubscriptionController::class)
+                            ->name('common.browser-notifications.subscriptions.store');
+
+                        Route::delete('/browser-notifications/subscriptions', DeletePushSubscriptionController::class)
+                            ->name('common.browser-notifications.subscriptions.destroy');
+                    });
+            });
     }
 }

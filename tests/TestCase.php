@@ -39,6 +39,7 @@ namespace CanyonGBS\Common\Tests;
 use CanyonGBS\Common\CommonServiceProvider;
 use Orchestra\Testbench\Foundation\Actions\CreateVendorSymlink;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Workbench\App\Models\PushSubscription;
 use Workbench\App\Models\User;
 use Workbench\App\Providers\TestingPanelProvider;
 
@@ -71,6 +72,13 @@ abstract class TestCase extends Orchestra
     protected function defineEnvironment($app): void
     {
         $app['config']->set('auth.providers.users.model', User::class);
+        $app['config']->set('cache.default', 'array');
+        $app['config']->set('webpush.database_connection', 'testing');
+        $app['config']->set('webpush.model', PushSubscription::class);
+        $app['config']->set('webpush.table_name', 'push_subscriptions');
+        $app['config']->set('webpush.vapid.subject', 'mailto:test@example.com');
+        $app['config']->set('webpush.vapid.public_key', 'BNpzFZCbX22h2eEuMMl_exDy0-_OTamryZNhYxQsQ3O6E_mRs9EpNG0ZvYBkhLPbdzLM5ucn1l673qV5IWiby4A');
+        $app['config']->set('webpush.vapid.private_key', 'kL2Ic-7viNVOz_DKCnmOWdP8fv3Xxsbubt_fmP-C_6s');
     }
 
     protected function defineDatabaseMigrations(): void
