@@ -45,6 +45,7 @@ use Illuminate\Validation\ValidationException;
 use Minishlink\WebPush\ContentEncoding;
 use NotificationChannels\WebPush\PushSubscription;
 
+/** @phpstan-ignore trait.unused (Used by models in consuming applications.) */
 trait HasBrowserNotificationSubscriptions
 {
     public function getBrowserNotificationStorageKey(): string
