@@ -48,7 +48,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Notification;
-use Throwable;
 
 class SendBrowserNotification implements ShouldBeUnique, ShouldQueue
 {
@@ -96,12 +95,5 @@ class SendBrowserNotification implements ShouldBeUnique, ShouldQueue
                 icon: $browserNotifications->resolveIcon($this->notifiable),
             ),
         );
-    }
-
-    public function failed(?Throwable $exception): void
-    {
-        if ($exception !== null) {
-            report($exception);
-        }
     }
 }
