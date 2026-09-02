@@ -55,7 +55,7 @@ class DeletePushSubscriptionController
         abort_unless($browserNotifications->isAvailable($notifiable), 404);
 
         $validated = $request->validate([
-            'endpoint' => ['required', 'string', 'url:http,https', 'max:500'],
+            'endpoint' => ['required', 'string', 'url:https', 'max:500'],
         ]);
 
         $deletePushSubscription($notifiable, $validated['endpoint']);
