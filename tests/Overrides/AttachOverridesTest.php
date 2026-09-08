@@ -34,6 +34,8 @@
 </COPYRIGHT>
 */
 
+use Illuminate\Support\Facades\Event;
+use OwenIt\Auditing\Events\AuditCustom;
 use OwenIt\Auditing\Models\Audit;
 use Workbench\App\Models\AuditableCategory;
 use Workbench\App\Models\AuditableLabel;
@@ -145,4 +147,20 @@ it('suppresses the pivot model auditing while still recording the parent event',
     expect((int) $audit->new_values['members'][0]['id'])->toBe($member->id);
 
     expect(Audit::query()->where('auditable_type', AuditableMembership::class)->count())->toBe(0);
+});
+
+it('resets the custom-event state on the model when the audit dispatch throws', function () {
+    Event::listen(AuditCustom::class, function (): void {
+        throw new RuntimeException('audit dispatch failed');
+    });
+
+    $post = AuditablePost::create(['title' => 'Post']);
+    $category = AuditableCategory::create(['name' => 'A']);
+
+    expect(fn () => $post->categories()->attach($category->id))
+        ->toThrow(RuntimeException::class);
+
+    expect($post->isCustomEvent)->toBeFalse();
+    expect($post->auditCustomOld)->toBe([]);
+    expect($post->auditCustomNew)->toBe([]);
 });

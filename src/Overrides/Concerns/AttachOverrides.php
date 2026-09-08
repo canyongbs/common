@@ -184,9 +184,14 @@ trait AttachOverrides
         $parentModel->auditCustomOld = $hasChanges ? [$relationName => $oldDiff] : []; /** @phpstan-ignore property.notFound */
         $parentModel->auditCustomNew = $hasChanges ? [$relationName => $newDiff] : []; /** @phpstan-ignore property.notFound */
         $parentModel->isCustomEvent = true; /** @phpstan-ignore property.notFound */
-        Event::dispatch(new AuditCustom($parentModel));
 
-        $parentModel->isCustomEvent = false; /** @phpstan-ignore property.notFound */
+        try {
+            Event::dispatch(new AuditCustom($parentModel));
+        } finally {
+            $parentModel->isCustomEvent = false; /** @phpstan-ignore property.notFound */
+            $parentModel->auditCustomOld = []; /** @phpstan-ignore property.notFound */
+            $parentModel->auditCustomNew = []; /** @phpstan-ignore property.notFound */
+        }
     }
 
     /**
