@@ -34,6 +34,13 @@
 </COPYRIGHT>
 */
 
+namespace Workbench\App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
-class ModelWithoutAuditableTraitFixture extends Model {}
+class AuditableCategory extends Model
+{
+    protected $table = 'audit_categories';
+
+    protected $guarded = [];
+}

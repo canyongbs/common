@@ -36,6 +36,4 @@
 
 namespace Fixtures\Auditing;
 
-trait LegacyAuditableTraitStub
-{
-}
+trait LegacyAuditableTraitStub {}

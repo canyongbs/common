@@ -34,22 +34,13 @@
 </COPYRIGHT>
 */
 
-namespace CanyonGBS\Common\Overrides\Concerns;
+namespace Workbench\App\Models;
 
-use OwenIt\Auditing\Contracts\Auditable;
+use Illuminate\Database\Eloquent\Model;
 
-/**
- * Describes the custom-event bookkeeping properties that "OwenIt\Auditing\Auditable" defines on
- * the parent model, so the many-to-many overrides can read and write them under static analysis.
- *
- * @property null|string $auditEvent
- * @property null|array<string, mixed> $auditCustomOld
- * @property null|array<string, mixed> $auditCustomNew
- * @property bool $isCustomEvent
- */
-interface AuditsCustomEvents extends Auditable
+class AuditableMember extends Model
 {
-    public function __get(string $name): mixed;
+    protected $table = 'audit_members';
 
-    public function __set(string $name, mixed $value): void;
+    protected $guarded = [];
 }

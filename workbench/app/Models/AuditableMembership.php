@@ -34,6 +34,19 @@
 </COPYRIGHT>
 */
 
-use Illuminate\Database\Eloquent\Model;
+namespace Workbench\App\Models;
 
-class ModelWithoutAuditableTraitFixture extends Model {}
+use Illuminate\Database\Eloquent\Relations\Pivot;
+use OwenIt\Auditing\Auditable as AuditableTrait;
+use OwenIt\Auditing\Contracts\Auditable;
+
+class AuditableMembership extends Pivot implements Auditable
+{
+    use AuditableTrait;
+
+    protected $table = 'audit_member_post';
+
+    public $incrementing = false;
+
+    protected $guarded = [];
+}

@@ -34,6 +34,45 @@
 </COPYRIGHT>
 */
 
-use Illuminate\Database\Eloquent\Model;
+namespace Workbench\App\Models;
 
-class ModelWithoutAuditableTraitFixture extends Model {}
+use CanyonGBS\Common\Models\Concerns\Auditable as AuditableConcern;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use OwenIt\Auditing\Contracts\Auditable;
+
+class AuditablePost extends Model implements Auditable
+{
+    use AuditableConcern;
+
+    protected $table = 'audit_posts';
+
+    protected $guarded = [];
+
+    /**
+     * @return BelongsToMany<AuditableCategory, $this>
+     */
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(AuditableCategory::class, 'audit_category_post', 'post_id', 'category_id')
+            ->withPivot('sort');
+    }
+
+    /**
+     * @return MorphToMany<AuditableLabel, $this>
+     */
+    public function labels(): MorphToMany
+    {
+        return $this->morphToMany(AuditableLabel::class, 'labelable', 'audit_labelables', 'labelable_id', 'label_id');
+    }
+
+    /**
+     * @return BelongsToMany<AuditableMember, $this>
+     */
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(AuditableMember::class, 'audit_member_post', 'post_id', 'member_id')
+            ->using(AuditableMembership::class);
+    }
+}

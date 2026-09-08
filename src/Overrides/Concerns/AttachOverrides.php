@@ -36,7 +36,9 @@
 
 namespace CanyonGBS\Common\Overrides\Concerns;
 
+use Closure;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use OwenIt\Auditing\Contracts\Auditable;
@@ -52,7 +54,7 @@ trait AttachOverrides
      */
     public function attach($id, array $attributes = [], $touch = true)
     {
-        /** @var AuditsCustomEvents $parentModel */
+        /** @var Auditable $parentModel */
         $parentModel = $this->getParent();
 
         if (! $this->isAuditable($parentModel::class)) {
@@ -63,24 +65,20 @@ trait AttachOverrides
 
         $relationName = $this->relationName;
 
-        $parentModel->auditEvent = 'attach';
-        $parentModel->isCustomEvent = true;
-        $parentModel->auditCustomOld = [
-            $relationName => $parentModel->{$relationName}()->get()->toArray(),
-        ];
+        $old = $this->relationAuditSnapshot($parentModel, $relationName);
 
-        parent::attach($id, $attributes, $touch);
+        $this->runWithoutPivotAuditing(function () use ($id, $attributes, $touch): void {
+            parent::attach($id, $attributes, $touch);
+        });
 
-        $parentModel->auditCustomNew = [
-            $relationName => $parentModel->{$relationName}()->get()->toArray(),
-        ];
-        Event::dispatch(new AuditCustom($parentModel));
-        $parentModel->isCustomEvent = false;
+        $new = $this->relationAuditSnapshot($parentModel, $relationName);
+
+        $this->dispatchRelationAuditEvent($parentModel, 'attach', $old, $new);
     }
 
     public function detach($ids = null, $touch = true)
     {
-        /** @var AuditsCustomEvents $parentModel */
+        /** @var Auditable $parentModel */
         $parentModel = $this->getParent();
 
         if (! $this->isAuditable($parentModel::class)) {
@@ -89,19 +87,13 @@ trait AttachOverrides
 
         $relationName = $this->relationName;
 
-        $parentModel->auditEvent = 'detach';
-        $parentModel->isCustomEvent = true;
-        $parentModel->auditCustomOld = [
-            $relationName => $parentModel->{$relationName}()->get()->toArray(),
-        ];
+        $old = $this->relationAuditSnapshot($parentModel, $relationName);
 
-        $results = parent::detach($ids, $touch);
+        $results = $this->runWithoutPivotAuditing(fn () => parent::detach($ids, $touch));
 
-        $parentModel->auditCustomNew = [
-            $relationName => $parentModel->{$relationName}()->get()->toArray(),
-        ];
-        Event::dispatch(new AuditCustom($parentModel));
-        $parentModel->isCustomEvent = false;
+        $new = $this->relationAuditSnapshot($parentModel, $relationName);
+
+        $this->dispatchRelationAuditEvent($parentModel, 'detach', $old, $new);
 
         return empty($results) ? 0 : $results;
     }
@@ -114,7 +106,7 @@ trait AttachOverrides
      */
     public function sync($ids, $detaching = true)
     {
-        /** @var AuditsCustomEvents $parentModel */
+        /** @var Auditable $parentModel */
         $parentModel = $this->getParent();
 
         if (! $this->isAuditable($parentModel::class)) {
@@ -123,26 +115,14 @@ trait AttachOverrides
 
         $relationName = $this->relationName;
 
-        $parentModel->auditEvent = 'sync';
+        $old = $this->relationAuditSnapshot($parentModel, $relationName);
 
-        $parentModel->auditCustomOld = [
-            $relationName => $parentModel->{$relationName}()->get()->toArray(),
-        ];
+        /** @var array<string, mixed> $changes */
+        $changes = $this->runWithoutPivotAuditing(fn () => parent::sync($ids, $detaching));
 
-        $changes = parent::sync($ids, $detaching);
+        $new = $this->relationAuditSnapshot($parentModel, $relationName);
 
-        if (collect($changes)->flatten()->isEmpty()) {
-            $parentModel->auditCustomOld = [];
-            $parentModel->auditCustomNew = [];
-        } else {
-            $parentModel->auditCustomNew = [
-                $relationName => $parentModel->{$relationName}()->get()->toArray(),
-            ];
-        }
-
-        $parentModel->isCustomEvent = true;
-        Event::dispatch(new AuditCustom($parentModel));
-        $parentModel->isCustomEvent = false;
+        $this->dispatchRelationAuditEvent($parentModel, 'sync', $old, $new);
 
         return $changes;
     }
@@ -152,5 +132,87 @@ trait AttachOverrides
         $reflection = new ReflectionClass($class);
 
         return $reflection->implementsInterface(Auditable::class);
+    }
+
+    /**
+     * Runs the pivot mutation with the pivot model's own auditing suppressed when that pivot is
+     * itself auditable, so a single relationship change is not recorded twice.
+     */
+    private function runWithoutPivotAuditing(Closure $callback): mixed
+    {
+        $pivotClass = $this->getPivotClass();
+
+        if ($pivotClass !== Pivot::class && is_a($pivotClass, Auditable::class, true)) {
+            return $pivotClass::withoutAuditing($callback); /** @phpstan-ignore staticMethod.notFound */
+        }
+
+        return $callback();
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private function relationAuditSnapshot(Auditable $parentModel, string $relationName): array
+    {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Model> $related */
+        $related = $parentModel->{$relationName}()->get();
+
+        $snapshot = [];
+
+        foreach ($related as $model) {
+            $snapshot[(string) $model->getKey()] = $model->toArray();
+        }
+
+        return $snapshot;
+    }
+
+    /**
+     * Records only the rows that were added, removed, or had their (pivot) attributes changed,
+     * rather than the full relationship on both the old and new side.
+     *
+     * @param array<string, array<string, mixed>> $old
+     * @param array<string, array<string, mixed>> $new
+     */
+    private function dispatchRelationAuditEvent(Auditable $parentModel, string $event, array $old, array $new): void
+    {
+        [$oldDiff, $newDiff] = $this->diffRelationSnapshots($old, $new);
+
+        $hasChanges = $oldDiff !== [] || $newDiff !== [];
+        $relationName = $this->relationName;
+
+        $parentModel->auditEvent = $event; /** @phpstan-ignore property.notFound */
+        $parentModel->auditCustomOld = $hasChanges ? [$relationName => $oldDiff] : []; /** @phpstan-ignore property.notFound */
+        $parentModel->auditCustomNew = $hasChanges ? [$relationName => $newDiff] : []; /** @phpstan-ignore property.notFound */
+        $parentModel->isCustomEvent = true; /** @phpstan-ignore property.notFound */
+        Event::dispatch(new AuditCustom($parentModel));
+
+        $parentModel->isCustomEvent = false; /** @phpstan-ignore property.notFound */
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $old
+     * @param array<string, array<string, mixed>> $new
+     *
+     * @return array{0: list<array<string, mixed>>, 1: list<array<string, mixed>>}
+     */
+    private function diffRelationSnapshots(array $old, array $new): array
+    {
+        $removedOrChanged = [];
+
+        foreach ($old as $key => $row) {
+            if (! array_key_exists($key, $new) || $new[$key] !== $row) {
+                $removedOrChanged[] = $row;
+            }
+        }
+
+        $addedOrChanged = [];
+
+        foreach ($new as $key => $row) {
+            if (! array_key_exists($key, $old) || $old[$key] !== $row) {
+                $addedOrChanged[] = $row;
+            }
+        }
+
+        return [$removedOrChanged, $addedOrChanged];
     }
 }
