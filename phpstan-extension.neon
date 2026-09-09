@@ -38,6 +38,12 @@ services:
         tags:
             - phpstan.rules.rule
     -
+        class: CanyonGBS\Common\Rules\ModelMustUseCommonAuditableTrait\ModelMustUseCommonAuditableTraitRule
+        arguments:
+            forbiddenAuditableTraits: %forbiddenAuditableTraits%
+        tags:
+            - phpstan.rules.rule
+    -
         class: CanyonGBS\Common\Rules\MultipleMigrationChangesWrappedInTransaction\MultipleMigrationChangesWrappedInTransactionRule
         tags:
             - phpstan.rules.rule
@@ -89,9 +95,12 @@ parameters:
         - App\Support\AbstractFeatureFlag
         - App\Support\LandlordAbstractFeatureFlag
     featuresNamespace: App\Features
+    forbiddenAuditableTraits:
+        - OwenIt\Auditing\Auditable
 
 parametersSchema:
     actionNamespaceIncludePatterns: listOf(string())
     actionNamespaceExcludePatterns: listOf(string())
     featureFlagBaseClasses: listOf(string())
     featuresNamespace: string()
+    forbiddenAuditableTraits: listOf(string())
