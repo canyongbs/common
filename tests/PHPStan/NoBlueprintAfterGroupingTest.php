@@ -33,42 +33,34 @@
 
 </COPYRIGHT>
 */
-
-it('reports Blueprint after() groupings that cannot be automatically flattened', function () {
-    $result = runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintAfterGroupingNonVariableReceiverFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.blueprintAfterGrouping');
-});
-
-it('does not report Blueprint after() groupings that can be automatically flattened', function () {
-    $result = runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintAfterGroupingFlattenableFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report flattenable Blueprint after() groupings.\nOutput: {$result['output']}");
-});
-
-it('does not report the Blueprint after() column modifier', function () {
-    $result = runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintColumnModifierAfterFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report the Blueprint after() column modifier.\nOutput: {$result['output']}");
-});
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnBlueprintAfterGroupingFixture(string $filePath): array
-{
+$runPhpStanOnBlueprintAfterGroupingFixture = function (string $filePath): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/no-blueprint-after-grouping.neon');
     $file = escapeshellarg($filePath);
-
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
     exec($command, $outputLines, $exitCode);
 
     return [
         'exitCode' => $exitCode,
         'output' => implode("\n", $outputLines),
     ];
-}
+};
+it('reports Blueprint after() groupings that cannot be automatically flattened', function () use ($runPhpStanOnBlueprintAfterGroupingFixture) {
+    $result = $runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintAfterGroupingNonVariableReceiverFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.blueprintAfterGrouping');
+});
+
+it('does not report Blueprint after() groupings that can be automatically flattened', function () use ($runPhpStanOnBlueprintAfterGroupingFixture) {
+    $result = $runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintAfterGroupingFlattenableFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report flattenable Blueprint after() groupings.\nOutput: {$result['output']}");
+});
+
+it('does not report the Blueprint after() column modifier', function () use ($runPhpStanOnBlueprintAfterGroupingFixture) {
+    $result = $runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintColumnModifierAfterFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report the Blueprint after() column modifier.\nOutput: {$result['output']}");
+});

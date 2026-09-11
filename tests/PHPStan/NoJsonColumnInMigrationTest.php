@@ -33,55 +33,47 @@
 
 </COPYRIGHT>
 */
-
-it('reports Blueprint json() column definitions in migrations', function () {
-    $result = runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonColumnInMigrationFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.jsonColumnInMigration');
-});
-
-it('reports Blueprint json() column definitions called on a property', function () {
-    $result = runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonColumnViaPropertyFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.jsonColumnInMigration');
-});
-
-it('does not report Blueprint jsonb() column definitions', function () {
-    $result = runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonbColumnInMigrationFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report jsonb() column definitions.\nOutput: {$result['output']}");
-});
-
-it('does not report json() calls on non-Blueprint receivers', function () {
-    $result = runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonColumnNonBlueprintFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report json() calls on non-Blueprint receivers.\nOutput: {$result['output']}");
-});
-
-it('allows json() column definitions silenced with a specific inline ignore', function () {
-    $result = runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonColumnIgnoredFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should respect the inline ignore for json() column definitions.\nOutput: {$result['output']}");
-});
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnJsonColumnInMigrationFixture(string $filePath): array
-{
+$runPhpStanOnJsonColumnInMigrationFixture = function (string $filePath): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/no-json-column-in-migration.neon');
     $file = escapeshellarg($filePath);
-
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
     exec($command, $outputLines, $exitCode);
 
     return [
         'exitCode' => $exitCode,
         'output' => implode("\n", $outputLines),
     ];
-}
+};
+it('reports Blueprint json() column definitions in migrations', function () use ($runPhpStanOnJsonColumnInMigrationFixture) {
+    $result = $runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonColumnInMigrationFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.jsonColumnInMigration');
+});
+
+it('reports Blueprint json() column definitions called on a property', function () use ($runPhpStanOnJsonColumnInMigrationFixture) {
+    $result = $runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonColumnViaPropertyFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.jsonColumnInMigration');
+});
+
+it('does not report Blueprint jsonb() column definitions', function () use ($runPhpStanOnJsonColumnInMigrationFixture) {
+    $result = $runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonbColumnInMigrationFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report jsonb() column definitions.\nOutput: {$result['output']}");
+});
+
+it('does not report json() calls on non-Blueprint receivers', function () use ($runPhpStanOnJsonColumnInMigrationFixture) {
+    $result = $runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonColumnNonBlueprintFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report json() calls on non-Blueprint receivers.\nOutput: {$result['output']}");
+});
+
+it('allows json() column definitions silenced with a specific inline ignore', function () use ($runPhpStanOnJsonColumnInMigrationFixture) {
+    $result = $runPhpStanOnJsonColumnInMigrationFixture('tests/PHPStan/Fixtures/JsonColumnIgnoredFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should respect the inline ignore for json() column definitions.\nOutput: {$result['output']}");
+});

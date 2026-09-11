@@ -42,6 +42,12 @@ use CanyonGBS\Common\Parser\Part\Salutation;
 /**
  * @return array
  */
+$getMapper = function () {
+    $english = new English();
+
+    return new SalutationMapper($english->getSalutations());
+};
+
 dataset('provider', function () {
     return [
         [
@@ -80,9 +86,3 @@ dataset('provider', function () {
         ],
     ];
 });
-function getMapper()
-{
-    $english = new English();
-
-    return new SalutationMapper($english->getSalutations());
-}
