@@ -171,7 +171,8 @@ Simple scalar datasets are also fine: `->with(['id', 'created_at', 'updated_at']
     - `createUserWithRoleNamed(Authenticatable::SUPER_ADMIN_ROLE)` — user assigned a named role.
     - `setCurrentTenantFor($user)` — single-database apps: attach an organization and set it as the current Filament tenant (see **Multi-tenancy**).
 - The exact helpers available differ per app — check `tests/Pest.php`.
-- Add a new test-scoped helper as a plain function (in the test file for local use, or `Pest.php` if shared), as with `auditsFor()`.
+- Keep helpers in stand-alone test files file-local: define them as closure variables and capture them in the `it()` / `test()` closures that use them. The shared Rector set enforces this automatically.
+- Define intentionally global helpers only in the supported Pest helper locations: `tests/Pest.php`, `tests/Helpers.php`, or files under `tests/Helpers/`. These files are excluded from the scoping Rector rule and are loaded for the whole test suite.
 - Use Eloquent model factories for domain data (`User::factory()->create()`).
 
 ## Multi-tenancy
