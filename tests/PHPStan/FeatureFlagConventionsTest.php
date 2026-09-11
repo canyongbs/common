@@ -33,67 +33,59 @@
 
 </COPYRIGHT>
 */
-
-it('reports classes in the features namespace that do not extend a feature flag base class', function () {
-    $result = runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/FeatureNotExtendingBaseFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.featureMustExtendFeatureFlagAbstracts');
-    expect($result['output'])->not->toContain('Common.featureFlagClassMustEndInFeature');
-});
-
-it('reports feature flag classes that do not end in "Feature"', function () {
-    $result = runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/FeatureMissingSuffixFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.featureFlagClassMustEndInFeature');
-    expect($result['output'])->not->toContain('Common.featureMustExtendFeatureFlagAbstracts');
-});
-
-it('reports landlord feature flag classes that do not end in "Feature"', function () {
-    $result = runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/LandlordFeatureMissingSuffixFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.featureFlagClassMustEndInFeature');
-    expect($result['output'])->not->toContain('Common.featureMustExtendFeatureFlagAbstracts');
-});
-
-it('reports feature flag classes that extend a base class outside the features namespace but are misnamed', function () {
-    $result = runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/OutsideNamespaceExtendsBaseFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.featureFlagClassMustEndInFeature');
-    expect($result['output'])->not->toContain('Common.featureMustExtendFeatureFlagAbstracts');
-});
-
-it('does not report a valid feature flag class', function () {
-    $result = runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/ValidFeatureFlagFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report a valid feature flag class.\nOutput: {$result['output']}");
-});
-
-it('does not report abstract feature flag classes in the features namespace', function () {
-    $result = runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/AbstractFeatureInNamespaceFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract feature flag classes.\nOutput: {$result['output']}");
-});
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnFeatureFlagConventionsFixture(string $filePath): array
-{
+$runPhpStanOnFeatureFlagConventionsFixture = function (string $filePath): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/feature-flag-conventions.neon');
     $file = escapeshellarg($filePath);
-
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
     exec($command, $outputLines, $exitCode);
 
     return [
         'exitCode' => $exitCode,
         'output' => implode("\n", $outputLines),
     ];
-}
+};
+it('reports classes in the features namespace that do not extend a feature flag base class', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+    $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/FeatureNotExtendingBaseFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.featureMustExtendFeatureFlagAbstracts');
+    expect($result['output'])->not->toContain('Common.featureFlagClassMustEndInFeature');
+});
+
+it('reports feature flag classes that do not end in "Feature"', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+    $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/FeatureMissingSuffixFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.featureFlagClassMustEndInFeature');
+    expect($result['output'])->not->toContain('Common.featureMustExtendFeatureFlagAbstracts');
+});
+
+it('reports landlord feature flag classes that do not end in "Feature"', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+    $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/LandlordFeatureMissingSuffixFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.featureFlagClassMustEndInFeature');
+    expect($result['output'])->not->toContain('Common.featureMustExtendFeatureFlagAbstracts');
+});
+
+it('reports feature flag classes that extend a base class outside the features namespace but are misnamed', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+    $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/OutsideNamespaceExtendsBaseFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.featureFlagClassMustEndInFeature');
+    expect($result['output'])->not->toContain('Common.featureMustExtendFeatureFlagAbstracts');
+});
+
+it('does not report a valid feature flag class', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+    $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/ValidFeatureFlagFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report a valid feature flag class.\nOutput: {$result['output']}");
+});
+
+it('does not report abstract feature flag classes in the features namespace', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+    $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/AbstractFeatureInNamespaceFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract feature flag classes.\nOutput: {$result['output']}");
+});

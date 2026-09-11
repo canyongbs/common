@@ -33,91 +33,83 @@
 
 </COPYRIGHT>
 */
-
-it('does not report models that define a $fillable property and no $guarded property', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelWithFillableFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report models that define a \$fillable property and no \$guarded property.\nOutput: {$result['output']}");
-});
-
-it('reports models that are missing a $fillable property', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelMissingFillableFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.modelMissingFillable');
-    expect($result['output'])->not->toContain('Common.modelHasGuarded');
-});
-
-it('reports models that define a $guarded property', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelWithGuardedFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.modelHasGuarded');
-    expect($result['output'])->not->toContain('Common.modelMissingFillable');
-});
-
-it('reports models that are missing a $fillable property and define a $guarded property', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelWithGuardedAndNoFillableFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.modelMissingFillable');
-    expect($result['output'])->toContain('Common.modelHasGuarded');
-});
-
-it('does not report models that inherit a $fillable property from an abstract parent', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelInheritingFillableFromAbstractParentFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report models that inherit a \$fillable property from an abstract parent.\nOutput: {$result['output']}");
-});
-
-it('does not report models that extend Pivot and define a $fillable property', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelExtendingPivotFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report models that extend Pivot and define a \$fillable property.\nOutput: {$result['output']}");
-});
-
-it('does not require a $fillable property for models that inherit a $guarded property from Pivot', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelExtendingPivotWithoutFillableFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not require a \$fillable property for models that inherit a \$guarded property from Pivot.\nOutput: {$result['output']}");
-});
-
-it('reports abstract models that define a $guarded property', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/AbstractModelWithGuardedFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.modelHasGuarded');
-    expect($result['output'])->not->toContain('Common.modelMissingFillable');
-});
-
-it('does not report abstract models', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/AbstractModelFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract models.\nOutput: {$result['output']}");
-});
-
-it('does not report classes that are not models', function () {
-    $result = runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/NonModelClassFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report classes that are not models.\nOutput: {$result['output']}");
-});
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnModelHasFillableAndNoGuardedFixture(string $filePath): array
-{
+$runPhpStanOnModelHasFillableAndNoGuardedFixture = function (string $filePath): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/model-has-fillable-and-no-guarded.neon');
     $file = escapeshellarg($filePath);
-
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
     exec($command, $outputLines, $exitCode);
 
     return [
         'exitCode' => $exitCode,
         'output' => implode("\n", $outputLines),
     ];
-}
+};
+it('does not report models that define a $fillable property and no $guarded property', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelWithFillableFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report models that define a \$fillable property and no \$guarded property.\nOutput: {$result['output']}");
+});
+
+it('reports models that are missing a $fillable property', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelMissingFillableFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.modelMissingFillable');
+    expect($result['output'])->not->toContain('Common.modelHasGuarded');
+});
+
+it('reports models that define a $guarded property', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelWithGuardedFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.modelHasGuarded');
+    expect($result['output'])->not->toContain('Common.modelMissingFillable');
+});
+
+it('reports models that are missing a $fillable property and define a $guarded property', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelWithGuardedAndNoFillableFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.modelMissingFillable');
+    expect($result['output'])->toContain('Common.modelHasGuarded');
+});
+
+it('does not report models that inherit a $fillable property from an abstract parent', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelInheritingFillableFromAbstractParentFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report models that inherit a \$fillable property from an abstract parent.\nOutput: {$result['output']}");
+});
+
+it('does not report models that extend Pivot and define a $fillable property', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelExtendingPivotFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report models that extend Pivot and define a \$fillable property.\nOutput: {$result['output']}");
+});
+
+it('does not require a $fillable property for models that inherit a $guarded property from Pivot', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/ModelExtendingPivotWithoutFillableFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not require a \$fillable property for models that inherit a \$guarded property from Pivot.\nOutput: {$result['output']}");
+});
+
+it('reports abstract models that define a $guarded property', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/AbstractModelWithGuardedFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.modelHasGuarded');
+    expect($result['output'])->not->toContain('Common.modelMissingFillable');
+});
+
+it('does not report abstract models', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/AbstractModelFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract models.\nOutput: {$result['output']}");
+});
+
+it('does not report classes that are not models', function () use ($runPhpStanOnModelHasFillableAndNoGuardedFixture) {
+    $result = $runPhpStanOnModelHasFillableAndNoGuardedFixture('tests/PHPStan/Fixtures/NonModelClassFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report classes that are not models.\nOutput: {$result['output']}");
+});

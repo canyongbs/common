@@ -41,12 +41,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Http;
 
-/**
- * @param array<string, mixed> $server
- * @param array<string, string> $headers
- */
-function makeRequest(array $server = [], array $headers = []): Request
-{
+$makeRequest = function (array $server = [], array $headers = []): Request {
     $request = Request::create('https://api.example.com/widgets/submission', 'POST', [], [], [], $server);
 
     foreach ($headers as $name => $value) {
@@ -54,14 +49,14 @@ function makeRequest(array $server = [], array $headers = []): Request
     }
 
     return $request;
-}
+};
 
 beforeEach(function () {
     // Never allow a real outbound request to Cloudflare during tests.
     Http::preventStrayRequests();
 });
 
-describe('resolve()', function () {
+describe('resolve()', function () use ($makeRequest) {
     beforeEach(function () {
         // Fake the published lists so the resolver can verify requests against the
         // Cloudflare ranges without making a real external call.
@@ -71,9 +66,9 @@ describe('resolve()', function () {
         ]);
     });
 
-    it('returns the CF-Connecting-IP when the request was delivered by Cloudflare', function () {
+    it('returns the CF-Connecting-IP when the request was delivered by Cloudflare', function () use ($makeRequest) {
         // The ALB appends the Cloudflare edge IP (173.245.48.10) as the last X-Forwarded-For hop.
-        $request = makeRequest(
+        $request = $makeRequest(
             server: ['REMOTE_ADDR' => '10.0.0.5'],
             headers: [
                 'X-Forwarded-For' => '203.0.113.10, 173.245.48.10',
@@ -84,10 +79,10 @@ describe('resolve()', function () {
         expect(ClientIp::resolve($request))->toBe('203.0.113.10');
     });
 
-    it('falls back to the request IP when the last forwarded hop is not a Cloudflare IP', function () {
+    it('falls back to the request IP when the last forwarded hop is not a Cloudflare IP', function () use ($makeRequest) {
         // A client hitting the ALB directly: their real IP (198.51.100.9) is appended last,
         // so the spoofed CF-Connecting-IP must be ignored.
-        $request = makeRequest(
+        $request = $makeRequest(
             server: ['REMOTE_ADDR' => '198.51.100.9'],
             headers: [
                 'X-Forwarded-For' => '203.0.113.10, 198.51.100.9',
@@ -98,8 +93,8 @@ describe('resolve()', function () {
         expect(ClientIp::resolve($request))->toBe('198.51.100.9');
     });
 
-    it('falls back to the request IP when there is no CF-Connecting-IP header', function () {
-        $request = makeRequest(
+    it('falls back to the request IP when there is no CF-Connecting-IP header', function () use ($makeRequest) {
+        $request = $makeRequest(
             server: ['REMOTE_ADDR' => '10.0.0.5'],
             headers: [
                 'X-Forwarded-For' => '203.0.113.10, 173.245.48.10',
@@ -109,8 +104,8 @@ describe('resolve()', function () {
         expect(ClientIp::resolve($request))->toBe($request->ip());
     });
 
-    it('falls back to the request IP when there is no X-Forwarded-For header', function () {
-        $request = makeRequest(
+    it('falls back to the request IP when there is no X-Forwarded-For header', function () use ($makeRequest) {
+        $request = $makeRequest(
             server: ['REMOTE_ADDR' => '198.51.100.9'],
             headers: [
                 'CF-Connecting-IP' => '203.0.113.10',
@@ -120,8 +115,8 @@ describe('resolve()', function () {
         expect(ClientIp::resolve($request))->toBe('198.51.100.9');
     });
 
-    it('ignores an invalid CF-Connecting-IP value and falls back', function () {
-        $request = makeRequest(
+    it('ignores an invalid CF-Connecting-IP value and falls back', function () use ($makeRequest) {
+        $request = $makeRequest(
             server: ['REMOTE_ADDR' => '198.51.100.9'],
             headers: [
                 'X-Forwarded-For' => '203.0.113.10, 173.245.48.10',
