@@ -50,7 +50,10 @@ final class ScopePestTestHelpersRectorTest extends AbstractRectorTestCase
 
     public static function provideData(): Iterator
     {
-        foreach (glob(__DIR__ . '/Fixtures/*.php.inc') as $filePath) {
+        foreach (array_merge(
+            glob(__DIR__ . '/Fixtures/*.php.inc'),
+            glob(__DIR__ . '/Fixtures/*/*.php.inc'),
+        ) as $filePath) {
             yield basename($filePath, '.php.inc') => [$filePath];
         }
     }

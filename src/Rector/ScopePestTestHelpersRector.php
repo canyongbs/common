@@ -37,6 +37,7 @@
 namespace CanyonGBS\Common\Rector;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
@@ -118,11 +119,18 @@ final class ScopePestTestHelpersRector extends AbstractRector
             return null;
         }
 
+        $helperFunctions = $this->withoutRecursiveHelpers($helperFunctions);
+
+        if ($helperFunctions === []) {
+            return null;
+        }
+
         $statements = array_values(array_filter(
             $node->stmts,
-            static fn (Node $statement): bool => ! $statement instanceof Function_,
+            static fn (Node $statement): bool => ! $statement instanceof Function_
+                || ! array_key_exists($statement->name->toString(), $helperFunctions),
         ));
-        $insertionIndex = $this->findFirstRegistrationIndex($statements);
+        $insertionIndex = $this->findFirstUsageOrRegistrationIndex($statements, array_keys($helperFunctions));
 
         if ($insertionIndex === count($statements)) {
             return null;
@@ -151,6 +159,12 @@ final class ScopePestTestHelpersRector extends AbstractRector
         foreach ((new NodeFinder())->findInstanceOf($statements, Closure::class) as $closure) {
             $this->rewriteHelperCalls($closure, $helperNames);
         }
+
+        foreach ((new NodeFinder())->findInstanceOf($statements, ArrowFunction::class) as $arrowFunction) {
+            $this->rewriteHelperCalls($arrowFunction, $helperNames);
+        }
+
+        $this->rewriteHelperCallsInStatements($statements, $helperNames);
 
         $helperStatements = [];
 
@@ -191,10 +205,88 @@ final class ScopePestTestHelpersRector extends AbstractRector
             && ! str_contains($filePath, '/Helpers/');
     }
 
-    /** @param list<Node> $statements */
-    private function findFirstRegistrationIndex(array $statements): int
+    /**
+     * @param array<string, Function_> $helperFunctions
+     *
+     * @return array<string, Function_>
+     */
+    private function withoutRecursiveHelpers(array $helperFunctions): array
+    {
+        $dependencies = [];
+
+        foreach ($helperFunctions as $helperName => $function) {
+            $dependencies[$helperName] = $this->findHelperCalls($function, array_keys($helperFunctions));
+        }
+
+        $recursiveHelpers = [];
+
+        foreach (array_keys($helperFunctions) as $helperName) {
+            if ($this->hasDependencyPath($helperName, $helperName, $dependencies, [])) {
+                $recursiveHelpers[$helperName] = true;
+            }
+        }
+
+        foreach (array_keys($recursiveHelpers) as $helperName) {
+            $this->markDependenciesAsUntransformable($helperName, $dependencies, $recursiveHelpers);
+        }
+
+        return array_filter(
+            $helperFunctions,
+            static fn (string $helperName): bool => ! isset($recursiveHelpers[$helperName]),
+            ARRAY_FILTER_USE_KEY,
+        );
+    }
+
+    /**
+     * @param array<string, list<string>> $dependencies
+     * @param array<string, true> $visited
+     */
+    private function hasDependencyPath(string $origin, string $current, array $dependencies, array $visited): bool
+    {
+        foreach ($dependencies[$current] ?? [] as $dependency) {
+            if ($dependency === $origin) {
+                return true;
+            }
+
+            if (! isset($visited[$dependency])) {
+                $visited[$dependency] = true;
+
+                if ($this->hasDependencyPath($origin, $dependency, $dependencies, $visited)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string, list<string>> $dependencies
+     * @param array<string, true> $untransformableHelpers
+     */
+    private function markDependenciesAsUntransformable(string $helperName, array $dependencies, array &$untransformableHelpers): void
+    {
+        foreach ($dependencies[$helperName] ?? [] as $dependency) {
+            if (isset($untransformableHelpers[$dependency])) {
+                continue;
+            }
+
+            $untransformableHelpers[$dependency] = true;
+            $this->markDependenciesAsUntransformable($dependency, $dependencies, $untransformableHelpers);
+        }
+    }
+
+    /**
+     * @param list<Node> $statements
+     * @param list<string> $helperNames
+     */
+    private function findFirstUsageOrRegistrationIndex(array $statements, array $helperNames): int
     {
         foreach ($statements as $index => $statement) {
+            if ($this->findHelperCalls($statement, $helperNames) !== []) {
+                return $index;
+            }
+
             foreach ((new NodeFinder())->findInstanceOf([$statement], FuncCall::class) as $call) {
                 foreach (self::PEST_REGISTRATION_FUNCTIONS as $functionName) {
                     if ($this->isName($call, $functionName)) {
@@ -212,11 +304,11 @@ final class ScopePestTestHelpersRector extends AbstractRector
      *
      * @return list<string>
      */
-    private function rewriteHelperCalls(Closure $closure, array $helperNames, ?string $currentHelper = null): array
+    private function rewriteHelperCalls(Closure | ArrowFunction $closure, array $helperNames, ?string $currentHelper = null): array
     {
         $dependencies = [];
 
-        foreach ((new NodeFinder())->findInstanceOf($closure->getStmts(), FuncCall::class) as $call) {
+        foreach ((new NodeFinder())->findInstanceOf($this->functionStatements($closure), FuncCall::class) as $call) {
             foreach ($helperNames as $helperName) {
                 $isHelperCall = $this->isName($call, $helperName)
                     || ($call->name instanceof Variable && $call->name->name === $helperName);
@@ -229,12 +321,59 @@ final class ScopePestTestHelpersRector extends AbstractRector
 
                 if ($helperName !== $currentHelper) {
                     $dependencies[] = $helperName;
-                    $this->addClosureUse($closure, $helperName);
+
+                    if ($closure instanceof Closure) {
+                        $this->addClosureUse($closure, $helperName);
+                    }
                 }
             }
         }
 
         return array_values(array_unique($dependencies));
+    }
+
+    /**
+     * @param list<Node> $statements
+     * @param list<string> $helperNames
+     */
+    private function rewriteHelperCallsInStatements(array $statements, array $helperNames): void
+    {
+        foreach ((new NodeFinder())->findInstanceOf(
+            array_filter($statements, static fn (Node $statement): bool => ! $statement instanceof Function_),
+            FuncCall::class,
+        ) as $call) {
+            foreach ($helperNames as $helperName) {
+                if ($this->isName($call, $helperName)) {
+                    $call->name = new Variable($helperName);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param list<string> $helperNames
+     *
+     * @return list<string>
+     */
+    private function findHelperCalls(Node $node, array $helperNames): array
+    {
+        $calls = [];
+
+        foreach ((new NodeFinder())->findInstanceOf([$node], FuncCall::class) as $call) {
+            foreach ($helperNames as $helperName) {
+                if ($this->isName($call, $helperName)) {
+                    $calls[] = $helperName;
+                }
+            }
+        }
+
+        return array_values(array_unique($calls));
+    }
+
+    /** @return list<Node> */
+    private function functionStatements(Closure | ArrowFunction $function): array
+    {
+        return $function instanceof Closure ? $function->getStmts() : [$function->expr];
     }
 
     /**
