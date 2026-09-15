@@ -33,45 +33,37 @@
 
 </COPYRIGHT>
 */
-
-it('reports traits that define a local scope using the "scope" prefix convention', function () {
-    $result = runPhpStanOnNoLocalScopeInTraitFixture('tests/PHPStan/Fixtures/TraitWithLocalScopeFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.noLocalModelScope');
-    expect($result['output'])->toContain('tappable scope');
-});
-
-it('reports traits that define a local scope using the #[Scope] attribute', function () {
-    $result = runPhpStanOnNoLocalScopeInTraitFixture('tests/PHPStan/Fixtures/TraitWithScopeAttributeFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.noLocalModelScope');
-    expect($result['output'])->toContain('tappable scope');
-});
-
-it('does not report traits that do not define a local scope', function () {
-    $result = runPhpStanOnNoLocalScopeInTraitFixture('tests/PHPStan/Fixtures/TraitWithoutLocalScopeFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report traits that do not define a local scope.\nOutput: {$result['output']}");
-});
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnNoLocalScopeInTraitFixture(string $filePath): array
-{
+$runPhpStanOnNoLocalScopeInTraitFixture = function (string $filePath): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/no-local-scope-in-trait.neon');
     $file = escapeshellarg($filePath);
-
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
     exec($command, $outputLines, $exitCode);
 
     return [
         'exitCode' => $exitCode,
         'output' => implode("\n", $outputLines),
     ];
-}
+};
+it('reports traits that define a local scope using the "scope" prefix convention', function () use ($runPhpStanOnNoLocalScopeInTraitFixture) {
+    $result = $runPhpStanOnNoLocalScopeInTraitFixture('tests/PHPStan/Fixtures/TraitWithLocalScopeFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.noLocalModelScope');
+    expect($result['output'])->toContain('tappable scope');
+});
+
+it('reports traits that define a local scope using the #[Scope] attribute', function () use ($runPhpStanOnNoLocalScopeInTraitFixture) {
+    $result = $runPhpStanOnNoLocalScopeInTraitFixture('tests/PHPStan/Fixtures/TraitWithScopeAttributeFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.noLocalModelScope');
+    expect($result['output'])->toContain('tappable scope');
+});
+
+it('does not report traits that do not define a local scope', function () use ($runPhpStanOnNoLocalScopeInTraitFixture) {
+    $result = $runPhpStanOnNoLocalScopeInTraitFixture('tests/PHPStan/Fixtures/TraitWithoutLocalScopeFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report traits that do not define a local scope.\nOutput: {$result['output']}");
+});

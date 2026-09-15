@@ -33,62 +33,54 @@
 
 </COPYRIGHT>
 */
-
-it('does not report migrations that wrap their changes in a transaction', function () {
-    $result = runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/MigrationWrappedInTransactionFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report migrations that wrap their changes in a transaction.\nOutput: {$result['output']}");
-});
-
-it('does not report migrations whose methods contain a single statement', function () {
-    $result = runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/MigrationSingleStatementFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report migrations whose methods contain a single statement.\nOutput: {$result['output']}");
-});
-
-it('does not report migrations with empty up() and down() bodies', function () {
-    $result = runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/MigrationEmptyBodyFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report migrations with empty up() and down() bodies.\nOutput: {$result['output']}");
-});
-
-it('reports migrations whose up() and down() methods contain multiple root statements', function () {
-    $result = runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/MigrationMultipleStatementsFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.multipleMigrationChangesNotWrappedInTransaction');
-    expect(substr_count($result['output'], '"identifier":"Common.multipleMigrationChangesNotWrappedInTransaction"'))->toBe(2);
-});
-
-it('reports anonymous migrations whose methods contain multiple root statements', function () {
-    $result = runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/AnonymousMigrationMultipleStatementsFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.multipleMigrationChangesNotWrappedInTransaction');
-});
-
-it('does not report non-migration classes whose methods contain multiple statements', function () {
-    $result = runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/NonMigrationMultipleStatementsClassFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report non-migration classes.\nOutput: {$result['output']}");
-});
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture(string $filePath): array
-{
+$runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture = function (string $filePath): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/multiple-migration-changes-wrapped-in-transaction.neon');
     $file = escapeshellarg($filePath);
-
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
     exec($command, $outputLines, $exitCode);
 
     return [
         'exitCode' => $exitCode,
         'output' => implode("\n", $outputLines),
     ];
-}
+};
+it('does not report migrations that wrap their changes in a transaction', function () use ($runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture) {
+    $result = $runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/MigrationWrappedInTransactionFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report migrations that wrap their changes in a transaction.\nOutput: {$result['output']}");
+});
+
+it('does not report migrations whose methods contain a single statement', function () use ($runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture) {
+    $result = $runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/MigrationSingleStatementFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report migrations whose methods contain a single statement.\nOutput: {$result['output']}");
+});
+
+it('does not report migrations with empty up() and down() bodies', function () use ($runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture) {
+    $result = $runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/MigrationEmptyBodyFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report migrations with empty up() and down() bodies.\nOutput: {$result['output']}");
+});
+
+it('reports migrations whose up() and down() methods contain multiple root statements', function () use ($runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture) {
+    $result = $runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/MigrationMultipleStatementsFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.multipleMigrationChangesNotWrappedInTransaction');
+    expect(substr_count($result['output'], '"identifier":"Common.multipleMigrationChangesNotWrappedInTransaction"'))->toBe(2);
+});
+
+it('reports anonymous migrations whose methods contain multiple root statements', function () use ($runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture) {
+    $result = $runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/AnonymousMigrationMultipleStatementsFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.multipleMigrationChangesNotWrappedInTransaction');
+});
+
+it('does not report non-migration classes whose methods contain multiple statements', function () use ($runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture) {
+    $result = $runPhpStanOnMultipleMigrationChangesWrappedInTransactionFixture('tests/PHPStan/Fixtures/NonMigrationMultipleStatementsClassFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report non-migration classes.\nOutput: {$result['output']}");
+});

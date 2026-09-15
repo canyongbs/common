@@ -34,55 +34,10 @@
 </COPYRIGHT>
 */
 
-use CanyonGBS\Common\Parser\Language\English;
-use CanyonGBS\Common\Parser\Mapper\SalutationMapper;
-use CanyonGBS\Common\Parser\Part\Firstname;
-use CanyonGBS\Common\Parser\Part\Salutation;
+use CanyonGBS\Common\Rector\ScopePestTestHelpersRector;
+use Rector\Config\RectorConfig;
 
-/**
- * @return array
- */
-$getMapper = function () {
-    $english = new English();
-
-    return new SalutationMapper($english->getSalutations());
-};
-
-dataset('provider', function () {
-    return [
-        [
-            'input' => [
-                'Mr.',
-                'Pan',
-            ],
-            'expectation' => [
-                new Salutation('Mr.', 'Mr.'),
-                'Pan',
-            ],
-        ],
-        [
-            'input' => [
-                'Mr',
-                'Peter',
-                'Pan',
-            ],
-            'expectation' => [
-                new Salutation('Mr', 'Mr.'),
-                'Peter',
-                'Pan',
-            ],
-        ],
-        [
-            'input' => [
-                'Mr',
-                new Firstname('James'),
-                'Miss',
-            ],
-            'expectation' => [
-                new Salutation('Mr', 'Mr.'),
-                new Firstname('James'),
-                'Miss',
-            ],
-        ],
-    ];
-});
+return RectorConfig::configure()
+    ->withRules([
+        ScopePestTestHelpersRector::class,
+    ]);

@@ -46,6 +46,21 @@ use NotificationChannels\WebPush\ReportHandler;
 use NotificationChannels\WebPush\WebPushChannel;
 use NotificationChannels\WebPush\WebPushMessage;
 
+$browserNotificationReportHandler = function (): BrowserNotificationReportHandler {
+    return new BrowserNotificationReportHandler(app(ReportHandler::class));
+};
+$browserNotificationDeliveryReport = function (?int $status): MessageSentReport {
+    return new MessageSentReport(
+        request: new Request('POST', 'https://push.example.com/subscription'),
+        response: $status === null ? null : new Response($status),
+        success: false,
+        reason: 'Delivery failed.',
+    );
+};
+$commonBrowserNotificationMessage = function (): WebPushMessage {
+    return (new WebPushMessage())->data(['common_browser_notification' => true]);
+};
+
 it('configures Web Push to use the browser notification report handler', function () {
     $channel = app(WebPushChannel::class);
     $reportHandler = (new ReflectionProperty(WebPushChannel::class, 'reportHandler'))->getValue($channel);
@@ -53,13 +68,13 @@ it('configures Web Push to use the browser notification report handler', functio
     expect($reportHandler)->toBeInstanceOf(BrowserNotificationReportHandler::class);
 });
 
-it('reports and retries transient browser notification failures', function (?int $status) {
+it('reports and retries transient browser notification failures', function (?int $status) use ($browserNotificationReportHandler, $browserNotificationDeliveryReport, $commonBrowserNotificationMessage) {
     Event::fake();
 
-    expect(fn () => browserNotificationReportHandler()->handleReport(
-        browserNotificationDeliveryReport($status),
+    expect(fn () => $browserNotificationReportHandler()->handleReport(
+        $browserNotificationDeliveryReport($status),
         new PushSubscription(['endpoint' => 'https://push.example.com/subscription']),
-        commonBrowserNotificationMessage(),
+        $commonBrowserNotificationMessage(),
     ))->toThrow(RetryableBrowserNotificationDeliveryException::class);
 
     Event::assertDispatched(NotificationFailed::class);
@@ -72,13 +87,13 @@ it('reports and retries transient browser notification failures', function (?int
     'service unavailable' => 503,
 ]);
 
-it('reports without retrying permanent browser notification failures', function (int $status) {
+it('reports without retrying permanent browser notification failures', function (int $status) use ($browserNotificationReportHandler, $browserNotificationDeliveryReport, $commonBrowserNotificationMessage) {
     Event::fake();
 
-    expect(fn () => browserNotificationReportHandler()->handleReport(
-        browserNotificationDeliveryReport($status),
+    expect(fn () => $browserNotificationReportHandler()->handleReport(
+        $browserNotificationDeliveryReport($status),
         new PushSubscription(['endpoint' => 'https://push.example.com/subscription']),
-        commonBrowserNotificationMessage(),
+        $commonBrowserNotificationMessage(),
     ))->not->toThrow(RetryableBrowserNotificationDeliveryException::class);
 
     Event::assertDispatched(NotificationFailed::class);
@@ -91,32 +106,12 @@ it('reports without retrying permanent browser notification failures', function 
     'unprocessable' => 422,
 ]);
 
-it('does not retry unrelated Web Push failures', function () {
+it('does not retry unrelated Web Push failures', function () use ($browserNotificationReportHandler, $browserNotificationDeliveryReport) {
     $message = (new WebPushMessage())->data([]);
 
-    expect(fn () => browserNotificationReportHandler()->handleReport(
-        browserNotificationDeliveryReport(503),
+    expect(fn () => $browserNotificationReportHandler()->handleReport(
+        $browserNotificationDeliveryReport(503),
         new PushSubscription(['endpoint' => 'https://push.example.com/subscription']),
         $message,
     ))->not->toThrow(RetryableBrowserNotificationDeliveryException::class);
 });
-
-function browserNotificationReportHandler(): BrowserNotificationReportHandler
-{
-    return new BrowserNotificationReportHandler(app(ReportHandler::class));
-}
-
-function browserNotificationDeliveryReport(?int $status): MessageSentReport
-{
-    return new MessageSentReport(
-        request: new Request('POST', 'https://push.example.com/subscription'),
-        response: $status === null ? null : new Response($status),
-        success: false,
-        reason: 'Delivery failed.',
-    );
-}
-
-function commonBrowserNotificationMessage(): WebPushMessage
-{
-    return (new WebPushMessage())->data(['common_browser_notification' => true]);
-}

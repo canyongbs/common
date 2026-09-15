@@ -33,77 +33,69 @@
 
 </COPYRIGHT>
 */
-
-it('does not report action classes that only expose __invoke publicly', function () {
-    $result = runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionInvokableFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report valid action classes.\nOutput: {$result['output']}");
-});
-
-it('reports action classes missing __invoke and exposing execute publicly', function () {
-    $result = runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionMissingInvokeFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.actionClassMustBeInvokable');
-    expect($result['output'])->toContain('Common.actionClassHasDisallowedPublicMethod');
-});
-
-it('reports action classes that expose extra public methods', function () {
-    $result = runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionWithExtraPublicMethodFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.actionClassHasDisallowedPublicMethod');
-    expect($result['output'])->not->toContain('Common.actionClassMustBeInvokable');
-});
-
-it('does not report classes outside action namespaces', function () {
-    $result = runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/NonActionOutsideNamespaceFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report classes outside action namespaces.\nOutput: {$result['output']}");
-});
-
-it('does not report abstract action classes', function () {
-    $result = runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/AbstractActionFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract action classes.\nOutput: {$result['output']}");
-});
-
-it('reports modular action namespaces matched by wildcard include patterns', function () {
-    $result = runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ModularActionMissingInvokeFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('Common.actionClassMustBeInvokable');
-    expect($result['output'])->toContain('Common.actionClassHasDisallowedPublicMethod');
-});
-
-it('does not report classes in Filament actions namespaces excluded by default', function () {
-    $result = runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/FilamentActionExcludedFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report classes in excluded Filament action namespaces.\nOutput: {$result['output']}");
-});
-
-it('does not report classes in nested Filament actions namespaces excluded by default', function () {
-    $result = runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/NestedFilamentActionExcludedFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report classes in nested excluded Filament action namespaces.\nOutput: {$result['output']}");
-});
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnActionClassFixture(string $filePath): array
-{
+$runPhpStanOnActionClassFixture = function (string $filePath): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/action-classes-must-be-invokable.neon');
     $file = escapeshellarg($filePath);
-
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
     exec($command, $outputLines, $exitCode);
 
     return [
         'exitCode' => $exitCode,
         'output' => implode("\n", $outputLines),
     ];
-}
+};
+it('does not report action classes that only expose __invoke publicly', function () use ($runPhpStanOnActionClassFixture) {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionInvokableFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report valid action classes.\nOutput: {$result['output']}");
+});
+
+it('reports action classes missing __invoke and exposing execute publicly', function () use ($runPhpStanOnActionClassFixture) {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionMissingInvokeFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.actionClassMustBeInvokable');
+    expect($result['output'])->toContain('Common.actionClassHasDisallowedPublicMethod');
+});
+
+it('reports action classes that expose extra public methods', function () use ($runPhpStanOnActionClassFixture) {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionWithExtraPublicMethodFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.actionClassHasDisallowedPublicMethod');
+    expect($result['output'])->not->toContain('Common.actionClassMustBeInvokable');
+});
+
+it('does not report classes outside action namespaces', function () use ($runPhpStanOnActionClassFixture) {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/NonActionOutsideNamespaceFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report classes outside action namespaces.\nOutput: {$result['output']}");
+});
+
+it('does not report abstract action classes', function () use ($runPhpStanOnActionClassFixture) {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/AbstractActionFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract action classes.\nOutput: {$result['output']}");
+});
+
+it('reports modular action namespaces matched by wildcard include patterns', function () use ($runPhpStanOnActionClassFixture) {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ModularActionMissingInvokeFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('Common.actionClassMustBeInvokable');
+    expect($result['output'])->toContain('Common.actionClassHasDisallowedPublicMethod');
+});
+
+it('does not report classes in Filament actions namespaces excluded by default', function () use ($runPhpStanOnActionClassFixture) {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/FilamentActionExcludedFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report classes in excluded Filament action namespaces.\nOutput: {$result['output']}");
+});
+
+it('does not report classes in nested Filament actions namespaces excluded by default', function () use ($runPhpStanOnActionClassFixture) {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/NestedFilamentActionExcludedFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report classes in nested excluded Filament action namespaces.\nOutput: {$result['output']}");
+});

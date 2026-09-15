@@ -33,49 +33,41 @@
 
 </COPYRIGHT>
 */
-
-it('types closure parameter for whereHas and related methods to archived model', function () {
-    $result = runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasClosureFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods in whereHas closure to a model with CanBeArchived.\nOutput: {$result['output']}");
-});
-
-it('reports errors for archive methods in whereHas closure to non-archived model', function () {
-    $result = runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasClosureNegativeFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('withoutArchived');
-});
-
-it('types closure parameter for nested whereHas relations to archived model', function () {
-    $result = runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasNestedClosureFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods in nested whereHas closure to a model with CanBeArchived.\nOutput: {$result['output']}");
-});
-
-it('reports errors for archive methods in nested whereHas closure to non-archived model', function () {
-    $result = runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasNestedClosureNegativeFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect($result['output'])->toContain('withoutArchived');
-});
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnFixture(string $filePath): array
-{
+$runPhpStanOnFixture = function (string $filePath): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/where-has-closure-type.neon');
     $file = escapeshellarg($filePath);
-
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
     exec($command, $outputLines, $exitCode);
 
     return [
         'exitCode' => $exitCode,
         'output' => implode("\n", $outputLines),
     ];
-}
+};
+it('types closure parameter for whereHas and related methods to archived model', function () use ($runPhpStanOnFixture) {
+    $result = $runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasClosureFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods in whereHas closure to a model with CanBeArchived.\nOutput: {$result['output']}");
+});
+
+it('reports errors for archive methods in whereHas closure to non-archived model', function () use ($runPhpStanOnFixture) {
+    $result = $runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasClosureNegativeFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('withoutArchived');
+});
+
+it('types closure parameter for nested whereHas relations to archived model', function () use ($runPhpStanOnFixture) {
+    $result = $runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasNestedClosureFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods in nested whereHas closure to a model with CanBeArchived.\nOutput: {$result['output']}");
+});
+
+it('reports errors for archive methods in nested whereHas closure to non-archived model', function () use ($runPhpStanOnFixture) {
+    $result = $runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasNestedClosureNegativeFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('withoutArchived');
+});

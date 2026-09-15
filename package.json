@@ -8,6 +8,7 @@
         "esbuild": "^0.28.1",
         "prettier": "^3.0.0",
         "prettier-plugin-blade": "^2.1.21",
-        "prettier-plugin-organize-imports": "^4.1.0"
+        "prettier-plugin-organize-imports": "^4.1.0",
+        "vue-tsc": "^3.3.11"
     }
 }

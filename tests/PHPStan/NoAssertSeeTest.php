@@ -33,42 +33,34 @@
 
 </COPYRIGHT>
 */
-
-it('reports calls to the assertSee family of methods', function () {
-    $result = runPhpStanOnNoAssertSeeFixture('tests/PHPStan/Fixtures/AssertSeeFixture.php');
-
-    expect($result['exitCode'])->not->toBe(0);
-    expect(substr_count($result['output'], '"identifier":"Common.noAssertSee"'))->toBe(17);
-});
-
-it('does not report assertSeeLivewire or unrelated assertions', function () {
-    $result = runPhpStanOnNoAssertSeeFixture('tests/PHPStan/Fixtures/AssertSeeAllowedFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should not report assertSeeLivewire/assertDontSeeLivewire or unrelated assertions.\nOutput: {$result['output']}");
-});
-
-it('allows assertSee() calls silenced with a specific inline ignore', function () {
-    $result = runPhpStanOnNoAssertSeeFixture('tests/PHPStan/Fixtures/AssertSeeIgnoredFixture.php');
-
-    expect($result['exitCode'])->toBe(0, "PHPStan should respect the inline ignore for assertSee() calls.\nOutput: {$result['output']}");
-});
-
-/**
- * @return array{exitCode: int, output: string}
- */
-function runPhpStanOnNoAssertSeeFixture(string $filePath): array
-{
+$runPhpStanOnNoAssertSeeFixture = function (string $filePath): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
     $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/no-assert-see.neon');
     $file = escapeshellarg($filePath);
-
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
-
     exec($command, $outputLines, $exitCode);
 
     return [
         'exitCode' => $exitCode,
         'output' => implode("\n", $outputLines),
     ];
-}
+};
+it('reports calls to the assertSee family of methods', function () use ($runPhpStanOnNoAssertSeeFixture) {
+    $result = $runPhpStanOnNoAssertSeeFixture('tests/PHPStan/Fixtures/AssertSeeFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect(substr_count($result['output'], '"identifier":"Common.noAssertSee"'))->toBe(17);
+});
+
+it('does not report assertSeeLivewire or unrelated assertions', function () use ($runPhpStanOnNoAssertSeeFixture) {
+    $result = $runPhpStanOnNoAssertSeeFixture('tests/PHPStan/Fixtures/AssertSeeAllowedFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report assertSeeLivewire/assertDontSeeLivewire or unrelated assertions.\nOutput: {$result['output']}");
+});
+
+it('allows assertSee() calls silenced with a specific inline ignore', function () use ($runPhpStanOnNoAssertSeeFixture) {
+    $result = $runPhpStanOnNoAssertSeeFixture('tests/PHPStan/Fixtures/AssertSeeIgnoredFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should respect the inline ignore for assertSee() calls.\nOutput: {$result['output']}");
+});

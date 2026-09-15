@@ -34,55 +34,32 @@
 </COPYRIGHT>
 */
 
-use CanyonGBS\Common\Parser\Language\English;
-use CanyonGBS\Common\Parser\Mapper\SalutationMapper;
-use CanyonGBS\Common\Parser\Part\Firstname;
-use CanyonGBS\Common\Parser\Part\Salutation;
+namespace CanyonGBS\Common\Tests\Rector\ScopePestTestHelpersRector;
 
-/**
- * @return array
- */
-$getMapper = function () {
-    $english = new English();
+use Iterator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Rector\Testing\PHPUnit\AbstractRectorTestCase;
 
-    return new SalutationMapper($english->getSalutations());
-};
+final class ScopePestTestHelpersRectorTest extends AbstractRectorTestCase
+{
+    #[DataProvider('provideData')]
+    public function test(string $filePath): void
+    {
+        $this->doTestFile($filePath);
+    }
 
-dataset('provider', function () {
-    return [
-        [
-            'input' => [
-                'Mr.',
-                'Pan',
-            ],
-            'expectation' => [
-                new Salutation('Mr.', 'Mr.'),
-                'Pan',
-            ],
-        ],
-        [
-            'input' => [
-                'Mr',
-                'Peter',
-                'Pan',
-            ],
-            'expectation' => [
-                new Salutation('Mr', 'Mr.'),
-                'Peter',
-                'Pan',
-            ],
-        ],
-        [
-            'input' => [
-                'Mr',
-                new Firstname('James'),
-                'Miss',
-            ],
-            'expectation' => [
-                new Salutation('Mr', 'Mr.'),
-                new Firstname('James'),
-                'Miss',
-            ],
-        ],
-    ];
-});
+    public static function provideData(): Iterator
+    {
+        foreach (array_merge(
+            glob(__DIR__ . '/Fixtures/*.php.inc'),
+            glob(__DIR__ . '/Fixtures/*/*.php.inc'),
+        ) as $filePath) {
+            yield basename($filePath, '.php.inc') => [$filePath];
+        }
+    }
+
+    public function provideConfigFilePath(): string
+    {
+        return __DIR__ . '/config/configured_rule.php';
+    }
+}
