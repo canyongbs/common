@@ -151,19 +151,15 @@ final class ScopePestTestHelpersRector extends AbstractRector
             ], ['comments' => $function->getComments()]);
 
             $dependencies[$helperName] = $this->rewriteHelperCalls($closure, $helperNames, $helperName, $reachableSets);
+            // closures nested inside a helper's own body don't inherit its use(); wire them separately
+            $this->wireNestedClosures($closure->getStmts(), $helperNames);
             $assignments[$helperName] = new Expression(
                 new Assign(new Variable($helperName), $closure),
                 ['comments' => $function->getComments()],
             );
         }
 
-        foreach ((new NodeFinder())->findInstanceOf($statements, Closure::class) as $closure) {
-            $this->rewriteHelperCalls($closure, $helperNames);
-        }
-
-        foreach ((new NodeFinder())->findInstanceOf($statements, ArrowFunction::class) as $arrowFunction) {
-            $this->rewriteHelperCalls($arrowFunction, $helperNames);
-        }
+        $this->wireNestedClosures($statements, $helperNames);
 
         $this->rewriteHelperCallsInStatements($statements, $helperNames);
 
@@ -318,6 +314,24 @@ final class ScopePestTestHelpersRector extends AbstractRector
         }
 
         return array_values(array_unique($dependencies));
+    }
+
+    /**
+     * A closure only sees its own use() list, so a helper call inside a closure nested
+     * within another closure/helper needs its own capture, not just the outermost one.
+     *
+     * @param list<Node> $statements
+     * @param list<string> $helperNames
+     */
+    private function wireNestedClosures(array $statements, array $helperNames): void
+    {
+        foreach ((new NodeFinder())->findInstanceOf($statements, Closure::class) as $nestedClosure) {
+            $this->rewriteHelperCalls($nestedClosure, $helperNames);
+        }
+
+        foreach ((new NodeFinder())->findInstanceOf($statements, ArrowFunction::class) as $nestedArrowFunction) {
+            $this->rewriteHelperCalls($nestedArrowFunction, $helperNames);
+        }
     }
 
     /**
