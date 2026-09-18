@@ -89,3 +89,21 @@ it('does not apply guideline exclusions to skills', function () {
 
     expect(is_dir($this->skillsDir . '/managing-feature-flags'))->toBeTrue();
 });
+
+it('does not publish common-only exclusions into boost.json', function () {
+    File::put($this->app->basePath('boost.override.json'), json_encode([
+        'guidelines' => [
+            'exclude' => ['zero-downtime'],
+        ],
+        'skills' => [
+            'exclude' => ['managing-feature-flags'],
+        ],
+    ], JSON_PRETTY_PRINT));
+
+    $this->artisan('common:publish')->assertSuccessful();
+
+    $boost = json_decode(File::get($this->app->basePath('boost.json')), associative: true);
+
+    expect($boost['guidelines'])->toBeTrue()
+        ->and($boost['skills'])->toBe(['laravel-best-practices', 'pennant-development', 'tailwindcss-development']);
+});

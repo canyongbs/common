@@ -88,7 +88,7 @@ Skills are on-demand knowledge modules loaded when their `description` matches t
 
 `php artisan common:publish` (in apps: `pls exec app php artisan common:publish`) assembles each app's agent guidance:
 
-1. **Config merge (deep):** `boost.json` = base `boost.json` + app `boost.override.json`; `.vscode/mcp.json` = base `mcp.json` + app `.vscode/mcp.override.json`. Objects merge recursively; **lists are concatenated and de-duplicated** (so overrides add to arrays, they don't replace them).
+1. **Config merge (deep):** `boost.json` = base `boost.json` + app `boost.override.json`; `.vscode/mcp.json` = base `mcp.json` + app `.vscode/mcp.override.json`. Objects merge recursively; **lists are concatenated and de-duplicated** (so overrides add to arrays, they don't replace them). `boost.guidelines.exclude` and `boost.skills.exclude` are Common-only override metadata: they control what Common copies and what Boost excludes through Laravel config, but they are stripped from generated `boost.json` so Boost's own `guidelines` and `skills` keys keep their expected shapes.
 2. **AI content overlay:** for each type (`skills`, `guidelines`) it wipes the output dir, copies common's `.ai/<type>`, then copies the app's `.ai/overrides/<type>` on top. Files copied by **relative path**, so an override at the same relative path **wins**.
 3. **Scaffolds override dirs:** ensures `.ai/overrides/skills/` and `.ai/overrides/guidelines/` exist (with a `.gitkeep`).
 4. **Manages `.gitignore`:** maintains a marked block ignoring the generated artifacts (`/boost.json`, `/.vscode/mcp.json`, `/AGENTS.md`, `/.github/skills/`, `/.ai/skills/`, `/.ai/guidelines/`).
@@ -107,7 +107,7 @@ Boost then compiles the published guidelines into `AGENTS.md`. Because the publi
 
 Remember array-merge semantics: to _disable_ something you exclude it via the appropriate `*.exclude` array, since arrays merge additively rather than being replaced.
 
-Excluding **common-authored** content works the same way: `boost.skills.exclude` drops shared skills and `boost.guidelines.exclude` drops shared guidelines at publish time (`common:publish` skips copying them), not only Boost's bundled content. `CommonBoostServiceProvider` reads these arrays from the app's `boost.override.json` into `config('boost.*.exclude')`, so an app needs no extra config wiring.
+Excluding **common-authored** content works the same way: `boost.skills.exclude` drops shared skills and `boost.guidelines.exclude` drops shared guidelines at publish time (`common:publish` skips copying them), not only Boost's bundled content. `CommonBoostServiceProvider` reads these arrays from the app's `boost.override.json` into `config('boost.*.exclude')`, so an app needs no extra config wiring. `common:publish` does not write those `exclude` arrays into generated `boost.json`; the generated file must remain compatible with Laravel Boost's schema, where `skills` is a flat list of installed skill names.
 
 ## Removing bundled/third-party content across all apps
 
