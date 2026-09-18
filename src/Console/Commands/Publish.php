@@ -279,6 +279,10 @@ class Publish extends Command
             }
         }
 
+        if ($outputName === 'boost.json') {
+            $override = $this->boostJsonOverride($override);
+        }
+
         $merged = $this->deepMerge($base, $override);
 
         $this->files->ensureDirectoryExists(dirname($outputPath));
@@ -301,6 +305,28 @@ class Publish extends Command
         $decoded = json_decode($this->files->get($path), associative: true);
 
         return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * @param array<mixed> $override
+     *
+     * @return array<mixed>
+     */
+    protected function boostJsonOverride(array $override): array
+    {
+        foreach (['guidelines', 'skills'] as $key) {
+            if (! isset($override[$key]) || ! is_array($override[$key]) || array_is_list($override[$key])) {
+                continue;
+            }
+
+            unset($override[$key]['exclude']);
+
+            if ($override[$key] === []) {
+                unset($override[$key]);
+            }
+        }
+
+        return $override;
     }
 
     /**
