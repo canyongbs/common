@@ -119,12 +119,6 @@ final class ScopePestTestHelpersRector extends AbstractRector
             return null;
         }
 
-        $helperFunctions = $this->withoutRecursiveHelpers($helperFunctions);
-
-        if ($helperFunctions === []) {
-            return null;
-        }
-
         $statements = array_values(array_filter(
             $node->stmts,
             static fn (Node $statement): bool => ! $statement instanceof Function_
@@ -137,6 +131,13 @@ final class ScopePestTestHelpersRector extends AbstractRector
         }
 
         $helperNames = array_keys($helperFunctions);
+        $rawCalls = [];
+
+        foreach ($helperFunctions as $helperName => $function) {
+            $rawCalls[$helperName] = $this->findHelperCalls($function, $helperNames);
+        }
+
+        $reachableSets = $this->computeReachableSets($rawCalls);
         $assignments = [];
         $dependencies = [];
 
@@ -149,20 +150,16 @@ final class ScopePestTestHelpersRector extends AbstractRector
                 'attrGroups' => $function->attrGroups,
             ], ['comments' => $function->getComments()]);
 
-            $dependencies[$helperName] = $this->rewriteHelperCalls($closure, $helperNames, $helperName);
+            $dependencies[$helperName] = $this->rewriteHelperCalls($closure, $helperNames, $helperName, $reachableSets);
+            // closures nested inside a helper's own body don't inherit its use(); wire them separately
+            $this->wireNestedClosures($closure->getStmts(), $helperNames);
             $assignments[$helperName] = new Expression(
                 new Assign(new Variable($helperName), $closure),
                 ['comments' => $function->getComments()],
             );
         }
 
-        foreach ((new NodeFinder())->findInstanceOf($statements, Closure::class) as $closure) {
-            $this->rewriteHelperCalls($closure, $helperNames);
-        }
-
-        foreach ((new NodeFinder())->findInstanceOf($statements, ArrowFunction::class) as $arrowFunction) {
-            $this->rewriteHelperCalls($arrowFunction, $helperNames);
-        }
+        $this->wireNestedClosures($statements, $helperNames);
 
         $this->rewriteHelperCallsInStatements($statements, $helperNames);
 
@@ -206,74 +203,56 @@ final class ScopePestTestHelpersRector extends AbstractRector
     }
 
     /**
-     * @param array<string, Function_> $helperFunctions
+     * @param array<string, list<string>> $edges
      *
-     * @return array<string, Function_>
+     * @return array<string, array<string, true>>
      */
-    private function withoutRecursiveHelpers(array $helperFunctions): array
+    private function computeReachableSets(array $edges): array
     {
-        $dependencies = [];
+        $reachable = [];
 
-        foreach ($helperFunctions as $helperName => $function) {
-            $dependencies[$helperName] = $this->findHelperCalls($function, array_keys($helperFunctions));
+        foreach (array_keys($edges) as $name) {
+            $reachable[$name] = $this->reachableFrom($name, $edges);
         }
 
-        $recursiveHelpers = [];
-
-        foreach (array_keys($helperFunctions) as $helperName) {
-            if ($this->hasDependencyPath($helperName, $helperName, $dependencies, [])) {
-                $recursiveHelpers[$helperName] = true;
-            }
-        }
-
-        foreach (array_keys($recursiveHelpers) as $helperName) {
-            $this->markDependenciesAsUntransformable($helperName, $dependencies, $recursiveHelpers);
-        }
-
-        return array_filter(
-            $helperFunctions,
-            static fn (string $helperName): bool => ! isset($recursiveHelpers[$helperName]),
-            ARRAY_FILTER_USE_KEY,
-        );
+        return $reachable;
     }
 
     /**
-     * @param array<string, list<string>> $dependencies
-     * @param array<string, true> $visited
+     * @param array<string, list<string>> $edges
+     *
+     * @return array<string, true>
      */
-    private function hasDependencyPath(string $origin, string $current, array $dependencies, array $visited): bool
+    private function reachableFrom(string $start, array $edges): array
     {
-        foreach ($dependencies[$current] ?? [] as $dependency) {
-            if ($dependency === $origin) {
-                return true;
-            }
+        $visited = [];
+        $queue = $edges[$start] ?? [];
 
-            if (! isset($visited[$dependency])) {
-                $visited[$dependency] = true;
+        while ($queue !== []) {
+            $name = array_pop($queue);
 
-                if ($this->hasDependencyPath($origin, $dependency, $dependencies, $visited)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param array<string, list<string>> $dependencies
-     * @param array<string, true> $untransformableHelpers
-     */
-    private function markDependenciesAsUntransformable(string $helperName, array $dependencies, array &$untransformableHelpers): void
-    {
-        foreach ($dependencies[$helperName] ?? [] as $dependency) {
-            if (isset($untransformableHelpers[$dependency])) {
+            if (isset($visited[$name])) {
                 continue;
             }
 
-            $untransformableHelpers[$dependency] = true;
-            $this->markDependenciesAsUntransformable($dependency, $dependencies, $untransformableHelpers);
+            $visited[$name] = true;
+
+            foreach ($edges[$name] ?? [] as $next) {
+                $queue[] = $next;
+            }
         }
+
+        return $visited;
+    }
+
+    /** @param array<string, array<string, true>> $reachableSets */
+    private function isSameCycle(string $first, string $second, array $reachableSets): bool
+    {
+        if ($first === $second) {
+            return isset($reachableSets[$first][$first]);
+        }
+
+        return isset($reachableSets[$first][$second]) && isset($reachableSets[$second][$first]);
     }
 
     /**
@@ -301,10 +280,11 @@ final class ScopePestTestHelpersRector extends AbstractRector
 
     /**
      * @param list<string> $helperNames
+     * @param array<string, array<string, true>> $reachableSets
      *
      * @return list<string>
      */
-    private function rewriteHelperCalls(Closure | ArrowFunction $closure, array $helperNames, ?string $currentHelper = null): array
+    private function rewriteHelperCalls(Closure | ArrowFunction $closure, array $helperNames, ?string $currentHelper = null, array $reachableSets = []): array
     {
         $dependencies = [];
 
@@ -319,17 +299,39 @@ final class ScopePestTestHelpersRector extends AbstractRector
 
                 $call->name = new Variable($helperName);
 
-                if ($helperName !== $currentHelper) {
-                    $dependencies[] = $helperName;
+                // a cyclic dependency needs a by-reference capture, since the target variable
+                // is not yet assigned when a same-cycle closure literal is being built
+                $byReference = $currentHelper !== null && $this->isSameCycle($currentHelper, $helperName, $reachableSets);
 
-                    if ($closure instanceof Closure) {
-                        $this->addClosureUse($closure, $helperName);
-                    }
+                if ($closure instanceof Closure && ($byReference || $helperName !== $currentHelper)) {
+                    $this->addClosureUse($closure, $helperName, $byReference);
+                }
+
+                if (! $byReference && $helperName !== $currentHelper) {
+                    $dependencies[] = $helperName;
                 }
             }
         }
 
         return array_values(array_unique($dependencies));
+    }
+
+    /**
+     * A closure only sees its own use() list, so a helper call inside a closure nested
+     * within another closure/helper needs its own capture, not just the outermost one.
+     *
+     * @param list<Node> $statements
+     * @param list<string> $helperNames
+     */
+    private function wireNestedClosures(array $statements, array $helperNames): void
+    {
+        foreach ((new NodeFinder())->findInstanceOf($statements, Closure::class) as $nestedClosure) {
+            $this->rewriteHelperCalls($nestedClosure, $helperNames);
+        }
+
+        foreach ((new NodeFinder())->findInstanceOf($statements, ArrowFunction::class) as $nestedArrowFunction) {
+            $this->rewriteHelperCalls($nestedArrowFunction, $helperNames);
+        }
     }
 
     /**
@@ -408,7 +410,7 @@ final class ScopePestTestHelpersRector extends AbstractRector
         return $sorted;
     }
 
-    private function addClosureUse(Closure $closure, string $variableName): void
+    private function addClosureUse(Closure $closure, string $variableName, bool $byReference = false): void
     {
         foreach ($closure->uses as $use) {
             if ($use->var->name === $variableName) {
@@ -416,6 +418,6 @@ final class ScopePestTestHelpersRector extends AbstractRector
             }
         }
 
-        $closure->uses[] = new Node\ClosureUse(new Variable($variableName));
+        $closure->uses[] = new Node\ClosureUse(new Variable($variableName), $byReference);
     }
 }

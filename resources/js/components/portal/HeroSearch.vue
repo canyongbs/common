@@ -32,9 +32,9 @@
 </COPYRIGHT>
 -->
 <script setup>
-    import BaseBadge from '../BaseBadge.vue';
     import { MagnifyingGlassIcon, TagIcon } from '@heroicons/vue/20/solid';
     import { ref } from 'vue';
+    import BaseBadge from '../BaseBadge.vue';
 
     defineProps({
         modelValue: {
