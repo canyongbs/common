@@ -40,6 +40,7 @@ use CanyonGBS\Common\Exceptions\NonUuidPermissionIdFound;
 use Closure;
 use Exception;
 use Filament\Forms\Components\Field;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -54,6 +55,9 @@ class PermissionsMatrix extends Field
     protected string | Closure $guard;
 
     protected string | Closure $permissionGroupModel;
+
+    /** @var array<string> | Closure $hiddenPermissionGroups */
+    protected array | Closure $hiddenPermissionGroups = [];
 
     protected function setUp(): void
     {
@@ -137,7 +141,13 @@ class PermissionsMatrix extends Field
      */
     public function getAvailablePermissions(): array
     {
+        $hiddenPermissionGroups = $this->getHiddenPermissionGroups();
+
         $permissions = $this->getPermissionGroupModel()::query()
+            ->when(
+                filled($hiddenPermissionGroups),
+                fn (Builder $query) => $query->whereNotIn('name', $hiddenPermissionGroups),
+            )
             ->with(['permissions' => fn (HasMany $query) => $query->where('guard_name', $this->getGuard())])
             ->get()
             ->reduce(function (array $carry, Model $permissionGroup): array {
@@ -218,5 +228,26 @@ class PermissionsMatrix extends Field
     public function getPermissionGroupModel(): string
     {
         return $this->evaluate($this->permissionGroupModel);
+    }
+
+    /**
+     * Permission groups, by name, to leave out of the matrix. Permissions the record
+     * already holds in these groups are kept when it is saved.
+     *
+     * @param array<string> | Closure $permissionGroups
+     */
+    public function hiddenPermissionGroups(array | Closure $permissionGroups): static
+    {
+        $this->hiddenPermissionGroups = $permissionGroups;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getHiddenPermissionGroups(): array
+    {
+        return $this->evaluate($this->hiddenPermissionGroups);
     }
 }
