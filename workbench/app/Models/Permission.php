@@ -44,7 +44,11 @@ class Permission extends Model
 {
     use HasUuids;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'name',
+        'guard_name',
+        'group_id',
+    ];
 
     /**
      * @return BelongsTo<PermissionGroup, $this>

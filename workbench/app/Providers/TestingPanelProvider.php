@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\Gate;
 use Workbench\App\Filament\Resources\Articles\ArticleResource;
 use Workbench\App\Filament\Resources\Attachments\AttachmentResource;
 use Workbench\App\Filament\Resources\Images\ImageResource;
+use Workbench\App\Filament\Resources\PermissionsMatrixRoles\PermissionsMatrixRoleResource;
 use Workbench\App\Filament\Resources\Projects\ProjectResource;
 use Workbench\App\Filament\Resources\Tags\TagResource;
 use Workbench\App\Filament\Resources\Tasks\TaskResource;
@@ -82,6 +83,7 @@ class TestingPanelProvider extends PanelProvider
                 ArticleResource::class,
                 AttachmentResource::class,
                 ImageResource::class,
+                PermissionsMatrixRoleResource::class,
                 ProjectResource::class,
                 TagResource::class,
                 TaskResource::class,

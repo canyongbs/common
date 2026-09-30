@@ -36,31 +36,51 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
     public function up(): void
     {
-        Schema::create('permission_groups', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('name')->unique();
-            $table->timestamps();
-        });
+        DB::transaction(function (): void {
+            Schema::create('permission_groups', function (Blueprint $table): void {
+                $table->uuid('id')->primary();
+                $table->string('name')->unique();
+                $table->timestamps();
+            });
 
-        Schema::create('permissions', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('name');
-            $table->string('guard_name');
-            $table->foreignUuid('group_id')->nullable()->constrained('permission_groups')->nullOnDelete();
-            $table->timestamps();
+            Schema::create('permissions', function (Blueprint $table): void {
+                $table->uuid('id')->primary();
+                $table->string('name');
+                $table->string('guard_name');
+                $table->foreignUuid('group_id')->nullable()->constrained('permission_groups')->nullOnDelete();
+                $table->timestamps();
 
-            $table->unique(['name', 'guard_name']);
+                $table->unique(['name', 'guard_name']);
+            });
+
+            Schema::create('permissions_matrix_roles', function (Blueprint $table): void {
+                $table->uuid('id')->primary();
+                $table->string('name');
+                $table->timestamps();
+            });
+
+            Schema::create('permissions_matrix_role_permission', function (Blueprint $table): void {
+                $table->foreignUuid('permissions_matrix_role_id')->constrained('permissions_matrix_roles')->cascadeOnDelete();
+                $table->foreignUuid('permission_id')->constrained('permissions')->cascadeOnDelete();
+
+                $table->primary(['permissions_matrix_role_id', 'permission_id']);
+            });
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('permissions');
-        Schema::dropIfExists('permission_groups');
+        DB::transaction(function (): void {
+            Schema::dropIfExists('permissions_matrix_role_permission');
+            Schema::dropIfExists('permissions_matrix_roles');
+            Schema::dropIfExists('permissions');
+            Schema::dropIfExists('permission_groups');
+        });
     }
 };

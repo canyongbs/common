@@ -34,25 +34,25 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\App\Models;
+namespace Workbench\App\Filament\Resources\PermissionsMatrixRoles\Pages;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use CanyonGBS\Common\Filament\Forms\Components\PermissionsMatrix;
+use Filament\Resources\Pages\EditRecord;
+use Filament\Schemas\Schema;
+use Workbench\App\Filament\Resources\PermissionsMatrixRoles\PermissionsMatrixRoleResource;
+use Workbench\App\Models\PermissionGroup;
 
-class PermissionGroup extends Model
+class EditPermissionsMatrixRole extends EditRecord
 {
-    use HasUuids;
+    protected static string $resource = PermissionsMatrixRoleResource::class;
 
-    protected $fillable = [
-        'name',
-    ];
-
-    /**
-     * @return HasMany<Permission, $this>
-     */
-    public function permissions(): HasMany
+    public function form(Schema $schema): Schema
     {
-        return $this->hasMany(Permission::class, 'group_id');
+        return $schema->components([
+            PermissionsMatrix::make('permissions')
+                ->guard('web')
+                ->permissionGroupModel(PermissionGroup::class)
+                ->hiddenPermissionGroups(['Task']),
+        ]);
     }
 }

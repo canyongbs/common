@@ -34,25 +34,12 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\App\Models;
+namespace Workbench\App\Filament\Resources\PermissionsMatrixRoles\Pages;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Filament\Resources\Pages\ListRecords;
+use Workbench\App\Filament\Resources\PermissionsMatrixRoles\PermissionsMatrixRoleResource;
 
-class PermissionGroup extends Model
+class ListPermissionsMatrixRoles extends ListRecords
 {
-    use HasUuids;
-
-    protected $fillable = [
-        'name',
-    ];
-
-    /**
-     * @return HasMany<Permission, $this>
-     */
-    public function permissions(): HasMany
-    {
-        return $this->hasMany(Permission::class, 'group_id');
-    }
+    protected static string $resource = PermissionsMatrixRoleResource::class;
 }

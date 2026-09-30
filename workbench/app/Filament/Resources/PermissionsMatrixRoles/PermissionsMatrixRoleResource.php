@@ -34,25 +34,27 @@
 </COPYRIGHT>
 */
 
-namespace Workbench\App\Models;
+namespace Workbench\App\Filament\Resources\PermissionsMatrixRoles;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Filament\Resources\Resource;
+use Workbench\App\Filament\Resources\PermissionsMatrixRoles\Pages\EditPermissionsMatrixRole;
+use Workbench\App\Filament\Resources\PermissionsMatrixRoles\Pages\ListPermissionsMatrixRoles;
+use Workbench\App\Models\PermissionsMatrixRole;
 
-class PermissionGroup extends Model
+/**
+ * @extends Resource<PermissionsMatrixRole>
+ */
+class PermissionsMatrixRoleResource extends Resource
 {
-    use HasUuids;
+    protected static ?string $model = PermissionsMatrixRole::class;
 
-    protected $fillable = [
-        'name',
-    ];
+    protected static ?string $recordTitleAttribute = 'name';
 
-    /**
-     * @return HasMany<Permission, $this>
-     */
-    public function permissions(): HasMany
+    public static function getPages(): array
     {
-        return $this->hasMany(Permission::class, 'group_id');
+        return [
+            'index' => ListPermissionsMatrixRoles::route('/'),
+            'edit' => EditPermissionsMatrixRole::route('/{record}/edit'),
+        ];
     }
 }

@@ -38,9 +38,9 @@ namespace Workbench\App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class PermissionGroup extends Model
+class PermissionsMatrixRole extends Model
 {
     use HasUuids;
 
@@ -49,10 +49,15 @@ class PermissionGroup extends Model
     ];
 
     /**
-     * @return HasMany<Permission, $this>
+     * @return BelongsToMany<Permission, $this>
      */
-    public function permissions(): HasMany
+    public function permissions(): BelongsToMany
     {
-        return $this->hasMany(Permission::class, 'group_id');
+        return $this->belongsToMany(Permission::class, 'permissions_matrix_role_permission');
     }
+
+    /**
+     * Called by `PermissionsMatrix` after it saves permissions. This workbench role has no permission cache to clear.
+     */
+    public function forgetCachedPermissions(): void {}
 }
