@@ -225,19 +225,19 @@ it('can create a user', function () {
 
 Common helpers to use consistently:
 
-| Helper                                                                                                      | Purpose                                                     |
-| ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Helper                                                                                                                  | Purpose                                                     |
+| ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | `Livewire::test(Page::class)` / `Livewire::test(Manager::class, ['ownerRecord' => $model, 'pageClass' => Edit::class])` | Instantiate the component                                   |
-| `fillForm($data)` / `assertSchemaStateSet($data)`                                                           | Set / assert form or infolist state                         |
-| `call('create' \| 'save' \| 'delete')`                                                                      | Invoke the page action                                      |
-| `assertHasFormErrors($errors)` / `assertHasNoFormErrors()`                                                  | Validation                                                  |
-| `assertCanSeeTableRecords()` / `assertCanNotSeeTableRecords()`                                              | Table contents                                              |
-| `sortTable()` / `searchTable()`                                                                             | Table sort / search behaviour                               |
-| `assertTableColumnVisible()` / `assertTableColumnHidden()`                                                  | Assert conditional column visibility (not static existence) |
-| `assertTableColumnStateSet($column, $state, record: $record)` / `assertTableColumnFormattedStateSet(...)`   | Assert a column's resolved / formatted cell state           |
-| `assertActionVisible()` / `assertActionHidden()`                                                            | Action visibility                                           |
-| `callAction(TestAction::make(ActionClass::class)->table())` / `->bulk()`                                    | Table & bulk actions                                        |
-| `selectTableRecords([$id])`                                                                                 | Select rows for bulk actions                                |
+| `fillForm($data)` / `assertSchemaStateSet($data)`                                                                       | Set / assert form or infolist state                         |
+| `call('create' \| 'save' \| 'delete')`                                                                                  | Invoke the page action                                      |
+| `assertHasFormErrors($errors)` / `assertHasNoFormErrors()`                                                              | Validation                                                  |
+| `assertCanSeeTableRecords()` / `assertCanNotSeeTableRecords()`                                                          | Table contents                                              |
+| `sortTable()` / `searchTable()`                                                                                         | Table sort / search behaviour                               |
+| `assertTableColumnVisible()` / `assertTableColumnHidden()`                                                              | Assert conditional column visibility (not static existence) |
+| `assertTableColumnStateSet($column, $state, record: $record)` / `assertTableColumnFormattedStateSet(...)`               | Assert a column's resolved / formatted cell state           |
+| `assertActionVisible()` / `assertActionHidden()`                                                                        | Action visibility                                           |
+| `callAction(TestAction::make(ActionClass::class)->table())` / `->bulk()`                                                | Table & bulk actions                                        |
+| `selectTableRecords([$id])`                                                                                             | Select rows for bulk actions                                |
 
 - Render checks use HTTP: `$this->get(UserResource::getUrl('create'))->assertSuccessful();`.
 - Relation managers are instantiated with the owner record and page class — `Livewire::test(RolesRelationManager::class, ['ownerRecord' => $user, 'pageClass' => EditUser::class])` — and actions are driven with `callAction(TestAction::make(AttachAction::class)->table())` (add `->bulk()` for bulk actions).
