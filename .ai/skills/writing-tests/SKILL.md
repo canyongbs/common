@@ -132,7 +132,9 @@ expect($record->user_id)->toBe($user->getKey())
 | `assertForbidden()`     | `assertStatus(403)` |
 | `assertUnprocessable()` | `assertStatus(422)` |
 
-Import Pest Laravel functions where used, e.g. `use function Pest\Laravel\{actingAs, postJson, artisan};` and `use function Pest\Livewire\livewire;`.
+Import Pest Laravel functions where used, e.g. `use function Pest\Laravel\{actingAs, postJson, artisan};`.
+
+Instantiate Livewire components (including Filament pages, relation managers and widgets) with `Livewire::test()` and `use Livewire\Livewire;`. The `livewire()` helper from `pestphp/pest-plugin-livewire` (`use function Pest\Livewire\livewire;`) is **deprecated** and being removed from all apps — never use it in new or changed tests; when editing a file that still uses it, convert that file to `Livewire::test()`.
 
 For existence checks (e.g. delete / bulk-action tests) use `assertModelExists($model)` / `assertModelMissing($model)`; use `assertDatabaseHas(...)` / `assertDatabaseMissing(...)` when asserting specific column values changed by a side effect.
 
@@ -144,7 +146,7 @@ Use datasets for repetitive cases — especially validation. Pass a labelled ass
 it('validates the inputs', function (CreateUserRequestFactory $data, array $errors) {
     $request = CreateUserRequestFactory::new($data)->create();
 
-    livewire(CreateUser::class)
+    Livewire::test(CreateUser::class)
         ->fillForm($request)
         ->call('create')
         ->assertHasFormErrors($errors);
@@ -199,7 +201,7 @@ The suite runs your migrations (`RefreshDatabase`), and, most of the time, the a
 
 ## Filament Resource Testing
 
-Instantiate the page/relation-manager component with `livewire()` and drive it with Filament's testing helpers.
+Instantiate the page/relation-manager component with `Livewire::test()` and drive it with Filament's testing helpers.
 
 ```php
 it('can create a user', function () {
@@ -207,7 +209,7 @@ it('can create a user', function () {
 
     $request = CreateUserRequestFactory::new()->create();
 
-    livewire(CreateUser::class)
+    Livewire::test(CreateUser::class)
         ->fillForm($request)
         ->call('create')
         ->assertNotified()
@@ -225,7 +227,7 @@ Common helpers to use consistently:
 
 | Helper                                                                                                      | Purpose                                                     |
 | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `livewire(Page::class)` / `livewire(Manager::class, ['ownerRecord' => $model, 'pageClass' => Edit::class])` | Instantiate the component                                   |
+| `Livewire::test(Page::class)` / `Livewire::test(Manager::class, ['ownerRecord' => $model, 'pageClass' => Edit::class])` | Instantiate the component                                   |
 | `fillForm($data)` / `assertSchemaStateSet($data)`                                                           | Set / assert form or infolist state                         |
 | `call('create' \| 'save' \| 'delete')`                                                                      | Invoke the page action                                      |
 | `assertHasFormErrors($errors)` / `assertHasNoFormErrors()`                                                  | Validation                                                  |
@@ -238,7 +240,7 @@ Common helpers to use consistently:
 | `selectTableRecords([$id])`                                                                                 | Select rows for bulk actions                                |
 
 - Render checks use HTTP: `$this->get(UserResource::getUrl('create'))->assertSuccessful();`.
-- Relation managers are instantiated with the owner record and page class — `livewire(RolesRelationManager::class, ['ownerRecord' => $user, 'pageClass' => EditUser::class])` — and actions are driven with `callAction(TestAction::make(AttachAction::class)->table())` (add `->bulk()` for bulk actions).
+- Relation managers are instantiated with the owner record and page class — `Livewire::test(RolesRelationManager::class, ['ownerRecord' => $user, 'pageClass' => EditUser::class])` — and actions are driven with `callAction(TestAction::make(AttachAction::class)->table())` (add `->bulk()` for bulk actions).
 
 ### Asserting computed state
 
@@ -291,7 +293,7 @@ Place it last in the file. At minimum cover:
 
 - Required: render; lists the related records scoped to the owner; does not list other owners' records; `can sort by column`; `can search by column`; `authorization`.
 - When applicable: `describe('filters')`; `describe('deletion')`; create / edit related records; custom column state (`assertTableColumnStateSet` / `assertTableColumnFormattedStateSet`); conditional column visibility.
-- Instantiate with the owner record: `livewire(ManageAdapters::class, ['record' => $owner->getRouteKey()])`.
+- Instantiate with the owner record: `Livewire::test(ManageAdapters::class, ['record' => $owner->getRouteKey()])`.
 
 **Custom / settings form page (`Manage<Thing>Test`, a custom page with a form)**
 
@@ -302,7 +304,7 @@ Place it last in the file. At minimum cover:
 
 - Required: render; lists the expected / scoped records; `authorization` when the widget is access-gated.
 - When applicable: custom column state / formatting (`assertTableColumnStateSet` / `assertTableColumnFormattedStateSet`) whenever a closure resolves the value; `describe('filters')`; `can sort by column` / `can search by column` when enabled; conditional visibility via the widget's `canView()` closure.
-- Instantiate with `livewire(<Name>Widget::class)`; pass `['record' => $model]` for a record-scoped widget.
+- Instantiate with `Livewire::test(<Name>Widget::class)`; pass `['record' => $model]` for a record-scoped widget.
 
 **Stats-overview & chart widgets (`<Name>WidgetTest`)**
 
