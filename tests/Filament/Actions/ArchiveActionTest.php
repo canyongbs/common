@@ -75,7 +75,7 @@ it('looks like an archive action when the model does not define `isUsed()`', fun
 
     Livewire::test(EditProject::class, ['record' => $project->getRouteKey()])
         ->assertActionHasLabel('archive', 'Archive')
-        ->assertActionHasColor('archive', 'warning')
+        ->assertActionHasColor('archive', 'primary')
         ->assertActionExists('archive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Archive Apollo')
         ->assertActionExists('archive', fn (Action $action): bool => $action->getModalSubmitActionLabel() === 'Archive')
         ->assertActionExists('archive', fn (Action $action): bool => $action->getModalIcon() === Heroicon::OutlinedArchiveBox)
@@ -142,7 +142,7 @@ it('looks like an archive action when the record is used', function () {
 
     Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
         ->assertActionHasLabel('archive', 'Archive')
-        ->assertActionHasColor('archive', 'warning')
+        ->assertActionHasColor('archive', 'primary')
         ->assertActionExists('archive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Archive Signals');
 });
 
