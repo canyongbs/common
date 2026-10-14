@@ -14,7 +14,7 @@ concurrency:
 jobs:
     enforce-copyright:
         name: Enforce Copyright
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions:
             contents: read
@@ -87,7 +87,7 @@ jobs:
 
     fix-code-style:
         name: Fix Code Style
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions:
             contents: read
@@ -188,7 +188,7 @@ jobs:
 
     lint:
         name: Lint
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions:
             contents: read
@@ -231,7 +231,7 @@ jobs:
 
     test:
         name: Test (PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel }}, Filament ${{ matrix.filament }})
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions:
             contents: read
@@ -297,7 +297,7 @@ jobs:
 
     request-copilot-review:
         name: Request Copilot Review
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions: {}
 
