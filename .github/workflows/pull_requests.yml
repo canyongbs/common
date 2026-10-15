@@ -14,7 +14,7 @@ concurrency:
 jobs:
     enforce-copyright:
         name: Enforce Copyright
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions:
             contents: read
@@ -87,7 +87,7 @@ jobs:
 
     fix-code-style:
         name: Fix Code Style
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions:
             contents: read
@@ -188,14 +188,12 @@ jobs:
 
     lint:
         name: Lint
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions:
             contents: read
 
         timeout-minutes: 15
-
-        needs: [enforce-copyright, fix-code-style]
 
         steps:
             - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
@@ -233,14 +231,12 @@ jobs:
 
     test:
         name: Test (PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel }}, Filament ${{ matrix.filament }})
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions:
             contents: read
 
         timeout-minutes: 15
-
-        needs: [enforce-copyright, fix-code-style]
 
         strategy:
             fail-fast: false
@@ -301,14 +297,14 @@ jobs:
 
     request-copilot-review:
         name: Request Copilot Review
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
 
         permissions: {}
 
         # Only request a review once the code is known to be green, so Copilot never reviews
         # code that is failing tests or linting. Automatic review must be disabled in the repo
         # settings so this gated job is the only path that requests Copilot.
-        needs: [lint, test]
+        needs: [enforce-copyright, fix-code-style, lint, test]
 
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]' }}
 
