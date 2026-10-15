@@ -97,7 +97,7 @@ jobs:
         needs: [enforce-copyright]
 
         steps:
-            - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+            - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
               with:
                   php-version: '8.4'
                   coverage: none
@@ -127,7 +127,7 @@ jobs:
             - name: Setup Dependencies
               uses: ./.github/actions/composer-dependency-setup # zizmor: ignore[self-repository]
 
-            - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+            - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
                   node-version-file: '.nvmrc'
                   cache: 'npm'
@@ -196,7 +196,7 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+            - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
               with:
                   php-version: '8.4'
                   coverage: none
@@ -262,7 +262,7 @@ jobs:
                       filament-constraint: '^4.11.6'
 
         steps:
-            - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+            - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
               with:
                   php-version: ${{ matrix.php }}
                   coverage: none
@@ -286,7 +286,7 @@ jobs:
                       --with="filament/filament:${FILAMENT_CONSTRAINT}" \
                       --prefer-dist --no-ansi --no-interaction --no-progress --optimize-autoloader
 
-            - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+            - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
                   node-version-file: '.nvmrc'
                   cache: 'npm'
