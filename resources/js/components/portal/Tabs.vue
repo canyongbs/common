@@ -32,6 +32,8 @@
 </COPYRIGHT>
 -->
 <script setup>
+    import BaseBadge from '../BaseBadge.vue';
+
     defineProps({
         tabs: {
             type: Array,
@@ -45,6 +47,14 @@
             type: Boolean,
             default: false,
         },
+        label: {
+            type: String,
+            default: null,
+        },
+        idPrefix: {
+            type: String,
+            default: null,
+        },
     });
 
     const emit = defineEmits(['update:modelValue']);
@@ -56,15 +66,21 @@
         :class="
             contained
                 ? 'border-b border-gray-200 px-3 py-2.5'
-                : 'rounded-xl bg-white p-2 shadow-sm ring-1 ring-gray-950/5'
+                : 'rounded-lg bg-white p-2 shadow-sm ring-1 ring-gray-950/5'
         "
+        role="tablist"
+        :aria-label="label ?? undefined"
     >
         <button
             v-for="tab in tabs"
             :key="tab.value"
             type="button"
+            role="tab"
+            :id="idPrefix ? `${idPrefix}-tab-${tab.value}` : undefined"
+            :aria-selected="modelValue === tab.value"
+            :aria-controls="idPrefix ? `${idPrefix}-panel-${tab.value}` : undefined"
             @click="emit('update:modelValue', tab.value)"
-            class="flex items-center justify-center gap-x-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition duration-75 outline-none"
+            class="flex items-center justify-center gap-x-2 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap transition duration-75 outline-none"
             :class="modelValue === tab.value ? 'bg-gray-50' : 'hover:bg-gray-50 focus-visible:bg-gray-50'"
         >
             <component
@@ -78,6 +94,13 @@
                 :class="modelValue === tab.value ? 'text-brand-700' : 'text-gray-500'"
                 >{{ tab.label }}</span
             >
+            <BaseBadge
+                v-if="tab.badge !== undefined && tab.badge !== null"
+                :color="modelValue === tab.value ? 'primary' : 'gray'"
+                size="sm"
+            >
+                {{ tab.badge }}
+            </BaseBadge>
         </button>
     </nav>
 </template>

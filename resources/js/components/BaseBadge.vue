@@ -40,98 +40,142 @@
         primary: {
             base: 'bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-600/10',
             hover: 'hover:bg-brand-100 hover:text-brand-800',
+            dot: 'bg-brand-500',
         },
         danger: {
             base: 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/10',
             hover: 'hover:bg-red-100 hover:text-red-800',
+            dot: 'bg-red-500',
         },
         success: {
             base: 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/10',
             hover: 'hover:bg-green-100 hover:text-green-800',
+            dot: 'bg-green-500',
         },
         warning: {
             base: 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/10',
             hover: 'hover:bg-amber-100 hover:text-amber-800',
+            dot: 'bg-amber-500',
         },
         info: {
             base: 'bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-600/10',
             hover: 'hover:bg-sky-100 hover:text-sky-800',
+            dot: 'bg-sky-500',
         },
         gray: {
             base: 'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-600/10',
             hover: 'hover:bg-gray-100 hover:text-gray-700',
+            dot: 'bg-gray-400',
         },
         'transparent-white': {
             base: 'bg-white/15 text-white/90 ring-1 ring-inset ring-white/25',
             hover: 'hover:bg-white/25 hover:text-white hover:ring-white/40',
+            dot: 'bg-white/80',
         },
         blue: {
             base: 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/10',
             hover: 'hover:bg-blue-100 hover:text-blue-800',
+            dot: 'bg-blue-500',
         },
         green: {
             base: 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/10',
             hover: 'hover:bg-green-100 hover:text-green-800',
+            dot: 'bg-green-500',
         },
         red: {
             base: 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/10',
             hover: 'hover:bg-red-100 hover:text-red-800',
+            dot: 'bg-red-500',
         },
         orange: {
             base: 'bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/10',
             hover: 'hover:bg-orange-100 hover:text-orange-800',
+            dot: 'bg-orange-500',
         },
         amber: {
             base: 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/10',
             hover: 'hover:bg-amber-100 hover:text-amber-800',
+            dot: 'bg-amber-500',
         },
         yellow: {
             base: 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/10',
             hover: 'hover:bg-yellow-100 hover:text-yellow-800',
+            dot: 'bg-yellow-400',
         },
         lime: {
             base: 'bg-lime-50 text-lime-700 ring-1 ring-inset ring-lime-600/10',
             hover: 'hover:bg-lime-100 hover:text-lime-800',
+            dot: 'bg-lime-500',
         },
         emerald: {
             base: 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/10',
             hover: 'hover:bg-emerald-100 hover:text-emerald-800',
+            dot: 'bg-emerald-500',
         },
         teal: {
             base: 'bg-teal-50 text-teal-700 ring-1 ring-inset ring-teal-600/10',
             hover: 'hover:bg-teal-100 hover:text-teal-800',
+            dot: 'bg-teal-500',
         },
         cyan: {
             base: 'bg-cyan-50 text-cyan-700 ring-1 ring-inset ring-cyan-600/10',
             hover: 'hover:bg-cyan-100 hover:text-cyan-800',
+            dot: 'bg-cyan-500',
         },
         sky: {
             base: 'bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-600/10',
             hover: 'hover:bg-sky-100 hover:text-sky-800',
+            dot: 'bg-sky-500',
         },
         indigo: {
             base: 'bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/10',
             hover: 'hover:bg-indigo-100 hover:text-indigo-800',
+            dot: 'bg-indigo-500',
         },
         violet: {
             base: 'bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-600/10',
             hover: 'hover:bg-violet-100 hover:text-violet-800',
+            dot: 'bg-violet-500',
         },
         purple: {
             base: 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/10',
             hover: 'hover:bg-purple-100 hover:text-purple-800',
+            dot: 'bg-purple-500',
         },
         fuchsia: {
             base: 'bg-fuchsia-50 text-fuchsia-700 ring-1 ring-inset ring-fuchsia-600/10',
             hover: 'hover:bg-fuchsia-100 hover:text-fuchsia-800',
+            dot: 'bg-fuchsia-500',
         },
         pink: {
             base: 'bg-pink-50 text-pink-700 ring-1 ring-inset ring-pink-600/10',
             hover: 'hover:bg-pink-100 hover:text-pink-800',
+            dot: 'bg-pink-500',
         },
         rose: {
             base: 'bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/10',
             hover: 'hover:bg-rose-100 hover:text-rose-800',
+            dot: 'bg-rose-500',
+        },
+        black: {
+            base: 'bg-gray-100 text-gray-950 ring-1 ring-inset ring-gray-950/15',
+            hover: 'hover:bg-gray-200 hover:text-gray-950',
+            dot: 'bg-gray-950',
+        },
+        'light-gray': {
+            base: 'bg-gray-50 text-gray-500 ring-1 ring-inset ring-gray-400/15',
+            hover: 'hover:bg-gray-100 hover:text-gray-600',
+            dot: 'bg-gray-300',
+        },
+        'dark-gray': {
+            base: 'bg-gray-100 text-gray-800 ring-1 ring-inset ring-gray-700/15',
+            hover: 'hover:bg-gray-200 hover:text-gray-900',
+            dot: 'bg-gray-700',
+        },
+        navy: {
+            base: 'bg-blue-50 text-blue-900 ring-1 ring-inset ring-blue-900/15',
+            hover: 'hover:bg-blue-100 hover:text-blue-950',
+            dot: 'bg-blue-900',
         },
     };
 
@@ -191,6 +235,10 @@
             type: Boolean,
             default: false,
         },
+        dot: {
+            type: Boolean,
+            default: false,
+        },
     });
 
     const emit = defineEmits(['click']);
@@ -205,7 +253,7 @@
     const palette = computed(() => PALETTE[props.color] ?? PALETTE.gray);
 
     const badgeClasses = computed(() => [
-        'inline-flex items-center justify-center gap-x-1 rounded-md font-medium truncate',
+        'inline-flex items-center justify-center gap-x-1 rounded font-medium truncate',
         SIZE_CLASSES[props.size],
         palette.value.base,
         isInteractive.value &&
@@ -257,6 +305,8 @@
 
 <template>
     <component :is="componentTag" v-bind="componentAttrs" :class="badgeClasses" @click="handleClick">
+        <span v-if="dot" :class="['size-1.5 shrink-0 rounded-full', palette.dot]" aria-hidden="true" />
+
         <component v-if="icon && iconPosition === 'before'" :is="icon" :class="iconClasses" aria-hidden="true" />
 
         <span class="min-w-0 truncate">
