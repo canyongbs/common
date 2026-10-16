@@ -33,6 +33,9 @@
 -->
 <script setup>
     import { ChevronDownIcon } from '@heroicons/vue/16/solid';
+    import { computed, useAttrs } from 'vue';
+
+    defineOptions({ inheritAttrs: false });
 
     defineProps({
         modelValue: {
@@ -50,11 +53,22 @@
     });
 
     defineEmits(['update:modelValue']);
+
+    const attrs = useAttrs();
+
+    // Layout (`class`, `style`) stays on the wrapper; every other attribute belongs to the select.
+    const wrapperAttrs = computed(() => ({ class: attrs.class, style: attrs.style }));
+    const selectAttrs = computed(() => {
+        const { class: _class, style: _style, ...rest } = attrs;
+
+        return rest;
+    });
 </script>
 
 <template>
-    <div class="relative inline-block w-full">
+    <div class="relative inline-block w-full" v-bind="wrapperAttrs">
         <select
+            v-bind="selectAttrs"
             :value="modelValue"
             :aria-label="label"
             class="w-full appearance-none rounded-md border-0 bg-white py-2 pl-3 pr-9 text-sm text-gray-950 shadow-sm ring-1 ring-inset ring-gray-950/10 outline-none focus:ring-2 focus:ring-brand-600"

@@ -53,7 +53,7 @@
 </script>
 
 <template>
-    <BaseTable role="status" aria-busy="true" class="animate-pulse">
+    <BaseTable role="status" class="animate-pulse">
         <BaseTableHeader>
             <tr>
                 <th v-for="col in columns" :key="col" class="px-4 py-3">

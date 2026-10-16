@@ -33,7 +33,9 @@
 -->
 <script setup>
     import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid';
-    import { onUnmounted, ref, watch } from 'vue';
+    import { computed, onUnmounted, ref, useAttrs, watch } from 'vue';
+
+    defineOptions({ inheritAttrs: false });
 
     const props = defineProps({
         modelValue: {
@@ -55,6 +57,16 @@
     });
 
     const emit = defineEmits(['update:modelValue']);
+
+    const attrs = useAttrs();
+
+    // Layout (`class`, `style`) stays on the wrapper; every other attribute belongs to the input.
+    const wrapperAttrs = computed(() => ({ class: attrs.class, style: attrs.style }));
+    const inputAttrs = computed(() => {
+        const { class: _class, style: _style, ...rest } = attrs;
+
+        return rest;
+    });
 
     const value = ref(props.modelValue);
 
@@ -89,13 +101,14 @@
 </script>
 
 <template>
-    <div class="relative w-full">
+    <div class="relative w-full" v-bind="wrapperAttrs">
         <MagnifyingGlassIcon
             class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400"
             aria-hidden="true"
         />
         <input
             type="search"
+            v-bind="inputAttrs"
             :value="value"
             :aria-label="label"
             :placeholder="placeholder"

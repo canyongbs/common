@@ -32,7 +32,9 @@
 </COPYRIGHT>
 -->
 <script setup>
-    defineProps({
+    import { computed, useSlots } from 'vue';
+
+    const props = defineProps({
         heading: {
             type: String,
             default: null,
@@ -46,14 +48,15 @@
             default: null,
         },
     });
+
+    const slots = useSlots();
+
+    const hasHeader = computed(() => Boolean(props.heading || props.description || props.icon || slots.actions));
 </script>
 
 <template>
     <section class="rounded-lg bg-white shadow-sm ring-1 ring-gray-950/5">
-        <header
-            v-if="heading || $slots.actions"
-            class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
-        >
+        <header v-if="hasHeader" class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-start gap-3">
                 <component v-if="icon" :is="icon" class="mt-0.5 size-6 shrink-0 text-gray-400" aria-hidden="true" />
                 <div class="grid gap-1">
@@ -67,7 +70,7 @@
             </div>
         </header>
 
-        <div :class="['p-6', (heading || $slots.actions) && 'border-t border-gray-200']">
+        <div :class="['p-6', hasHeader && 'border-t border-gray-200']">
             <slot />
         </div>
     </section>

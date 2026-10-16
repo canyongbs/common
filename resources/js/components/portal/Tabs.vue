@@ -32,9 +32,10 @@
 </COPYRIGHT>
 -->
 <script setup>
+    import { computed } from 'vue';
     import BaseBadge from '../BaseBadge.vue';
 
-    defineProps({
+    const props = defineProps({
         tabs: {
             type: Array,
             required: true,
@@ -58,6 +59,36 @@
     });
 
     const emit = defineEmits(['update:modelValue']);
+
+    const tabElements = [];
+
+    // Only the selected tab (or the first, when none is selected) is in the Tab sequence; arrow keys move between tabs.
+    const tabbableIndex = computed(() =>
+        Math.max(
+            props.tabs.findIndex((tab) => tab.value === props.modelValue),
+            0,
+        ),
+    );
+
+    function focusTab(index) {
+        tabElements[(index + props.tabs.length) % props.tabs.length]?.focus();
+    }
+
+    function onKeydown(event, index) {
+        const targets = {
+            ArrowRight: index + 1,
+            ArrowLeft: index - 1,
+            Home: 0,
+            End: props.tabs.length - 1,
+        };
+
+        if (!(event.key in targets)) {
+            return;
+        }
+
+        event.preventDefault();
+        focusTab(targets[event.key]);
+    }
 </script>
 
 <template>
@@ -72,14 +103,17 @@
         :aria-label="label ?? undefined"
     >
         <button
-            v-for="tab in tabs"
+            v-for="(tab, index) in tabs"
             :key="tab.value"
+            :ref="(element) => (tabElements[index] = element)"
             type="button"
             role="tab"
+            :tabindex="index === tabbableIndex ? 0 : -1"
             :id="idPrefix ? `${idPrefix}-tab-${tab.value}` : undefined"
             :aria-selected="modelValue === tab.value"
             :aria-controls="idPrefix ? `${idPrefix}-panel-${tab.value}` : undefined"
             @click="emit('update:modelValue', tab.value)"
+            @keydown="onKeydown($event, index)"
             class="flex items-center justify-center gap-x-2 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap transition duration-75 outline-none"
             :class="modelValue === tab.value ? 'bg-gray-50' : 'hover:bg-gray-50 focus-visible:bg-gray-50'"
         >
