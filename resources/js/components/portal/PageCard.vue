@@ -32,7 +32,7 @@
 </COPYRIGHT>
 -->
 <template>
-    <div class="bg-white ring-1 ring-gray-950/5 shadow-xs rounded-xl px-6 py-4 flex flex-col gap-y-6">
+    <div class="bg-white shadow-sm ring-1 ring-gray-950/5 rounded-lg px-6 py-4 flex flex-col gap-y-6">
         <slot />
     </div>
 </template>
