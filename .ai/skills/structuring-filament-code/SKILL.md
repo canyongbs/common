@@ -1,6 +1,6 @@
 ---
 name: structuring-filament-code
-description: "Use when writing or reviewing Filament v4+ code in a Canyon GBS app, kept small and maintainable — organizing a resource's form, infolist, and table into separate `configure()` classes; extracting fields, columns, filters, or actions into their own classes; deciding between a static `make()` factory and a component base class; or splitting a schema per page instead of branching by operation/context. Trigger whenever a Filament schema/table/action definition grows past a few lines or gains a complex closure, when adding a resource page schema, when you add record-dependent logic to a `delete`/`restore`/`forceDelete` policy method and must authorize individual records on Filament bulk actions, or when you see per-page branching (`hiddenOn`/`visibleOn`/`disabledOn`, `$operation`, `$livewire instanceof`). Do not use for: non-Filament PHP (use `laravel-best-practices`), Filament file uploads (use `handling-file-uploads`), settings-page wiring (use `managing-settings`), or writing tests (use `writing-tests`)."
+description: "Use when writing or reviewing Filament v4+ code in a Canyon GBS app — splitting a resource's form, infolist, and table into `configure()` classes; extracting fields, columns, filters, or actions into their own classes; choosing a `make()` factory vs a base class; sharing subforms as schema classes; or splitting a schema per page instead of branching by operation/context. Trigger when a schema/table/action definition grows past a few lines or gains a complex closure, when adding a page schema, when you add record-dependent logic to a `delete`/`restore`/`forceDelete` policy method and must authorize individual records on Filament bulk actions, or when you see per-page branching (`hiddenOn`/`visibleOn`/`disabledOn`, `$operation`, `$livewire instanceof`). Do not use for: non-Filament PHP (use `laravel-best-practices`), Filament file uploads (use `handling-file-uploads`), settings-page wiring (use `managing-settings`), or writing tests (use `writing-tests`)."
 user-invocable: false
 license: Elastic-2.0
 metadata:
@@ -222,6 +222,45 @@ public function form(Schema $schema): Schema
 
 Extract it to a shared class only when another page, action, or place needs the **same** schema. Either way, keep the definition short by pulling non-trivial fields into component classes.
 
+## Share Subforms as Schema Classes, Not Groups
+
+When the same group of fields is needed in more than one place — e.g. a section of the create form **and** an action that edits just that section — make it a **schema class** with `configure(Schema $schema): Schema`, exactly like a resource's form. Don't wrap the fields in a `Group` returned from a `make()` factory: a `Group` is a layout component that adds a wrapper, whereas a schema class configures the consuming schema directly — the same way a page or action builds its own.
+
+```php
+// Schemas/ProjectDetailsForm.php
+class ProjectDetailsForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                TextInput::make('name')->required()->maxLength(255),
+                Textarea::make('description')->columnSpanFull(),
+            ])
+            ->columns(2);
+    }
+}
+```
+
+Nest it in a layout component (e.g. `Section`) or an action by passing a closure that configures the injected schema:
+
+```php
+// Schemas/ProjectForm.php — the create form is a list of sections
+Section::make('Details')
+    ->schema(fn (Schema $schema): Schema => ProjectDetailsForm::configure($schema))
+    ->columns(2),
+
+// Schemas/ProjectInfolist.php — the same fields in an edit slide-over
+EditAction::make('editDetails')
+    ->modalHeading('Edit details')
+    ->slideOver()
+    ->schema(fn (Schema $schema): Schema => ProjectDetailsForm::configure($schema)),
+```
+
+- A nested schema takes its columns from its parent, so set `columns()` on the wrapping layout component too. The schema class's own `columns()` applies where it is the root schema, e.g. an action modal.
+- Leave `model()` / `statePath()` / `operation()` to the caller — a schema class only declares components.
+- Closures in a shared schema that inject `$livewire` must accept every page that hosts it (e.g. `CreateProject | ManageProject $livewire`), not one page.
+
 ## No Per-Context Branching
 
 Never branch a shared schema by page or operation. Do **not** use `hiddenOn()` / `visibleOn()` / `disabledOn()`, `$operation`-based closures, `$livewire instanceof ...`, or an injected `$context` to change behaviour per page. Give each page its own schema — inline on the page — referencing shared component classes and chaining the differences.
@@ -254,10 +293,11 @@ public function form(Schema $schema): Schema
 - A class defines at most one schema/table: a resource's form / infolist / table each become separate `configure()` classes; the resource just delegates.
 - Single-use schema → inline on the page (`public function form(Schema $schema)`); extract to a class only when shared across 2+ places. (Relation managers / `ManageRelatedRecords` without a resource also define inline.)
 - Any multi-line or complex-closure field / column / filter / action → its own class.
+- Fields shared between a form section and an action (or two pages) → a schema class nested with `->schema(fn (Schema $schema): Schema => X::configure($schema))`, never a `Group` factory.
 - `public static function make(<mandatory params>)` factory by default; `extends` + `setUp()` only for OOTB, no-required-param, optionally-configurable components.
 - No `hiddenOn` / `visibleOn` / `disabledOn` / `$operation` / `$livewire instanceof` / `$context` branching — each page owns its schema, reusing shared component classes.
 - Added record-dependent logic to a `delete` / `restore` / `forceDelete` policy method? Add `->authorizeIndividualRecords('<method>')` to every Filament bulk action for that model, and return `DenyResponse` from the policy method for accurate failure notifications.
 
 ---
 
-Related: `handling-file-uploads`, `managing-settings`, `archiving-records`, and `writing-tests`; for non-Filament PHP, the `laravel-best-practices` skill.
+Related: `building-tabbed-record-pages` (one record page with tabs for infolists, forms, and relation managers), `handling-file-uploads`, `managing-settings`, `archiving-records`, and `writing-tests`; for non-Filament PHP, the `laravel-best-practices` skill.
