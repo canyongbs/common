@@ -37,6 +37,7 @@
 namespace Workbench\App\Filament\Resources\Tasks;
 
 use CanyonGBS\Common\Filament\Actions\ArchiveBulkAction;
+use CanyonGBS\Common\Filament\Actions\UnarchiveBulkAction;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -61,6 +62,7 @@ class TaskResource extends Resource
             ])
             ->toolbarActions([
                 ArchiveBulkAction::make(),
+                UnarchiveBulkAction::make(),
             ]);
     }
 

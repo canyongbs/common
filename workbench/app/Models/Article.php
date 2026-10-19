@@ -74,7 +74,13 @@ class Article extends Model
 
     public function isUsed(): bool
     {
-        return (bool) ($this->reviews_exists ??= $this->reviews()->exists());
+        if (! isset($this->reviews_exists)) {
+            $this->reviews_exists = $this->reviews()->exists();
+
+            $this->syncOriginalAttribute('reviews_exists');
+        }
+
+        return (bool) $this->reviews_exists;
     }
 
     protected static function newFactory(): ArticleFactory

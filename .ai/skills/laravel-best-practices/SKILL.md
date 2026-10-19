@@ -57,11 +57,11 @@ Check sibling files, related controllers, models, or tests for established patte
 
 - Generate migrations with `php artisan make:migration`
 - PostgreSQL via `tpetry/laravel-postgresql-enhanced` (import its `Blueprint`/`Schema`); UUID primary keys (`uuid('id')->primary()`, `foreignUuid()`); `caseInsensitiveText()` (citext) for case-insensitive columns
-- Always `uniqueIndex()`, never `unique()`; scope to `whereNull('deleted_at')` on soft-deleting tables; `nullsNotDistinct()` / partial indexes for NULLs; match unique validation to the index
+- Always `uniqueIndex()`, never `unique()`; scope to `whereNull('deleted_at')` on soft-deleting tables; `nullsNotDistinct()` / partial indexes for NULLs; match unique validation to the index (`scopedUnique()` in Filament)
 - Never use `->after()` / `->first()` — column positioning is ignored on PostgreSQL
 - `constrained()` for foreign keys
 - Never modify migrations that have run in production
-- Add indexes in the migration (columns used in `WHERE`, `ORDER BY`, `JOIN`)
+- Add indexes in the migration (columns used in `WHERE`, `ORDER BY`, `JOIN`); chain `->index()` before `->constrained()`
 - Reversible `down()` by default; forward-fix intentionally irreversible changes
 - Keep each migration focused; mixing DDL and DML is expected for inseparable changes (rename-with-copy, flag activation) if transaction-wrapped — only split create-and-seed of a new table
 

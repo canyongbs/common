@@ -79,6 +79,7 @@ it('looks like an archive action when the model does not define `isUsed()`', fun
         ->assertActionExists('archive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Archive Apollo')
         ->assertActionExists('archive', fn (Action $action): bool => $action->getModalSubmitActionLabel() === 'Archive')
         ->assertActionExists('archive', fn (Action $action): bool => $action->getModalIcon() === Heroicon::OutlinedArchiveBox)
+        ->assertActionExists('archive', fn (Action $action): bool => $action->getTableIcon() === Heroicon::ArchiveBox)
         ->assertActionExists('archive', fn (Action $action): bool => $action->getGroupedIcon() === Heroicon::ArchiveBox);
 });
 
@@ -104,24 +105,21 @@ it('archives the record from the view page', function (): void {
     expect($project->refresh()->isArchived())->toBeTrue();
 });
 
-it('deletes an unused record from the view page', function (): void {
-    $article = Article::factory()->create();
-
-    Livewire::test(ViewArticle::class, ['record' => $article->getRouteKey()])
-        ->assertActionHasLabel('archive', 'Delete')
-        ->callAction('archive')
-        ->assertNotified('Deleted')
-        ->assertRedirect(ArticleResource::getUrl('index'));
-
-    expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
-});
-
 it('is hidden when the record is already archived', function (): void {
     $project = Project::factory()->create();
     $project->archive();
 
     Livewire::test(EditProject::class, ['record' => $project->getRouteKey()])
         ->assertActionHidden('archive');
+});
+
+it('is visible in archive mode even when the record is soft-deleted', function (): void {
+    $attachment = Attachment::factory()->used()->create();
+    $attachment->delete();
+
+    Livewire::test(EditAttachment::class, ['record' => $attachment->getRouteKey()])
+        ->assertActionVisible('archive')
+        ->assertActionHasLabel('archive', 'Archive');
 });
 
 it('does not archive when the archiving event is cancelled', function (): void {
@@ -136,112 +134,184 @@ it('does not archive when the archiving event is cancelled', function (): void {
     expect($project->refresh()->isArchived())->toBeFalse();
 });
 
-it('looks like an archive action when the record is used', function (): void {
-    $article = Article::factory()->create(['name' => 'Signals']);
-    Review::factory()->create(['article_id' => $article->id]);
+it('throws when the model does not use the `CanBeArchived` trait', function (): void {
+    $task = Task::factory()->create();
 
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->assertActionHasLabel('archive', 'Archive')
-        ->assertActionHasColor('archive', 'warning')
-        ->assertActionExists('archive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Archive Signals');
+    Livewire::test(EditTask::class, ['record' => $task->getRouteKey()]);
+})->throws(Exception::class, 'The [ArchiveAction] requires the model to use the [CanBeArchived] trait.');
+
+describe('deleting unused records', function (): void {
+    it('looks like an archive action when the record is used', function (): void {
+        $article = Article::factory()->create(['name' => 'Signals']);
+        Review::factory()->create(['article_id' => $article->id]);
+
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->assertActionHasLabel('archive', 'Archive')
+            ->assertActionHasColor('archive', 'warning')
+            ->assertActionExists('archive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Archive Signals');
+    });
+
+    it('looks like a delete action when the record is unused', function (): void {
+        $article = Article::factory()->create(['name' => 'Signals']);
+
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->assertActionHasLabel('archive', 'Delete')
+            ->assertActionHasColor('archive', 'danger')
+            ->assertActionExists('archive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Delete Signals')
+            ->assertActionExists('archive', fn (Action $action): bool => $action->getModalSubmitActionLabel() === 'Delete')
+            ->assertActionExists('archive', fn (Action $action): bool => $action->getModalIcon() === Heroicon::OutlinedTrash)
+            ->assertActionExists('archive', fn (Action $action): bool => $action->getTableIcon() === Heroicon::Trash)
+            ->assertActionExists('archive', fn (Action $action): bool => $action->getGroupedIcon() === Heroicon::Trash);
+    });
+
+    it('archives a used record instead of deleting it', function (): void {
+        $article = Article::factory()->create();
+        Review::factory()->create(['article_id' => $article->id]);
+
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->callAction('archive')
+            ->assertNotified('Archived');
+
+        expect($article->refresh()->isArchived())->toBeTrue();
+    });
+
+    it('deletes an unused record and redirects to the index page', function (): void {
+        $article = Article::factory()->create();
+
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->callAction('archive')
+            ->assertNotified('Deleted')
+            ->assertRedirect(ArticleResource::getUrl('index'));
+
+        expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
+    });
+
+    it('deletes an unused record from the view page', function (): void {
+        $article = Article::factory()->create();
+
+        Livewire::test(ViewArticle::class, ['record' => $article->getRouteKey()])
+            ->assertActionHasLabel('archive', 'Delete')
+            ->callAction('archive')
+            ->assertNotified('Deleted')
+            ->assertRedirect(ArticleResource::getUrl('index'));
+
+        expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
+    });
+
+    it('deletes an archived record that is unused', function (): void {
+        $article = Article::factory()->create();
+        $article->archive();
+
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->callAction('archive')
+            ->assertNotified('Deleted');
+
+        expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
+    });
+
+    it('remains visible as a delete action when an unused record is archived', function (): void {
+        $article = Article::factory()->create();
+        $article->archive();
+
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->assertActionVisible('archive')
+            ->assertActionHasLabel('archive', 'Delete');
+    });
+
+    it('is hidden when a used record is archived', function (): void {
+        $article = Article::factory()->create();
+        Review::factory()->create(['article_id' => $article->id]);
+        $article->archive();
+
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->assertActionHidden('archive');
+    });
+
+    it('does not delete when the deleting event is cancelled', function (): void {
+        Article::deleting(fn (): bool => false);
+
+        $article = Article::factory()->create();
+
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->callAction('archive')
+            ->assertNotNotified();
+
+        expect(Article::query()->whereKey($article->getKey())->exists())->toBeTrue();
+    });
+
+    it('soft-deletes an unused record when the model uses `SoftDeletes`', function (): void {
+        $attachment = Attachment::factory()->create();
+
+        Livewire::test(EditAttachment::class, ['record' => $attachment->getRouteKey()])
+            ->callAction('archive')
+            ->assertNotified('Deleted');
+
+        expect($attachment->refresh()->trashed())->toBeTrue();
+    });
+
+    it('remains visible in delete mode when a soft-deletable record is not trashed', function (): void {
+        $attachment = Attachment::factory()->create();
+
+        Livewire::test(EditAttachment::class, ['record' => $attachment->getRouteKey()])
+            ->assertActionVisible('archive')
+            ->assertActionHasLabel('archive', 'Delete');
+    });
+
+    it('is hidden in delete mode when the record is soft-deleted', function (): void {
+        $attachment = Attachment::factory()->create();
+        $attachment->delete();
+
+        Livewire::test(EditAttachment::class, ['record' => $attachment->getRouteKey()])
+            ->assertActionHidden('archive');
+    });
 });
 
-it('looks like a delete action when the record is unused', function (): void {
-    $article = Article::factory()->create(['name' => 'Signals']);
+describe('authorization', function (): void {
+    it('is hidden when the user is not authorized to archive a used record with the policy\'s `archive` method', function (): void {
+        ArticlePolicy::$abilities['archive'] = false;
 
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->assertActionHasLabel('archive', 'Delete')
-        ->assertActionHasColor('archive', 'danger')
-        ->assertActionExists('archive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Delete Signals')
-        ->assertActionExists('archive', fn (Action $action): bool => $action->getModalSubmitActionLabel() === 'Delete')
-        ->assertActionExists('archive', fn (Action $action): bool => $action->getModalIcon() === Heroicon::OutlinedTrash)
-        ->assertActionExists('archive', fn (Action $action): bool => $action->getGroupedIcon() === Heroicon::Trash);
-});
+        $article = Article::factory()->create();
+        Review::factory()->create(['article_id' => $article->id]);
 
-it('archives a used record instead of deleting it', function (): void {
-    $article = Article::factory()->create();
-    Review::factory()->create(['article_id' => $article->id]);
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->assertActionHidden('archive');
+    });
 
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->callAction('archive')
-        ->assertNotified('Archived');
+    it('ignores the delete ability for a used record when the policy has an `archive` method', function (): void {
+        ArticlePolicy::$abilities['delete'] = false;
 
-    expect($article->refresh()->isArchived())->toBeTrue();
-});
+        $article = Article::factory()->create();
+        Review::factory()->create(['article_id' => $article->id]);
 
-it('deletes an unused record and redirects to the index page', function (): void {
-    $article = Article::factory()->create();
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->assertActionVisible('archive')
+            ->callAction('archive')
+            ->assertNotified('Archived');
 
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->callAction('archive')
-        ->assertNotified('Deleted')
-        ->assertRedirect(ArticleResource::getUrl('index'));
+        expect($article->refresh()->isArchived())->toBeTrue();
+    });
 
-    expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
-});
+    it('is hidden when the user is not authorized to delete an unused record', function (): void {
+        ArticlePolicy::$abilities['delete'] = false;
 
-it('remains visible as a delete action when an unused record is archived', function (): void {
-    $article = Article::factory()->create();
-    $article->archive();
+        $article = Article::factory()->create();
 
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->assertActionVisible('archive')
-        ->assertActionHasLabel('archive', 'Delete');
-});
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->assertActionHidden('archive');
+    });
 
-it('is hidden when a used record is archived', function (): void {
-    $article = Article::factory()->create();
-    Review::factory()->create(['article_id' => $article->id]);
-    $article->archive();
+    it('ignores the archive ability for an unused record', function (): void {
+        ArticlePolicy::$abilities['archive'] = false;
 
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->assertActionHidden('archive');
-});
+        $article = Article::factory()->create();
 
-it('is hidden when the user is not authorized to delete an unused record', function (): void {
-    ArticlePolicy::$abilities['delete'] = false;
+        Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
+            ->assertActionVisible('archive')
+            ->callAction('archive')
+            ->assertNotified('Deleted');
 
-    $article = Article::factory()->create();
-
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->assertActionHidden('archive');
-});
-
-it('is hidden when the user is not authorized to archive a used record with the policy\'s `archive` method', function (): void {
-    ArticlePolicy::$abilities['archive'] = false;
-
-    $article = Article::factory()->create();
-    Review::factory()->create(['article_id' => $article->id]);
-
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->assertActionHidden('archive');
-});
-
-it('ignores the delete ability for a used record when the policy has an `archive` method', function (): void {
-    ArticlePolicy::$abilities['delete'] = false;
-
-    $article = Article::factory()->create();
-    Review::factory()->create(['article_id' => $article->id]);
-
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->assertActionVisible('archive')
-        ->callAction('archive')
-        ->assertNotified('Archived');
-
-    expect($article->refresh()->isArchived())->toBeTrue();
-});
-
-it('ignores the archive ability for an unused record', function (): void {
-    ArticlePolicy::$abilities['archive'] = false;
-
-    $article = Article::factory()->create();
-
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->assertActionVisible('archive')
-        ->callAction('archive')
-        ->assertNotified('Deleted');
-
-    expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
+        expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
+    });
 });
 
 describe('backwards compatibility', function (): void {
@@ -295,68 +365,4 @@ describe('backwards compatibility', function (): void {
 
         expect($tag->refresh()->isArchived())->toBeTrue();
     });
-});
-
-it('does not delete when the deleting event is cancelled', function (): void {
-    Article::deleting(fn (): bool => false);
-
-    $article = Article::factory()->create();
-
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->callAction('archive')
-        ->assertNotNotified();
-
-    expect(Article::query()->whereKey($article->getKey())->exists())->toBeTrue();
-});
-
-it('throws when the model does not use the `CanBeArchived` trait', function (): void {
-    $task = Task::factory()->create();
-
-    Livewire::test(EditTask::class, ['record' => $task->getRouteKey()]);
-})->throws(Exception::class, 'The [ArchiveAction] requires the model to use the [CanBeArchived] trait.');
-
-it('deletes an archived record that is unused', function (): void {
-    $article = Article::factory()->create();
-    $article->archive();
-
-    Livewire::test(EditArticle::class, ['record' => $article->getRouteKey()])
-        ->callAction('archive')
-        ->assertNotified('Deleted');
-
-    expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
-});
-
-it('is hidden in delete mode when the record is soft-deleted', function (): void {
-    $attachment = Attachment::factory()->create();
-    $attachment->delete();
-
-    Livewire::test(EditAttachment::class, ['record' => $attachment->getRouteKey()])
-        ->assertActionHidden('archive');
-});
-
-it('remains visible in delete mode when a soft-deletable record is not trashed', function (): void {
-    $attachment = Attachment::factory()->create();
-
-    Livewire::test(EditAttachment::class, ['record' => $attachment->getRouteKey()])
-        ->assertActionVisible('archive')
-        ->assertActionHasLabel('archive', 'Delete');
-});
-
-it('soft-deletes an unused record when the model uses `SoftDeletes`', function (): void {
-    $attachment = Attachment::factory()->create();
-
-    Livewire::test(EditAttachment::class, ['record' => $attachment->getRouteKey()])
-        ->callAction('archive')
-        ->assertNotified('Deleted');
-
-    expect($attachment->refresh()->trashed())->toBeTrue();
-});
-
-it('is visible in archive mode even when the record is soft-deleted', function (): void {
-    $attachment = Attachment::factory()->used()->create();
-    $attachment->delete();
-
-    Livewire::test(EditAttachment::class, ['record' => $attachment->getRouteKey()])
-        ->assertActionVisible('archive')
-        ->assertActionHasLabel('archive', 'Archive');
 });

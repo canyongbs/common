@@ -71,24 +71,6 @@ beforeEach(function (): void {
     $this->actingAs(User::create(['name' => 'Ada', 'email' => 'ada@example.com']));
 });
 
-it('archives used records and deletes unused records', function (): void {
-    $usedArticles = Article::factory()->count(2)->create();
-    $usedArticles->each(fn (Article $article) => Review::factory()->create(['article_id' => $article->id]));
-
-    $unusedArticle = Article::factory()->create();
-
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords(Article::query()->pluck('id')->all())
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('2 archived, 1 deleted');
-
-    $usedArticles->each(function (Article $article): void {
-        expect($article->refresh()->isArchived())->toBeTrue();
-    });
-
-    expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeFalse();
-});
-
 it('archives every record when the model does not define `used()`', function (): void {
     Image::factory()->count(3)->create();
 
@@ -113,27 +95,66 @@ it('only processes the selected records', function (): void {
     expect($unselectedArticle->refresh()->isArchived())->toBeFalse();
 });
 
-it('fires model events and counts cancelled operations as failures', function (): void {
-    Article::deleting(fn (): bool => false);
+it('skips records that are already archived', function (bool $fetchesSelectedRecords): void {
+    ArticleResource::$fetchesSelectedRecords = $fetchesSelectedRecords;
 
-    $usedArticle = Article::factory()->create();
-    Review::factory()->create(['article_id' => $usedArticle->id]);
+    $usedArticles = Article::factory()->count(2)->create();
+    $usedArticles->each(fn (Article $article) => Review::factory()->create(['article_id' => $article->id]));
 
-    $unusedArticle = Article::factory()->create();
+    $archivedArticle = $usedArticles->first();
+    $archivedArticle->archive();
+    $archivedAt = $archivedArticle->refresh()->archived_at;
+
+    $this->travel(1)->minutes();
 
     Livewire::test(ListArticles::class)
-        ->selectTableRecords([$usedArticle->getKey(), $unusedArticle->getKey()])
+        ->selectTableRecords($usedArticles->pluck('id')->all())
         ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified(
-            Notification::make()
-                ->warning()
-                ->title('1 archived')
-                ->body('<p>1 record failed to process.</p>')
-                ->persistent(),
-        );
+        ->assertNotified(Notification::make()->success()->title('1 archived'));
 
+    expect($archivedArticle->refresh()->archived_at->equalTo($archivedAt))->toBeTrue();
+    expect($usedArticles->last()->refresh()->isArchived())->toBeTrue();
+})->with([
+    'fetching records' => true,
+    'not fetching records' => false,
+]);
+
+it('does nothing when no records are selected', function (): void {
+    Article::factory()->create();
+
+    Livewire::test(ListArticles::class)
+        ->callAction(TestAction::make('archive')->table()->bulk())
+        ->assertNotified('No records were archived or deleted');
+
+    expect(Article::query()->count())->toBe(1);
+    expect(Article::query()->onlyArchived()->count())->toBe(0);
+});
+
+it('processes chunked selections', function (): void {
+    ArticleResource::$selectedRecordsChunkSize = 50;
+
+    $category = Category::factory()->create();
+
+    Article::factory()->count(120)->create(['category_id' => $category->id]);
+
+    $usedArticle = Article::factory()->create(['category_id' => $category->id]);
+    Review::factory()->create(['article_id' => $usedArticle->id]);
+
+    Livewire::test(ListArticles::class)
+        ->selectTableRecords(Article::query()->pluck('id')->all())
+        ->callAction(TestAction::make('archive')->table()->bulk())
+        ->assertNotified('1 archived, 120 deleted');
+
+    expect(Article::query()->count())->toBe(1);
     expect($usedArticle->refresh()->isArchived())->toBeTrue();
-    expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeTrue();
+});
+
+it('has no delete warning in the modal when the model does not define `used()`', function (): void {
+    Image::factory()->create();
+
+    Livewire::test(ListImages::class)
+        ->assertActionHasLabel(TestAction::make('archive')->table()->bulk(), 'Archive')
+        ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => ! str_contains((string) $action->getModalDescription(), 'permanently deleted'));
 });
 
 it('counts cancelled archive operations as failures', function (): void {
@@ -200,133 +221,6 @@ it('processes records in bulk queries without model events when not fetching rec
     expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeFalse();
 });
 
-it('skips and reports records that fail individual `delete` authorization when it is enabled', function (): void {
-    ArticleResource::$authorizesIndividualRecords = true;
-
-    $usedArticle = Article::factory()->create();
-    Review::factory()->create(['article_id' => $usedArticle->id]);
-
-    $unusedArticle = Article::factory()->create();
-
-    $deniedArticle = Article::factory()->create();
-    ArticlePolicy::$deniedDeleteKeys = [$deniedArticle->getKey()];
-
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords(Article::query()->pluck('id')->all())
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('1 archived, 1 deleted');
-
-    expect($usedArticle->refresh()->isArchived())->toBeTrue();
-    expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeFalse();
-    expect($deniedArticle->refresh()->isArchived())->toBeFalse();
-});
-
-it('does not check the `delete` ability for each record by default', function (): void {
-    ArticlePolicy::$abilities['delete'] = false;
-
-    $article = Article::factory()->create();
-
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords([$article->getKey()])
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('1 deleted');
-
-    expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
-});
-
-it('is hidden when the user is not authorized to delete any records', function (): void {
-    ArticlePolicy::$abilities['deleteAny'] = false;
-
-    Article::factory()->create();
-
-    Livewire::test(ListArticles::class)
-        ->assertActionHidden(TestAction::make('archive')->table()->bulk());
-});
-
-it('throws when the model does not use the `CanBeArchived` trait', function (): void {
-    $task = Task::factory()->create();
-
-    Livewire::test(ListTasks::class)
-        ->selectTableRecords([$task->getKey()])
-        ->callAction(TestAction::make('archive')->table()->bulk());
-})->throws(Exception::class, 'The [ArchiveBulkAction] requires the model to use the [CanBeArchived] trait.');
-
-it('has archive styling and a delete warning in the modal when the model defines `used()`', function (): void {
-    Article::factory()->create();
-
-    Livewire::test(ListArticles::class)
-        ->assertActionHasLabel(TestAction::make('archive')->table()->bulk(), 'Archive / Delete')
-        ->assertActionHasColor(TestAction::make('archive')->table()->bulk(), 'warning')
-        ->assertActionHasIcon(TestAction::make('archive')->table()->bulk(), Heroicon::ArchiveBox)
-        ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => ((string) $action->getModalHeading()) === 'Archive Articles')
-        ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => $action->getModalSubmitActionLabel() === 'Archive')
-        ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => $action->getModalIcon() === Heroicon::OutlinedArchiveBox)
-        ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => ((string) $action->getModalDescription()) === 'Records that are no longer in use will be permanently deleted instead of archived.');
-});
-
-it('has no delete warning in the modal when the model does not define `used()`', function (): void {
-    Image::factory()->create();
-
-    Livewire::test(ListImages::class)
-        ->assertActionHasLabel(TestAction::make('archive')->table()->bulk(), 'Archive')
-        ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => ! str_contains((string) $action->getModalDescription(), 'permanently deleted'));
-});
-
-it('reports when no records could be processed because of authorization', function (): void {
-    ArticleResource::$authorizesIndividualRecords = true;
-    ArticlePolicy::$abilities['delete'] = false;
-
-    Article::factory()->count(2)->create();
-
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords(Article::query()->pluck('id')->all())
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified(
-            Notification::make()
-                ->danger()
-                ->title('No records were archived or deleted')
-                ->body('<p>2 records could not be processed because you are not authorized to delete them.</p>')
-                ->persistent(),
-        );
-
-    expect(Article::query()->count())->toBe(2);
-    expect(Article::query()->onlyArchived()->count())->toBe(0);
-});
-
-it('reports skipped records alongside the successful counts when individual authorization fails', function (): void {
-    ArticleResource::$authorizesIndividualRecords = true;
-
-    $usedArticle = Article::factory()->create();
-    Review::factory()->create(['article_id' => $usedArticle->id]);
-
-    $unusedArticle = Article::factory()->create();
-
-    $deniedArticle = Article::factory()->create();
-    ArticlePolicy::$deniedDeleteKeys = [$deniedArticle->getKey()];
-
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords(Article::query()->pluck('id')->all())
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('1 archived, 1 deleted');
-
-    expect($deniedArticle->refresh()->isArchived())->toBeFalse();
-});
-
-it('does not authorize individual records when not fetching records', function (): void {
-    ArticleResource::$authorizesIndividualRecords = true;
-    ArticleResource::$fetchesSelectedRecords = false;
-    ArticlePolicy::$abilities['delete'] = false;
-
-    $article = Article::factory()->create();
-
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords([$article->getKey()])
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('1 deleted');
-
-    expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
-});
-
 it('reports a complete failure when a bulk statement fails', function (): void {
     ArticleResource::$fetchesSelectedRecords = false;
 
@@ -353,70 +247,208 @@ it('reports a complete failure when a bulk statement fails', function (): void {
     expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeTrue();
 });
 
-it('processes chunked selections', function (): void {
-    ArticleResource::$selectedRecordsChunkSize = 50;
+it('throws when the model does not use the `CanBeArchived` trait', function (): void {
+    $task = Task::factory()->create();
 
-    $category = Category::factory()->create();
+    Livewire::test(ListTasks::class)
+        ->selectTableRecords([$task->getKey()])
+        ->callAction(TestAction::make('archive')->table()->bulk());
+})->throws(Exception::class, 'The [ArchiveBulkAction] requires the model to use the [CanBeArchived] trait.');
 
-    Article::factory()->count(120)->create(['category_id' => $category->id]);
+describe('deleting unused records', function (): void {
+    it('archives used records and deletes unused records', function (): void {
+        $usedArticles = Article::factory()->count(2)->create();
+        $usedArticles->each(fn (Article $article) => Review::factory()->create(['article_id' => $article->id]));
 
-    $usedArticle = Article::factory()->create(['category_id' => $category->id]);
-    Review::factory()->create(['article_id' => $usedArticle->id]);
+        $unusedArticle = Article::factory()->create();
 
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords(Article::query()->pluck('id')->all())
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('1 archived, 120 deleted');
+        Livewire::test(ListArticles::class)
+            ->selectTableRecords(Article::query()->pluck('id')->all())
+            ->callAction(TestAction::make('archive')->table()->bulk())
+            ->assertNotified('2 archived, 1 deleted');
 
-    expect(Article::query()->count())->toBe(1);
-    expect($usedArticle->refresh()->isArchived())->toBeTrue();
+        $usedArticles->each(function (Article $article): void {
+            expect($article->refresh()->isArchived())->toBeTrue();
+        });
+
+        expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeFalse();
+    });
+
+    it('has archive styling and a delete warning in the modal when the model defines `used()`', function (): void {
+        Article::factory()->create();
+
+        Livewire::test(ListArticles::class)
+            ->assertActionHasLabel(TestAction::make('archive')->table()->bulk(), 'Archive / Delete')
+            ->assertActionHasColor(TestAction::make('archive')->table()->bulk(), 'warning')
+            ->assertActionHasIcon(TestAction::make('archive')->table()->bulk(), Heroicon::ArchiveBox)
+            ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => ((string) $action->getModalHeading()) === 'Archive Articles')
+            ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => $action->getModalSubmitActionLabel() === 'Archive')
+            ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => $action->getModalIcon() === Heroicon::OutlinedArchiveBox)
+            ->assertActionExists(TestAction::make('archive')->table()->bulk(), fn (BulkAction $action): bool => ((string) $action->getModalDescription()) === 'Records that are no longer in use will be permanently deleted instead of archived.');
+    });
+
+    it('counts cancelled delete operations as failures', function (): void {
+        Article::deleting(fn (): bool => false);
+
+        $usedArticle = Article::factory()->create();
+        Review::factory()->create(['article_id' => $usedArticle->id]);
+
+        $unusedArticle = Article::factory()->create();
+
+        Livewire::test(ListArticles::class)
+            ->selectTableRecords([$usedArticle->getKey(), $unusedArticle->getKey()])
+            ->callAction(TestAction::make('archive')->table()->bulk())
+            ->assertNotified(
+                Notification::make()
+                    ->warning()
+                    ->title('1 archived')
+                    ->body('<p>1 record failed to process.</p>')
+                    ->persistent(),
+            );
+
+        expect($usedArticle->refresh()->isArchived())->toBeTrue();
+        expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeTrue();
+    });
 });
 
-it('does nothing when no records are selected', function (): void {
-    Article::factory()->create();
+describe('authorization', function (): void {
+    it('is hidden when the user is not authorized to delete any records', function (): void {
+        ArticlePolicy::$abilities['deleteAny'] = false;
 
-    Livewire::test(ListArticles::class)
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('No records were archived or deleted');
+        Article::factory()->create();
 
-    expect(Article::query()->count())->toBe(1);
-    expect(Article::query()->onlyArchived()->count())->toBe(0);
-});
+        Livewire::test(ListArticles::class)
+            ->assertActionHidden(TestAction::make('archive')->table()->bulk());
+    });
 
-it('authorizes records that will be archived with the `archive` ability when the policy has an `archive` method', function (): void {
-    ArticleResource::$authorizesIndividualRecords = true;
-    ArticlePolicy::$abilities['archive'] = false;
+    it('does not check the `delete` ability for each record by default', function (): void {
+        ArticlePolicy::$abilities['delete'] = false;
 
-    $usedArticle = Article::factory()->create();
-    Review::factory()->create(['article_id' => $usedArticle->id]);
+        $article = Article::factory()->create();
 
-    $unusedArticle = Article::factory()->create();
+        Livewire::test(ListArticles::class)
+            ->selectTableRecords([$article->getKey()])
+            ->callAction(TestAction::make('archive')->table()->bulk())
+            ->assertNotified('1 deleted');
 
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords([$usedArticle->getKey(), $unusedArticle->getKey()])
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('1 deleted');
+        expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
+    });
 
-    expect($usedArticle->refresh()->isArchived())->toBeFalse();
-    expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeFalse();
-});
+    it('skips records that fail individual `delete` authorization when it is enabled', function (): void {
+        ArticleResource::$authorizesIndividualRecords = true;
 
-it('ignores the delete ability for records that will be archived when the policy has an `archive` method', function (): void {
-    ArticleResource::$authorizesIndividualRecords = true;
-    ArticlePolicy::$abilities['delete'] = false;
+        $usedArticle = Article::factory()->create();
+        Review::factory()->create(['article_id' => $usedArticle->id]);
 
-    $usedArticle = Article::factory()->create();
-    Review::factory()->create(['article_id' => $usedArticle->id]);
+        $unusedArticle = Article::factory()->create();
 
-    $unusedArticle = Article::factory()->create();
+        $deniedArticle = Article::factory()->create();
+        ArticlePolicy::$deniedDeleteKeys = [$deniedArticle->getKey()];
 
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords([$usedArticle->getKey(), $unusedArticle->getKey()])
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('1 archived');
+        Livewire::test(ListArticles::class)
+            ->selectTableRecords(Article::query()->pluck('id')->all())
+            ->callAction(TestAction::make('archive')->table()->bulk())
+            ->assertNotified('1 archived, 1 deleted');
 
-    expect($usedArticle->refresh()->isArchived())->toBeTrue();
-    expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeTrue();
+        expect($usedArticle->refresh()->isArchived())->toBeTrue();
+        expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeFalse();
+        expect($deniedArticle->refresh()->isArchived())->toBeFalse();
+    });
+
+    it('reports skipped records alongside the successful counts when individual authorization fails', function (): void {
+        ArticleResource::$authorizesIndividualRecords = true;
+
+        $usedArticle = Article::factory()->create();
+        Review::factory()->create(['article_id' => $usedArticle->id]);
+
+        $unusedArticle = Article::factory()->create();
+
+        $deniedArticle = Article::factory()->create();
+        ArticlePolicy::$deniedDeleteKeys = [$deniedArticle->getKey()];
+
+        Livewire::test(ListArticles::class)
+            ->selectTableRecords(Article::query()->pluck('id')->all())
+            ->callAction(TestAction::make('archive')->table()->bulk())
+            ->assertNotified(
+                Notification::make()
+                    ->warning()
+                    ->title('1 archived, 1 deleted')
+                    ->body('<p>1 record could not be processed because you are not authorized to delete it.</p>')
+                    ->persistent(),
+            );
+    });
+
+    it('reports when no records could be processed because of authorization', function (): void {
+        ArticleResource::$authorizesIndividualRecords = true;
+        ArticlePolicy::$abilities['delete'] = false;
+
+        Article::factory()->count(2)->create();
+
+        Livewire::test(ListArticles::class)
+            ->selectTableRecords(Article::query()->pluck('id')->all())
+            ->callAction(TestAction::make('archive')->table()->bulk())
+            ->assertNotified(
+                Notification::make()
+                    ->danger()
+                    ->title('No records were archived or deleted')
+                    ->body('<p>2 records could not be processed because you are not authorized to delete them.</p>')
+                    ->persistent(),
+            );
+
+        expect(Article::query()->count())->toBe(2);
+        expect(Article::query()->onlyArchived()->count())->toBe(0);
+    });
+
+    it('does not authorize individual records when not fetching records', function (): void {
+        ArticleResource::$authorizesIndividualRecords = true;
+        ArticleResource::$fetchesSelectedRecords = false;
+        ArticlePolicy::$abilities['delete'] = false;
+
+        $article = Article::factory()->create();
+
+        Livewire::test(ListArticles::class)
+            ->selectTableRecords([$article->getKey()])
+            ->callAction(TestAction::make('archive')->table()->bulk())
+            ->assertNotified('1 deleted');
+
+        expect(Article::query()->whereKey($article->getKey())->exists())->toBeFalse();
+    });
+
+    it('authorizes records that will be archived with the `archive` ability when the policy has an `archive` method', function (): void {
+        ArticleResource::$authorizesIndividualRecords = true;
+        ArticlePolicy::$abilities['archive'] = false;
+
+        $usedArticle = Article::factory()->create();
+        Review::factory()->create(['article_id' => $usedArticle->id]);
+
+        $unusedArticle = Article::factory()->create();
+
+        Livewire::test(ListArticles::class)
+            ->selectTableRecords([$usedArticle->getKey(), $unusedArticle->getKey()])
+            ->callAction(TestAction::make('archive')->table()->bulk())
+            ->assertNotified('1 deleted');
+
+        expect($usedArticle->refresh()->isArchived())->toBeFalse();
+        expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeFalse();
+    });
+
+    it('ignores the delete ability for records that will be archived when the policy has an `archive` method', function (): void {
+        ArticleResource::$authorizesIndividualRecords = true;
+        ArticlePolicy::$abilities['delete'] = false;
+
+        $usedArticle = Article::factory()->create();
+        Review::factory()->create(['article_id' => $usedArticle->id]);
+
+        $unusedArticle = Article::factory()->create();
+
+        Livewire::test(ListArticles::class)
+            ->selectTableRecords([$usedArticle->getKey(), $unusedArticle->getKey()])
+            ->callAction(TestAction::make('archive')->table()->bulk())
+            ->assertNotified('1 archived');
+
+        expect($usedArticle->refresh()->isArchived())->toBeTrue();
+        expect(Article::query()->whereKey($unusedArticle->getKey())->exists())->toBeTrue();
+    });
 });
 
 describe('backwards compatibility', function (): void {
@@ -446,18 +478,4 @@ describe('backwards compatibility', function (): void {
 
         expect(Image::query()->onlyArchived()->count())->toBe(2);
     });
-});
-
-it('includes already-archived used records in the archived count', function (): void {
-    $usedArticles = Article::factory()->count(2)->create();
-    $usedArticles->each(fn (Article $article) => Review::factory()->create(['article_id' => $article->id]));
-
-    $usedArticles->first()->archive();
-
-    Livewire::test(ListArticles::class)
-        ->selectTableRecords($usedArticles->pluck('id')->all())
-        ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('2 archived');
-
-    expect(Article::query()->onlyArchived()->count())->toBe(2);
 });

@@ -37,6 +37,7 @@
 namespace Workbench\App\Filament\Resources\Projects\Pages;
 
 use CanyonGBS\Common\Filament\Actions\ArchiveAction;
+use CanyonGBS\Common\Filament\Actions\UnarchiveAction;
 use Filament\Resources\Pages\ViewRecord;
 use Workbench\App\Filament\Resources\Projects\ProjectResource;
 
@@ -48,6 +49,7 @@ class ViewProject extends ViewRecord
     {
         return [
             ArchiveAction::make(),
+            UnarchiveAction::make(),
         ];
     }
 }
