@@ -81,7 +81,7 @@ class MiddlenameMapper extends AbstractMapper
      *
      * @return array<int, string|AbstractPart|Middlename>
      */
-    protected function mapFrom($start, $parts): array
+    protected function mapFrom($start, array $parts): array
     {
         // If we don't expect a lastname, include the last part,
         // otherwise skip the last (-1) because it should be a lastname

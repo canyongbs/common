@@ -43,7 +43,7 @@ use CanyonGBS\Common\Parser\Part\Suffix;
 /**
  * @return array
  */
-dataset('provider', function () {
+dataset('provider', function (): array {
     return [
         [
             ['Mr.', 'James', 'Blueberg', 'PhD'],
@@ -93,7 +93,7 @@ dataset('provider', function () {
     ];
 });
 
-it('maps suffix parts correctly', function (array $input, array $expected, array $config) {
+it('maps suffix parts correctly', function (array $input, array $expected, array $config): void {
     $matchSinglePart = $config['matchSinglePart'] ?? false;
     $reservedParts = $config['reservedParts'] ?? 2;
 

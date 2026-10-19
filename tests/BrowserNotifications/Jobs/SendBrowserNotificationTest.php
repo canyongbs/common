@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Workbench\App\Models\BrowserNotificationUser;
 
-it('uses the database notification ID as its unique key', function () {
+it('uses the database notification ID as its unique key', function (): void {
     $payload = new BrowserNotificationPayload(
         id: '123e4567-e89b-12d3-a456-426614174000',
         title: 'Request assigned',
@@ -59,7 +59,7 @@ it('uses the database notification ID as its unique key', function () {
     expect($job->uniqueId())->toBe($payload->id . ':subscription-id');
 });
 
-it('sends the browser notification through Laravels notification dispatcher', function () {
+it('sends the browser notification through Laravels notification dispatcher', function (): void {
     Notification::fake();
 
     $user = BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']);

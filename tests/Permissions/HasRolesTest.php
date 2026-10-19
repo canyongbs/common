@@ -37,7 +37,7 @@
 use CanyonGBS\Common\Models\Role;
 use Workbench\App\Models\User;
 
-it('assigns and checks roles', function () {
+it('assigns and checks roles', function (): void {
     $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
     Role::create(['name' => 'Editor', 'guard_name' => 'web']);
@@ -50,7 +50,7 @@ it('assigns and checks roles', function () {
     expect($user->hasAnyRole(['Admin', 'Editor']))->toBeTrue();
 });
 
-it('only exposes roles matching the model\'s guard', function () {
+it('only exposes roles matching the model\'s guard', function (): void {
     $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
     $webRole = Role::create(['name' => 'Editor', 'guard_name' => 'web']);

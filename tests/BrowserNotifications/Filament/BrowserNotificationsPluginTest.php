@@ -44,7 +44,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Workbench\App\Models\BrowserNotificationUser;
 
-it('renders the permission prompt only when the consuming app enables the feature', function () {
+it('renders the permission prompt only when the consuming app enables the feature', function (): void {
     Filament::setCurrentPanel('testing');
     Filament::bootCurrentPanel();
 
@@ -63,7 +63,7 @@ it('renders the permission prompt only when the consuming app enables the featur
         ->not->toContain('x-data="browserNotificationsPrompt"');
 });
 
-it('allows the permission prompt to be disabled', function () {
+it('allows the permission prompt to be disabled', function (): void {
     $panel = Panel::make()
         ->id('browser-notifications-without-prompt')
         ->plugin(BrowserNotificationsPlugin::make()->prompt(false));
@@ -74,7 +74,7 @@ it('allows the permission prompt to be disabled', function () {
         ->not->toHaveKey(PanelsRenderHook::BODY_END);
 });
 
-it('renders a loading state while checking browser notification status', function () {
+it('renders a loading state while checking browser notification status', function (): void {
     expect(view('common::browser-notifications.settings')->render())
         ->toContain('x-show="status === \'loading\'"')
         ->toContain('fi-loading-indicator')
@@ -82,7 +82,7 @@ it('renders a loading state while checking browser notification status', functio
         ->toContain('x-show="status !== \'loading\'"');
 });
 
-it('records browser opt-out before independently cleaning up the subscription', function () {
+it('records browser opt-out before independently cleaning up the subscription', function (): void {
     $script = file_get_contents(dirname(__DIR__, 3) . '/resources/js/dist/filament/browser-notifications.js');
 
     expect($script)->not->toBeFalse();

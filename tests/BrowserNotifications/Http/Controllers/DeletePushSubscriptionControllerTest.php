@@ -43,7 +43,7 @@ use function Pest\Laravel\deleteJson;
 use Workbench\App\Models\BrowserNotificationUser;
 use Workbench\App\Models\PushSubscription;
 
-it('deletes only the current users browser subscription', function () {
+it('deletes only the current users browser subscription', function (): void {
     $user = BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']);
     $endpoint = 'https://push.example.com/subscriptions/' . Str::uuid();
 

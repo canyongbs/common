@@ -93,15 +93,15 @@ class CommonServiceProvider extends PackageServiceProvider
 
         $this->app->scoped(PermissionResolver::class);
 
-        $this->app->singleton(MakeTmpMigration::class, function (Application $app) {
+        $this->app->singleton(MakeTmpMigration::class, function (Application $app): MakeTmpMigration {
             return new MakeTmpMigration($app['migration.creator'], $app[Composer::class]);
         });
 
-        $this->app->singleton(PermissionMigrationCreator::class, function (Application $app) {
+        $this->app->singleton(PermissionMigrationCreator::class, function (Application $app): PermissionMigrationCreator {
             return new PermissionMigrationCreator($app['files'], $app->basePath('stubs'));
         });
 
-        $this->app->singleton(CreatePermissionMigration::class, function (Application $app) {
+        $this->app->singleton(CreatePermissionMigration::class, function (Application $app): CreatePermissionMigration {
             return new CreatePermissionMigration($app[PermissionMigrationCreator::class], $app[Composer::class]);
         });
 
@@ -157,7 +157,7 @@ class CommonServiceProvider extends PackageServiceProvider
             'rose' => Color::Rose,
         ]);
 
-        TimezoneSelect::configureUsing(function (TimezoneSelect $component) {
+        TimezoneSelect::configureUsing(function (TimezoneSelect $component): void {
             $component->searchable();
         });
     }

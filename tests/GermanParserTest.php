@@ -41,7 +41,7 @@ use CanyonGBS\Common\Parser\Parser;
 /**
  * @return array
  */
-dataset('provider', function () {
+dataset('provider', function (): array {
     return [
         [
             'Herr Schmidt',
@@ -77,7 +77,7 @@ dataset('provider', function () {
     ];
 });
 
-test('parse', function ($input, $expectation) {
+test('parse', function ($input, $expectation): void {
     $parser = new Parser([
         new German(),
     ]);

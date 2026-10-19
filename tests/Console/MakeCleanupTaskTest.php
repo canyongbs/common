@@ -37,7 +37,7 @@
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->travelTo(Carbon::create(2026, 5, 1, 12, 0, 0));
     $this->testDir = sys_get_temp_dir() . '/' . uniqid('common-cleanup-test-');
     mkdir($this->testDir, 0755, true);
@@ -45,11 +45,11 @@ beforeEach(function () {
     $this->cleanupDir = $this->app->basePath('.cleanup-tasks');
 });
 
-afterEach(function () {
+afterEach(function (): void {
     File::deleteDirectory($this->testDir);
 });
 
-it('creates a cleanup task file with the given name argument', function () {
+it('creates a cleanup task file with the given name argument', function (): void {
     $this->artisan('make:cleanup', ['name' => 'refactor_auth'])
         ->assertSuccessful();
 
@@ -63,7 +63,7 @@ it('creates a cleanup task file with the given name argument', function () {
         ->and($content)->toContain('created: 2026-05-01');
 });
 
-it('prompts for name when no argument is provided', function () {
+it('prompts for name when no argument is provided', function (): void {
     $this->artisan('make:cleanup')
         ->expectsQuestion('What should the cleanup task be named?', 'my_task')
         ->assertSuccessful();
@@ -73,7 +73,7 @@ it('prompts for name when no argument is provided', function () {
     expect(file_exists($expectedFile))->toBeTrue();
 });
 
-it('creates the cleanup-tasks directory when it does not exist', function () {
+it('creates the cleanup-tasks directory when it does not exist', function (): void {
     expect(is_dir($this->cleanupDir))->toBeFalse();
 
     $this->artisan('make:cleanup', ['name' => 'test'])
@@ -82,18 +82,18 @@ it('creates the cleanup-tasks directory when it does not exist', function () {
     expect(is_dir($this->cleanupDir))->toBeTrue();
 });
 
-it('outputs success message with file path', function () {
+it('outputs success message with file path', function (): void {
     $this->artisan('make:cleanup', ['name' => 'test_task'])
         ->assertSuccessful()
         ->expectsOutputToContain('created successfully');
 });
 
-it('returns exit code 0', function () {
+it('returns exit code 0', function (): void {
     $this->artisan('make:cleanup', ['name' => 'test'])
         ->assertExitCode(0);
 });
 
-it('fails when a cleanup task with the same name already exists for today', function () {
+it('fails when a cleanup task with the same name already exists for today', function (): void {
     File::makeDirectory($this->cleanupDir, 0755, true);
     $existingFile = $this->cleanupDir . '/2026_05_01_duplicate.md';
     $originalContent = "---\ntitle: Duplicate\ncreated: 2026-05-01\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n";

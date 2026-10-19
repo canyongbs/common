@@ -46,39 +46,39 @@ $runPhpStanOnModelMustBeAuditableOrNotAuditedFixture = function (string $filePat
         'output' => implode("\n", $outputLines),
     ];
 };
-it('does not report models that implement the Auditable contract', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture) {
+it('does not report models that implement the Auditable contract', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture): void {
     $result = $runPhpStanOnModelMustBeAuditableOrNotAuditedFixture('tests/PHPStan/Fixtures/Auditing/ModelImplementingAuditableFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report models that implement the Auditable contract.\nOutput: {$result['output']}");
 });
 
-it('does not report models that are marked with the NotAudited attribute', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture) {
+it('does not report models that are marked with the NotAudited attribute', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture): void {
     $result = $runPhpStanOnModelMustBeAuditableOrNotAuditedFixture('tests/PHPStan/Fixtures/Auditing/ModelWithNotAuditedAttributeFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report models marked with the #[NotAudited] attribute.\nOutput: {$result['output']}");
 });
 
-it('reports models that are neither Auditable nor marked with the NotAudited attribute', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture) {
+it('reports models that are neither Auditable nor marked with the NotAudited attribute', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture): void {
     $result = $runPhpStanOnModelMustBeAuditableOrNotAuditedFixture('tests/PHPStan/Fixtures/Auditing/ModelMissingAuditingFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.modelMustBeAuditableOrNotAudited');
 });
 
-it('reports concrete models that only inherit the NotAudited attribute from a parent', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture) {
+it('reports concrete models that only inherit the NotAudited attribute from a parent', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture): void {
     $result = $runPhpStanOnModelMustBeAuditableOrNotAuditedFixture('tests/PHPStan/Fixtures/Auditing/ModelInheritingNotAuditedFromParentFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.modelMustBeAuditableOrNotAudited');
 });
 
-it('does not report abstract models', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture) {
+it('does not report abstract models', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture): void {
     $result = $runPhpStanOnModelMustBeAuditableOrNotAuditedFixture('tests/PHPStan/Fixtures/AbstractModelFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract models.\nOutput: {$result['output']}");
 });
 
-it('does not report classes that are not models', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture) {
+it('does not report classes that are not models', function () use ($runPhpStanOnModelMustBeAuditableOrNotAuditedFixture): void {
     $result = $runPhpStanOnModelMustBeAuditableOrNotAuditedFixture('tests/PHPStan/Fixtures/NonModelClassFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report classes that are not models.\nOutput: {$result['output']}");

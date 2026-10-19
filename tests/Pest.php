@@ -69,7 +69,7 @@ function skillFrontmatter(string $path): array
     return $frontmatter;
 }
 
-dataset('skills', function () {
+dataset('skills', function (): array {
     $skills = [];
 
     foreach (glob(dirname(__DIR__) . '/.ai/skills/*', GLOB_ONLYDIR) ?: [] as $directory) {

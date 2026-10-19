@@ -41,14 +41,14 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamps();
         });
 
-        Schema::create('roles', function (Blueprint $table) {
+        Schema::create('roles', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('guard_name');
@@ -58,7 +58,7 @@ return new class () extends Migration {
             $table->unique(['name', 'guard_name']);
         });
 
-        Schema::create('role_assignments', function (Blueprint $table) {
+        Schema::create('role_assignments', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('role_id')->constrained('roles')->cascadeOnDelete();
             $table->uuidMorphs('model');
@@ -67,7 +67,7 @@ return new class () extends Migration {
             $table->unique(['role_id', 'model_id', 'model_type'], 'role_assignments_role_model_type_unique');
         });
 
-        Schema::create('role_permissions', function (Blueprint $table) {
+        Schema::create('role_permissions', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('role_id')->constrained('roles')->cascadeOnDelete();
             $table->string('permission');

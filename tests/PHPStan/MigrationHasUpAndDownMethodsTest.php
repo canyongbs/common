@@ -46,13 +46,13 @@ $runPhpStanOnMigrationHasUpAndDownMethodsFixture = function (string $filePath): 
         'output' => implode("\n", $outputLines),
     ];
 };
-it('does not report migrations that define both up() and down() methods', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture) {
+it('does not report migrations that define both up() and down() methods', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture): void {
     $result = $runPhpStanOnMigrationHasUpAndDownMethodsFixture('tests/PHPStan/Fixtures/MigrationWithUpAndDownFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report migrations that define both up() and down().\nOutput: {$result['output']}");
 });
 
-it('reports migrations that are missing a down() method', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture) {
+it('reports migrations that are missing a down() method', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture): void {
     $result = $runPhpStanOnMigrationHasUpAndDownMethodsFixture('tests/PHPStan/Fixtures/MigrationMissingDownFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -60,7 +60,7 @@ it('reports migrations that are missing a down() method', function () use ($runP
     expect($result['output'])->not->toContain('Common.migrationMissingUpMethod');
 });
 
-it('reports migrations that are missing an up() method', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture) {
+it('reports migrations that are missing an up() method', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture): void {
     $result = $runPhpStanOnMigrationHasUpAndDownMethodsFixture('tests/PHPStan/Fixtures/MigrationMissingUpFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -68,7 +68,7 @@ it('reports migrations that are missing an up() method', function () use ($runPh
     expect($result['output'])->not->toContain('Common.migrationMissingDownMethod');
 });
 
-it('reports migrations that are missing both up() and down() methods', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture) {
+it('reports migrations that are missing both up() and down() methods', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture): void {
     $result = $runPhpStanOnMigrationHasUpAndDownMethodsFixture('tests/PHPStan/Fixtures/MigrationMissingBothFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -76,20 +76,20 @@ it('reports migrations that are missing both up() and down() methods', function 
     expect($result['output'])->toContain('Common.migrationMissingDownMethod');
 });
 
-it('does not report anonymous migrations that define both up() and down() methods', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture) {
+it('does not report anonymous migrations that define both up() and down() methods', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture): void {
     $result = $runPhpStanOnMigrationHasUpAndDownMethodsFixture('tests/PHPStan/Fixtures/AnonymousMigrationWithUpAndDownFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report anonymous migrations that define both up() and down().\nOutput: {$result['output']}");
 });
 
-it('reports anonymous migrations that are missing a down() method', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture) {
+it('reports anonymous migrations that are missing a down() method', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture): void {
     $result = $runPhpStanOnMigrationHasUpAndDownMethodsFixture('tests/PHPStan/Fixtures/AnonymousMigrationMissingDownFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.migrationMissingDownMethod');
 });
 
-it('does not report classes that are not migrations', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture) {
+it('does not report classes that are not migrations', function () use ($runPhpStanOnMigrationHasUpAndDownMethodsFixture): void {
     $result = $runPhpStanOnMigrationHasUpAndDownMethodsFixture('tests/PHPStan/Fixtures/NonMigrationClassFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report classes that are not migrations.\nOutput: {$result['output']}");

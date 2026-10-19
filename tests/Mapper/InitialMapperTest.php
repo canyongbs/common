@@ -39,7 +39,7 @@ use CanyonGBS\Common\Parser\Part\Initial;
 use CanyonGBS\Common\Parser\Part\Lastname;
 use CanyonGBS\Common\Parser\Part\Salutation;
 
-dataset('provider', function () {
+dataset('provider', function (): array {
     return [
         [
             'input' => ['A', 'B'],
@@ -74,7 +74,7 @@ dataset('provider', function () {
     ];
 });
 
-it('maps initial parts correctly', function (array $input, array $expectation, array $arguments = []) {
+it('maps initial parts correctly', function (array $input, array $expectation, array $arguments = []): void {
     $maxCombined = $arguments[0] ?? 2;
     $matchLastPart = $arguments[1] ?? false;
 

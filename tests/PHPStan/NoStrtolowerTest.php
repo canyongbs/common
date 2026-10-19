@@ -46,20 +46,20 @@ $runPhpStanOnNoStrtolowerFixture = function (string $filePath): array {
         'output' => implode("\n", $outputLines),
     ];
 };
-it('reports calls to the global strtolower() function', function () use ($runPhpStanOnNoStrtolowerFixture) {
+it('reports calls to the global strtolower() function', function () use ($runPhpStanOnNoStrtolowerFixture): void {
     $result = $runPhpStanOnNoStrtolowerFixture('tests/PHPStan/Fixtures/StrtolowerFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.noStrtolower');
 });
 
-it('does not report Str::lower() or mb_strtolower() calls', function () use ($runPhpStanOnNoStrtolowerFixture) {
+it('does not report Str::lower() or mb_strtolower() calls', function () use ($runPhpStanOnNoStrtolowerFixture): void {
     $result = $runPhpStanOnNoStrtolowerFixture('tests/PHPStan/Fixtures/StrLowerFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report Str::lower() or mb_strtolower() calls.\nOutput: {$result['output']}");
 });
 
-it('allows strtolower() calls silenced with a specific inline ignore', function () use ($runPhpStanOnNoStrtolowerFixture) {
+it('allows strtolower() calls silenced with a specific inline ignore', function () use ($runPhpStanOnNoStrtolowerFixture): void {
     $result = $runPhpStanOnNoStrtolowerFixture('tests/PHPStan/Fixtures/StrtolowerIgnoredFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should respect the inline ignore for strtolower() calls.\nOutput: {$result['output']}");

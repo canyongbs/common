@@ -51,32 +51,32 @@
  * `SkillConventions` test, since those are our preferences and will grow over
  * time independently of the spec.
  */
-it('has a SKILL.md file', function (string $name, string $path) {
+it('has a SKILL.md file', function (string $name, string $path): void {
     expect($path)->toBeFile();
 })->with('skills');
 
-it('has a `name` that matches its directory', function (string $name, string $path) {
+it('has a `name` that matches its directory', function (string $name, string $path): void {
     $frontmatter = skillFrontmatter($path);
 
     expect($frontmatter)->toHaveKey('name')
         ->and($frontmatter['name'])->toBe($name);
 })->with('skills');
 
-it('has a `name` no longer than 64 characters', function (string $name, string $path) {
+it('has a `name` no longer than 64 characters', function (string $name, string $path): void {
     $value = skillFrontmatter($path)['name'] ?? null;
 
     expect($value)->toBeString()
         ->and(mb_strlen((string) $value, 'UTF-8'))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(64);
 })->with('skills');
 
-it('has a `name` containing only lowercase letters, numbers, and hyphens', function (string $name, string $path) {
+it('has a `name` containing only lowercase letters, numbers, and hyphens', function (string $name, string $path): void {
     $value = skillFrontmatter($path)['name'] ?? null;
 
     expect($value)->toBeString()
         ->and($value)->toMatch('/^[a-z0-9-]+$/');
 })->with('skills');
 
-it('has a `name` that does not start or end with a hyphen', function (string $name, string $path) {
+it('has a `name` that does not start or end with a hyphen', function (string $name, string $path): void {
     $value = skillFrontmatter($path)['name'] ?? null;
 
     expect($value)->toBeString()
@@ -84,21 +84,21 @@ it('has a `name` that does not start or end with a hyphen', function (string $na
         ->and(str_ends_with((string) $value, '-'))->toBeFalse();
 })->with('skills');
 
-it('has a `name` that does not contain consecutive hyphens', function (string $name, string $path) {
+it('has a `name` that does not contain consecutive hyphens', function (string $name, string $path): void {
     $value = skillFrontmatter($path)['name'] ?? null;
 
     expect($value)->toBeString()
         ->and(str_contains((string) $value, '--'))->toBeFalse();
 })->with('skills');
 
-it('has a non-empty `description` within the 1024-character limit', function (string $name, string $path) {
+it('has a non-empty `description` within the 1024-character limit', function (string $name, string $path): void {
     $value = skillFrontmatter($path)['description'] ?? null;
 
     expect($value)->toBeString()
         ->and(mb_strlen((string) $value, 'UTF-8'))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(1024);
 })->with('skills');
 
-it('has a `compatibility` value within the 500-character limit', function (string $name, string $path) {
+it('has a `compatibility` value within the 500-character limit', function (string $name, string $path): void {
     $frontmatter = skillFrontmatter($path);
 
     if (! array_key_exists('compatibility', $frontmatter)) {
