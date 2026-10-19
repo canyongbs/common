@@ -53,28 +53,6 @@ it('can archive a model', function () {
     expect($project->archived_at)->toBeInstanceOf(Carbon::class);
 });
 
-it('can exclude archived models with `withoutArchived` scope', function () {
-    $activeProject = Project::factory()->create();
-    $archivedProject = Project::factory()->create();
-    $archivedProject->archive();
-
-    $projects = Project::withoutArchived()->get();
-
-    expect($projects)->toHaveCount(1);
-    expect($projects->first()->id)->toBe($activeProject->id);
-});
-
-it('can get only archived models with `onlyArchived` scope', function () {
-    Project::factory()->create();
-    $archivedProject = Project::factory()->create();
-    $archivedProject->archive();
-
-    $projects = Project::onlyArchived()->get();
-
-    expect($projects)->toHaveCount(1);
-    expect($projects->first()->id)->toBe($archivedProject->id);
-});
-
 it('can unarchive a model', function () {
     $project = Project::factory()->create();
     $project->archive();
@@ -206,6 +184,65 @@ it('updates the `updated_at` timestamp when archiving', function () {
     Carbon::setTestNow();
 });
 
+it('updates the `updated_at` timestamp when unarchiving', function () {
+    $project = Project::factory()->create();
+    $project->archive();
+    $originalUpdatedAt = $project->updated_at;
+
+    Carbon::setTestNow(now()->addMinute());
+
+    $project->unarchive();
+
+    expect($project->updated_at->gt($originalUpdatedAt))->toBeTrue();
+    expect($project->fresh()->updated_at->gt($originalUpdatedAt))->toBeTrue();
+
+    Carbon::setTestNow();
+});
+
+it('does not persist other pending changes when archiving', function () {
+    $project = Project::factory()->create(['name' => 'Apollo']);
+
+    $project->name = 'Gemini';
+
+    $project->archive();
+
+    expect($project->fresh()->name)->toBe('Apollo');
+    expect($project->fresh()->isArchived())->toBeTrue();
+    expect($project->isDirty('name'))->toBeTrue();
+});
+
+it('does not persist other pending changes when unarchiving', function () {
+    $project = Project::factory()->create(['name' => 'Apollo']);
+    $project->archive();
+
+    $project->name = 'Gemini';
+
+    $project->unarchive();
+
+    expect($project->fresh()->name)->toBe('Apollo');
+    expect($project->fresh()->isArchived())->toBeFalse();
+    expect($project->isDirty('name'))->toBeTrue();
+});
+
+it('archives a model with a pending attribute that is not a column', function () {
+    $article = Article::factory()->create();
+
+    $article->reviews_exists = false;
+
+    expect($article->archive())->toBeTrue();
+    expect($article->fresh()->isArchived())->toBeTrue();
+});
+
+it('unarchives a model with a pending attribute that is not a column', function () {
+    $article = Article::factory()->create();
+    $article->archive();
+
+    $article->reviews_exists = false;
+
+    expect($article->unarchive())->toBeTrue();
+    expect($article->fresh()->isArchived())->toBeFalse();
+});
+
 it('can bulk archive models using query builder', function () {
     Project::factory()->count(3)->create();
 
@@ -233,6 +270,28 @@ it('includes archived models in queries by default', function () {
     $archivedProject->archive();
 
     expect(Project::count())->toBe(2);
+});
+
+it('can exclude archived models with `withoutArchived` scope', function () {
+    $activeProject = Project::factory()->create();
+    $archivedProject = Project::factory()->create();
+    $archivedProject->archive();
+
+    $projects = Project::withoutArchived()->get();
+
+    expect($projects)->toHaveCount(1);
+    expect($projects->first()->id)->toBe($activeProject->id);
+});
+
+it('can get only archived models with `onlyArchived` scope', function () {
+    Project::factory()->create();
+    $archivedProject = Project::factory()->create();
+    $archivedProject->archive();
+
+    $projects = Project::onlyArchived()->get();
+
+    expect($projects)->toHaveCount(1);
+    expect($projects->first()->id)->toBe($archivedProject->id);
 });
 
 it('excludes archived and unused models with `withoutArchivedAndUnused` scope', function () {
@@ -278,4 +337,11 @@ it('memoizes the relation existence in `isUsed()` after the first check', functi
 
     expect($article->isUsed())->toBeFalse();
     expect($article->fresh()->isUsed())->toBeTrue();
+});
+
+it('does not mark the model as dirty when memoizing the relation existence in `isUsed()`', function () {
+    $article = Article::factory()->create();
+
+    expect($article->isUsed())->toBeFalse();
+    expect($article->isDirty())->toBeFalse();
 });

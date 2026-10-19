@@ -89,8 +89,6 @@ class ArchivingScope implements Scope
     protected function addUnarchive(Builder $builder): void
     {
         $builder->macro('unarchive', function (Builder $builder) {
-            $builder->withoutGlobalScope(ArchivingScope::class);
-
             $model = $builder->getModel();
 
             return $builder->update([(method_exists($model, 'getArchivedAtColumn') ? $model->getArchivedAtColumn() : 'archived_at') => null]);

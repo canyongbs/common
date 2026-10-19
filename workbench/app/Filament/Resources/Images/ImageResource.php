@@ -37,6 +37,7 @@
 namespace Workbench\App\Filament\Resources\Images;
 
 use CanyonGBS\Common\Filament\Actions\ArchiveBulkAction;
+use CanyonGBS\Common\Filament\Actions\UnarchiveBulkAction;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -60,6 +61,8 @@ class ImageResource extends Resource
             ])
             ->toolbarActions([
                 ArchiveBulkAction::make()
+                    ->authorizeIndividualRecords(static::$authorizesIndividualRecords ? 'delete' : null),
+                UnarchiveBulkAction::make()
                     ->authorizeIndividualRecords(static::$authorizesIndividualRecords ? 'delete' : null),
             ]);
     }

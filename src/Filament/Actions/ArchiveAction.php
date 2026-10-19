@@ -36,6 +36,7 @@
 
 namespace CanyonGBS\Common\Filament\Actions;
 
+use CanyonGBS\Common\Filament\Actions\Concerns\ResolvesArchiveAbility;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
@@ -43,12 +44,12 @@ use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class ArchiveAction extends Action
 {
     use CanCustomizeProcess;
+    use ResolvesArchiveAbility;
 
     protected function setUp(): void
     {
@@ -61,8 +62,7 @@ class ArchiveAction extends Action
         $this->modalSubmitActionLabel(fn (Model $record): string => $this->shouldDeleteInsteadOfArchive($record) ? 'Delete' : 'Archive');
 
         $this->successNotificationTitle(function (?Model $record): string {
-            // The record is no longer resolvable once it has been deleted,
-            // which only happens after a successful deletion.
+            // The record can no longer be resolved after it has been deleted.
             if (! $record instanceof Model) {
                 return 'Deleted';
             }
@@ -121,11 +121,9 @@ class ArchiveAction extends Action
                 throw new Exception('Unsupported Livewire component for [ArchiveAction] authorization. It must be used within [EditRecord] or [ViewRecord], or a custom [authorize()] function must be used.');
             }
 
-            if ((! $this->shouldDeleteInsteadOfArchive($record)) && $this->hasArchivePolicyMethod($record)) {
-                return $livewire::getResource()::can('archive', $record);
-            }
+            $ability = $this->shouldDeleteInsteadOfArchive($record) ? 'delete' : $this->getArchiveAbility($record);
 
-            return $livewire::getResource()::can('delete', $record);
+            return $livewire::getResource()::can($ability, $record);
         });
 
         $this->successRedirectUrl(function (Component $livewire): string {
@@ -143,10 +141,7 @@ class ArchiveAction extends Action
     }
 
     /**
-     * Archiving exists to preserve records that are still referenced elsewhere.
-     * A model may define an optional `isUsed()` method to report whether the
-     * individual record is still referenced, in which case unreferenced records
-     * are safe to delete outright instead of being archived.
+     * Models opt into deleting unused records by defining `isUsed()`.
      */
     public function shouldDeleteInsteadOfArchive(?Model $record = null): bool
     {
@@ -161,12 +156,5 @@ class ArchiveAction extends Action
         }
 
         return ! $record->isUsed();
-    }
-
-    protected function hasArchivePolicyMethod(Model $record): bool
-    {
-        $policy = Gate::getPolicyFor($record::class);
-
-        return filled($policy) && method_exists($policy, 'archive');
     }
 }

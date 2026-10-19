@@ -57,9 +57,10 @@ use Tpetry\PostgresqlEnhanced\Support\Facades\Schema;
 - **NULLs are distinct by default** — PostgreSQL permits multiple NULLs in a unique index. Use `->nullsNotDistinct()` when NULLs must collide (e.g. only one row may have a NULL `parent_id`), or a partial `->where(fn (Builder $condition) => $condition->whereNotNull('col'))` to constrain only non-NULL values.
 
 - **Match unique validation to the index.** When the index is scoped to `whereNull('deleted_at')`, the validation rule must be too, or soft-deleted rows cause false conflicts:
-    - Filament / model-resolved rules: `->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->withoutTrashed())`.
+    - Filament fields: `->scopedUnique()`. It queries through the model's Eloquent builder, so the `SoftDeletes` scope excludes trashed rows, and it ignores the current record on edit. Plain `->unique()` queries the table directly and still matches trashed rows.
     - Raw-table `Rule::unique('table', 'column')`: `->whereNull('deleted_at')` (plus `->ignore($record)` on update).
-    - Add `->where('other_column', $get('other_column'))` for composite / scoped indexes.
+    - For composite / scoped indexes, constrain the other columns: `->scopedUnique(modifyQueryUsing: fn (Builder $query, Get $get): Builder => $query->where('property_id', $get('property_id')))`, or `->where(...)` on `Rule::unique`.
+    - `scopedUnique()` registers a closure rule, so its error has no rule name: assert it with `assertHasFormErrors(['name'])`, not `['name' => 'unique']`.
 
 ## Never Use `->after()`
 
@@ -117,7 +118,9 @@ Immutability applies to the migration's schema/data logic, not to these deletion
 
 ## Add Indexes in the Migration
 
-Add indexes when creating the table, not as an afterthought. Columns used in `WHERE`, `ORDER BY`, and `JOIN` clauses need indexes.
+Add indexes when creating the table, not as an afterthought. Columns used in `WHERE`, `ORDER BY`, and `JOIN` clauses need indexes. PostgreSQL does not index foreign key columns automatically.
+
+Chain `->index()` before `->constrained()`: `constrained()` returns the foreign key definition, so a trailing `->index()` is silently ignored and no index is created. Skip it when a unique or composite index already leads with the column.
 
 Incorrect:
 
@@ -135,7 +138,7 @@ Correct:
 ```php
 Schema::create('orders', function (Blueprint $table) {
     $table->uuid('id')->primary();
-    $table->foreignUuid('user_id')->constrained()->index();
+    $table->foreignUuid('user_id')->index()->constrained();
     $table->string('status')->index();
     $table->timestamp('shipped_at')->nullable()->index();
     $table->timestamps();

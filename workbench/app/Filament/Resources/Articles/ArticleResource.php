@@ -37,6 +37,7 @@
 namespace Workbench\App\Filament\Resources\Articles;
 
 use CanyonGBS\Common\Filament\Actions\ArchiveBulkAction;
+use CanyonGBS\Common\Filament\Actions\UnarchiveBulkAction;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -68,6 +69,10 @@ class ArticleResource extends Resource
             ])
             ->toolbarActions([
                 ArchiveBulkAction::make()
+                    ->authorizeIndividualRecords(static::$authorizesIndividualRecords ? 'delete' : null)
+                    ->fetchSelectedRecords(static::$fetchesSelectedRecords)
+                    ->chunkSelectedRecords(static::$selectedRecordsChunkSize),
+                UnarchiveBulkAction::make()
                     ->authorizeIndividualRecords(static::$authorizesIndividualRecords ? 'delete' : null)
                     ->fetchSelectedRecords(static::$fetchesSelectedRecords)
                     ->chunkSelectedRecords(static::$selectedRecordsChunkSize),
