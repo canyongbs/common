@@ -58,9 +58,9 @@
             dot: 'bg-amber-500',
         },
         info: {
-            base: 'bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-600/10',
-            hover: 'hover:bg-sky-100 hover:text-sky-800',
-            dot: 'bg-sky-500',
+            base: 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/10',
+            hover: 'hover:bg-blue-100 hover:text-blue-800',
+            dot: 'bg-blue-500',
         },
         gray: {
             base: 'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-600/10',

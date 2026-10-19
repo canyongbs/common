@@ -53,6 +53,11 @@
             type: String,
             default: null,
         },
+        role: {
+            type: String,
+            default: 'note',
+            validator: (v) => ['note', 'status', 'alert'].includes(v),
+        },
         size: {
             type: String,
             default: 'lg',
@@ -71,11 +76,11 @@
         },
         warning: {
             icon: ExclamationTriangleIcon,
-            surface: 'bg-orange-50 ring-orange-600/20',
-            largeIcon: 'bg-orange-400 text-white',
-            smallIcon: 'text-orange-600',
-            title: 'text-orange-800',
-            text: 'text-orange-700',
+            surface: 'bg-amber-50 ring-amber-600/20',
+            largeIcon: 'bg-amber-400 text-white',
+            smallIcon: 'text-amber-600',
+            title: 'text-amber-800',
+            text: 'text-amber-700',
         },
         danger: {
             icon: XMarkIcon,
@@ -110,7 +115,7 @@
 
 <template>
     <section
-        role="status"
+        :role="role"
         :class="[
             'flex flex-col gap-4 rounded-lg shadow-sm ring-1 ring-inset md:flex-row md:justify-between',
             isLarge ? 'px-5 py-4 md:items-center' : 'px-4 py-3',

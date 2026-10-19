@@ -32,7 +32,7 @@
 </COPYRIGHT>
 -->
 <template>
-    <td class="px-4 py-3.5 align-top">
+    <td class="px-4 py-3.5 align-top sm:first:ps-6 sm:last:pe-6">
         <slot />
     </td>
 </template>

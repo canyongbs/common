@@ -95,7 +95,7 @@
     <nav
         aria-label="Pagination"
         role="navigation"
-        class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 border-t border-gray-200 px-6 py-3"
+        class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 border-t border-gray-200 px-4 py-3 sm:px-6"
         :class="lastPage <= 1 && 'hidden md:grid'"
     >
         <button

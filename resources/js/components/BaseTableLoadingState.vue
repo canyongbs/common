@@ -53,7 +53,7 @@
 </script>
 
 <template>
-    <BaseTable role="status" class="animate-pulse">
+    <BaseTable role="status" :aria-label="label" class="animate-pulse">
         <BaseTableHeader>
             <tr>
                 <th v-for="col in columns" :key="col" class="px-4 py-3">
@@ -74,6 +74,5 @@
                 </td>
             </tr>
         </BaseTableBody>
-        <span class="sr-only">{{ label }}</span>
     </BaseTable>
 </template>

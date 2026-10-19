@@ -67,7 +67,11 @@
 </script>
 
 <template>
-    <th :scope="scope" :aria-sort="ariaSort" class="px-4 py-3 text-xs font-semibold text-gray-500">
+    <th
+        :scope="scope"
+        :aria-sort="ariaSort"
+        class="px-4 py-3 text-xs font-semibold text-gray-500 sm:first:ps-6 sm:last:pe-6"
+    >
         <button
             v-if="sortable"
             type="button"
