@@ -37,6 +37,7 @@
 namespace Workbench\App\Filament\Resources\Articles\Pages;
 
 use CanyonGBS\Common\Filament\Actions\ArchiveAction;
+use CanyonGBS\Common\Filament\Actions\UnarchiveAction;
 use Filament\Resources\Pages\EditRecord;
 use Workbench\App\Filament\Resources\Articles\ArticleResource;
 
@@ -48,6 +49,7 @@ class EditArticle extends EditRecord
     {
         return [
             ArchiveAction::make(),
+            UnarchiveAction::make(),
         ];
     }
 }

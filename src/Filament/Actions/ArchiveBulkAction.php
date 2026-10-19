@@ -36,6 +36,7 @@
 
 namespace CanyonGBS\Common\Filament\Actions;
 
+use CanyonGBS\Common\Filament\Actions\Concerns\ResolvesArchiveAbility;
 use Exception;
 use Filament\Actions\BulkAction;
 use Filament\Actions\Concerns\CanCustomizeProcess;
@@ -49,6 +50,7 @@ use Throwable;
 class ArchiveBulkAction extends BulkAction
 {
     use CanCustomizeProcess;
+    use ResolvesArchiveAbility;
 
     protected int $archivedCount = 0;
 
@@ -116,8 +118,7 @@ class ArchiveBulkAction extends BulkAction
                 $shouldDeleteUnused = $action->shouldDeleteUnusedRecords();
 
                 if (! $action->shouldFetchSelectedRecords()) {
-                    // Individual record authorization only applies when records are
-                    // fetched, so only the selection counts are initialized here.
+                    // Initializes the selection counts used by the notifications.
                     $action->getSelectedRecords();
 
                     try {
@@ -126,15 +127,14 @@ class ArchiveBulkAction extends BulkAction
                         if ($shouldDeleteUnused) {
                             $action->archivedCount = $query->clone()
                                 ->where(fn (Builder $query) => $modelInstance->used($query)) /** @phpstan-ignore method.notFound */
-                                ->archive(); /** @phpstan-ignore method.notFound */
+                                ->withoutArchived() /** @phpstan-ignore method.notFound */
+                                ->archive();
                             $action->deletedCount = $query->clone()
                                 ->whereNot(fn (Builder $query) => $modelInstance->used($query)) /** @phpstan-ignore method.notFound */
                                 ->delete();
                         } else {
-                            $action->archivedCount = $query->archive(); /** @phpstan-ignore method.notFound */
+                            $action->archivedCount = $query->withoutArchived()->archive(); /** @phpstan-ignore method.notFound */
                         }
-
-                        $action->reportBulkProcessingSuccessfulRecordsCount($action->archivedCount + $action->deletedCount);
                     } catch (Throwable $exception) {
                         $action->reportCompleteBulkProcessingFailure();
 
@@ -144,9 +144,7 @@ class ArchiveBulkAction extends BulkAction
                     return;
                 }
 
-                // The partition is computed before the records are individually
-                // authorized, as it determines which policy method applies to
-                // each record.
+                // Partition before authorizing, as it decides which ability each record is checked with.
                 $action->usedKeys = $shouldDeleteUnused
                     ? $action->getSelectedRecordsQuery()
                         ->where(fn (Builder $query) => $modelInstance->used($query)) /** @phpstan-ignore method.notFound */
@@ -162,6 +160,10 @@ class ArchiveBulkAction extends BulkAction
                 $records->each(static function (Model $record) use ($action, &$isFirstException): void {
                     $shouldArchive = ($action->usedKeys === null) || array_key_exists($record->getKey(), $action->usedKeys);
 
+                    if ($shouldArchive && $record->isArchived()) { /** @phpstan-ignore method.notFound */
+                        return;
+                    }
+
                     try {
                         if ($shouldArchive) {
                             $record->archive() /** @phpstan-ignore method.notFound */
@@ -176,9 +178,7 @@ class ArchiveBulkAction extends BulkAction
                         $action->reportBulkProcessingFailure();
 
                         if ($isFirstException) {
-                            // Only report the first exception to not flood error logs. Even if Filament
-                            // did not catch exceptions like this, only the first would be reported
-                            // as the rest of the process would be halted.
+                            // Only report the first exception to avoid flooding the logs.
                             report($exception);
 
                             $isFirstException = false;
@@ -197,10 +197,7 @@ class ArchiveBulkAction extends BulkAction
     }
 
     /**
-     * Archiving exists to preserve records that are still referenced elsewhere.
-     * A model may define an optional `used()` scope to constrain a query to
-     * records that are still referenced, in which case unreferenced records
-     * are safe to delete outright instead of being archived.
+     * Models opt into deleting unused records by defining a `used()` scope.
      */
     public function shouldDeleteUnusedRecords(): bool
     {
@@ -211,12 +208,8 @@ class ArchiveBulkAction extends BulkAction
 
     public function getIndividualRecordAuthorizationResponse(Model $record): Response
     {
-        if (
-            ($this->authorizeIndividualRecords === 'delete')
-            && $this->isRecordPlannedToBeArchived($record)
-            && $this->hasArchivePolicyMethod($record)
-        ) {
-            return Gate::inspect('archive', [$record]);
+        if (($this->authorizeIndividualRecords === 'delete') && $this->isRecordPlannedToBeArchived($record)) {
+            return Gate::inspect($this->getArchiveAbility($record), [$record]);
         }
 
         return parent::getIndividualRecordAuthorizationResponse($record);
@@ -229,13 +222,6 @@ class ArchiveBulkAction extends BulkAction
         }
 
         return array_key_exists($record->getKey(), $this->usedKeys ?? []);
-    }
-
-    protected function hasArchivePolicyMethod(Model $record): bool
-    {
-        $policy = Gate::getPolicyFor($record::class);
-
-        return filled($policy) && method_exists($policy, 'archive');
     }
 
     protected function getCountsNotificationTitle(): string

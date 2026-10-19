@@ -1,6 +1,6 @@
 ---
 name: archiving-records
-description: 'Use when adding or working with archiving in a Canyon GBS app — a soft alternative to deletion using an `archived_at` timestamp where archived records are INCLUDED in queries by default (unlike SoftDeletes). Trigger whenever you add the `CanBeArchived` trait to a model, add an `archived_at` column, use archive()/unarchive()/isArchived() or the withoutArchived / onlyArchived / withoutArchivedAndUnused query scopes, define used()/isUsed() for archived-but-still-used records, wire the Filament ArchiveAction / ArchiveBulkAction, or handle archiving model events and authorization. Do not use for: Laravel SoftDeletes (a different feature), or writing tests for archiving (use `writing-tests`).'
+description: 'Use when adding or working with archiving in a Canyon GBS app — a soft alternative to deletion using an `archived_at` timestamp where archived records are INCLUDED in queries by default (unlike SoftDeletes). Trigger whenever you add the `CanBeArchived` trait to a model, add an `archived_at` column, use archive()/unarchive()/isArchived() or the withoutArchived / onlyArchived / withoutArchivedAndUnused query scopes, define used()/isUsed() for archived-but-still-used records, wire the Filament ArchiveAction / ArchiveBulkAction / UnarchiveAction / UnarchiveBulkAction, or handle archiving model events and authorization. Do not use for: Laravel SoftDeletes (a different feature), or writing tests for archiving (use `writing-tests`).'
 user-invocable: false
 license: Elastic-2.0
 metadata:
@@ -75,46 +75,54 @@ An optional `isUsed()` is the record-level counterpart. It must agree with `used
 ```php
 public function isUsed(): bool
 {
-    return (bool) ($this->projects_exists ??= $this->projects()->exists());
+    if (! isset($this->projects_exists)) {
+        $this->projects_exists = $this->projects()->exists();
+
+        $this->syncOriginalAttribute('projects_exists');
+    }
+
+    return (bool) $this->projects_exists;
 }
 ```
 
-In tables where `isUsed()` runs per row, eager-load the check to avoid N+1: `$table->modifyQueryUsing(fn (Builder $query) => $query->withExists('projects'))`. When the value is computed lazily it is stored as a dirty attribute, so avoid calling `save()` on that instance afterwards.
+Syncing the original keeps the attribute clean, as `withExists()` loads it, so a later `save()` does not try to write a `projects_exists` column.
+
+In tables where `isUsed()` runs per row, eager-load the check to avoid N+1: `$table->modifyQueryUsing(fn (Builder $query) => $query->withExists('projects'))`.
 
 ## Model Events
 
 `archiving`, `archived`, `unarchiving`, and `unarchived` fire around the operation; returning `false` from `archiving` or `unarchiving` cancels it.
 
+`archive()` and `unarchive()` only write `archived_at` and `updated_at`: they do not fire Eloquent's save events or persist other pending changes.
+
 ## Authorization
 
-Archiving authorizes against the model's policy `delete` method — `ArchiveAction` calls `can('delete', $record)`, whether it archives or falls back to deleting an unused record. Always define a `delete` method.
+The actions authorize with the policy's `archive` method when it is defined, otherwise `delete`. Deleting an unused record always uses `delete`. Always define `delete` and `deleteAny`.
 
-When the `delete` method gains **record-dependent logic** (logic beyond what `deleteAny` checks), add `->authorizeIndividualRecords('delete')` to the `ArchiveBulkAction` — a bulk action only checks `deleteAny` once, so per-record `delete` rules are otherwise bypassed for bulk archiving. Have `delete` return Filament's `DenyResponse` so the bulk action's notifications report how many records were skipped and why. Always reference the `delete` method here. See the `structuring-filament-code` skill (Bulk Actions) for the full pattern.
+Bulk actions check `deleteAny` once. When `archive` or `delete` has record-dependent logic, add `->authorizeIndividualRecords('delete')` so each selected record is checked, and return Filament's `DenyResponse` so the notifications explain skipped records. See the `structuring-filament-code` skill (Bulk Actions).
 
 ## Filament Actions
 
-`ArchiveAction` (from `CanyonGBS\Common\Filament\Actions\ArchiveAction`) is a header action for `EditRecord` / `ViewRecord` pages; `ArchiveBulkAction` is its table bulk-action counterpart.
+`ArchiveAction` and `UnarchiveAction` are header actions for `EditRecord` / `ViewRecord` pages; `ArchiveBulkAction` and `UnarchiveBulkAction` are table bulk actions. All four live in `CanyonGBS\Common\Filament\Actions`.
 
 ```php
-use CanyonGBS\Common\Filament\Actions\ArchiveAction;
-
 protected function getHeaderActions(): array
 {
     return [
         ArchiveAction::make(),
+        UnarchiveAction::make(),
     ];
 }
+
+$table->toolbarActions([
+    ArchiveBulkAction::make(),
+    UnarchiveBulkAction::make(),
+]);
 ```
 
-`ArchiveAction`:
-
-- Is hidden when the record is already archived.
-- Authorizes via the policy's `delete` method and redirects to the index on success.
-- Becomes a **delete** action (Filament `DeleteAction` behaviour — "Delete" label, danger colour, `$record->delete()`) when the model defines `isUsed()` and it returns `false`; otherwise it archives. Closures can branch on `shouldDeleteInsteadOfArchive()`. If the model does not define `isUsed()`, `shouldDeleteInsteadOfArchive()` always returns `false` and the action only ever archives — deletion is opt-in and must be a conscious decision (see above).
-
-Override `authorize()`, `successRedirectUrl()`, or `using()` when the action is used outside a standard Edit/View page or needs custom behaviour.
-
-`ArchiveBulkAction` authorizes `deleteAny` and already reports archived/deleted counts and per-record processing failures in its notifications. When the policy's `delete` method carries record-dependent logic, add `->authorizeIndividualRecords('delete')` so it is enforced per selected record (see **Authorization** above).
+- The record actions are hidden unless they apply, and the bulk actions skip selected records that are already archived or unarchived. `ArchiveAction` redirects to the index on success.
+- When `isUsed()` returns `false`, `ArchiveAction` deletes the record instead (closures can branch on `shouldDeleteInsteadOfArchive()`). `ArchiveBulkAction` likewise deletes selected records that are not `used()`.
+- Outside an Edit/View page, such as a table record action, pass your own `authorize()`, and `successRedirectUrl()` for `ArchiveAction`.
 
 ---
 

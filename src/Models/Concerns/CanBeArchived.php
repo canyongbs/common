@@ -67,10 +67,7 @@ trait CanBeArchived
             return false;
         }
 
-        /** @var Builder<static> $query */
-        $query = $this->newModelQuery();
-
-        $query = $this->setKeysForSaveQuery($query);
+        $query = $this->setKeysForSaveQuery($this->newModelQuery());
 
         $time = $this->freshTimestamp();
 
@@ -104,15 +101,27 @@ trait CanBeArchived
             return false;
         }
 
+        $query = $this->setKeysForSaveQuery($this->newModelQuery());
+
+        $columns = [$this->getArchivedAtColumn() => null];
+
         $this->{$this->getArchivedAtColumn()} = null;
 
-        $this->exists = true;
+        if ($this->usesTimestamps() && ! is_null($this->getUpdatedAtColumn())) {
+            $time = $this->freshTimestamp();
 
-        $result = $this->save();
+            $this->{$this->getUpdatedAtColumn()} = $time;
+
+            $columns[$this->getUpdatedAtColumn()] = $this->fromDateTime($time);
+        }
+
+        $query->update($columns);
+
+        $this->syncOriginalAttributes(array_keys($columns));
 
         $this->fireModelEvent('unarchived', false);
 
-        return $result;
+        return true;
     }
 
     public function unarchiveQuietly(): bool

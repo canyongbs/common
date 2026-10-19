@@ -51,10 +51,16 @@ class ArticlePolicy
      */
     public static array $deniedDeleteKeys = [];
 
+    /**
+     * @var array<int, mixed>
+     */
+    public static array $deniedArchiveKeys = [];
+
     public static function reset(): void
     {
         static::$abilities = [];
         static::$deniedDeleteKeys = [];
+        static::$deniedArchiveKeys = [];
     }
 
     public function viewAny(User $user): bool
@@ -88,6 +94,10 @@ class ArticlePolicy
 
     public function archive(User $user, Article $article): bool
     {
+        if (in_array($article->getKey(), static::$deniedArchiveKeys)) {
+            return false;
+        }
+
         return static::$abilities['archive'] ?? true;
     }
 }
