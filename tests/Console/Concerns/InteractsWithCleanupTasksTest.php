@@ -38,7 +38,7 @@ use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->travelTo(Carbon::create(2026, 5, 1, 12, 0, 0));
     $this->testDir = sys_get_temp_dir() . '/' . uniqid('common-trait-test-');
     mkdir($this->testDir, 0755, true);
@@ -46,12 +46,12 @@ beforeEach(function () {
     $this->cleanupDir = $this->app->basePath('.cleanup-tasks');
 });
 
-afterEach(function () {
+afterEach(function (): void {
     File::deleteDirectory($this->testDir);
 });
 
-describe('getExistingCleanupTasks', function () {
-    it('returns empty array when directory does not exist', function () {
+describe('getExistingCleanupTasks', function (): void {
+    it('returns empty array when directory does not exist', function (): void {
         $command = $this->app->make(MakeCleanupTask::class);
         $command->setLaravel($this->app);
 
@@ -60,7 +60,7 @@ describe('getExistingCleanupTasks', function () {
         expect($method->invoke($command))->toBe([]);
     });
 
-    it('returns empty array when directory has no md files', function () {
+    it('returns empty array when directory has no md files', function (): void {
         File::makeDirectory($this->cleanupDir, 0755, true);
         file_put_contents($this->cleanupDir . '/.gitkeep', '');
 
@@ -72,7 +72,7 @@ describe('getExistingCleanupTasks', function () {
         expect($method->invoke($command))->toBe([]);
     });
 
-    it('returns only md filenames', function () {
+    it('returns only md filenames', function (): void {
         File::makeDirectory($this->cleanupDir, 0755, true);
         file_put_contents($this->cleanupDir . '/.gitkeep', '');
         file_put_contents($this->cleanupDir . '/2026_05_01_task_one.md', '# Task');
@@ -90,8 +90,8 @@ describe('getExistingCleanupTasks', function () {
     });
 });
 
-describe('createCleanupTask', function () {
-    it('creates the cleanup-tasks directory if it does not exist', function () {
+describe('createCleanupTask', function (): void {
+    it('creates the cleanup-tasks directory if it does not exist', function (): void {
         expect(is_dir($this->cleanupDir))->toBeFalse();
 
         $command = $this->app->make(MakeCleanupTask::class);
@@ -103,7 +103,7 @@ describe('createCleanupTask', function () {
         expect(is_dir($this->cleanupDir))->toBeTrue();
     });
 
-    it('creates file with correct date_snake_name naming', function () {
+    it('creates file with correct date_snake_name naming', function (): void {
         $command = $this->app->make(MakeCleanupTask::class);
         $command->setLaravel($this->app);
 
@@ -114,7 +114,7 @@ describe('createCleanupTask', function () {
             ->and(file_exists($path))->toBeTrue();
     });
 
-    it('fills stub placeholders with headline title and date', function () {
+    it('fills stub placeholders with headline title and date', function (): void {
         $command = $this->app->make(MakeCleanupTask::class);
         $command->setLaravel($this->app);
 
@@ -130,7 +130,7 @@ describe('createCleanupTask', function () {
             ->and($content)->toContain('## Additional Cleanup');
     });
 
-    it('returns the full path to the created file', function () {
+    it('returns the full path to the created file', function (): void {
         $command = $this->app->make(MakeCleanupTask::class);
         $command->setLaravel($this->app);
 
@@ -141,8 +141,8 @@ describe('createCleanupTask', function () {
     });
 });
 
-describe('resolveCleanupTaskStub', function () {
-    it('uses custom stub when present in base path', function () {
+describe('resolveCleanupTaskStub', function (): void {
+    it('uses custom stub when present in base path', function (): void {
         $stubDir = $this->app->basePath('stubs');
         File::makeDirectory($stubDir, 0755, true);
         file_put_contents($stubDir . '/cleanup-task.stub', 'CUSTOM: {{ title }}');
@@ -156,7 +156,7 @@ describe('resolveCleanupTaskStub', function () {
         expect($result)->toBe('CUSTOM: {{ title }}');
     });
 
-    it('falls back to package stub when no custom stub exists', function () {
+    it('falls back to package stub when no custom stub exists', function (): void {
         $command = $this->app->make(MakeCleanupTask::class);
         $command->setLaravel($this->app);
 
@@ -168,8 +168,8 @@ describe('resolveCleanupTaskStub', function () {
     });
 });
 
-describe('appendToCleanupSection', function () {
-    it('appends entry under the correct section heading', function () {
+describe('appendToCleanupSection', function (): void {
+    it('appends entry under the correct section heading', function (): void {
         $command = $this->app->make(MakeCleanupTask::class);
         $command->setLaravel($this->app);
 
@@ -185,7 +185,7 @@ describe('appendToCleanupSection', function () {
         expect($content)->toContain("## Feature Flags\n\n- App\\Features\\TestFeature\n");
     });
 
-    it('appends additional entries below existing ones', function () {
+    it('appends additional entries below existing ones', function (): void {
         $command = $this->app->make(MakeCleanupTask::class);
         $command->setLaravel($this->app);
 
@@ -201,7 +201,7 @@ describe('appendToCleanupSection', function () {
         expect($content)->toContain("- App\\Features\\FirstFeature\n- App\\Features\\SecondFeature\n");
     });
 
-    it('does not modify other sections', function () {
+    it('does not modify other sections', function (): void {
         $command = $this->app->make(MakeCleanupTask::class);
         $command->setLaravel($this->app);
 
@@ -222,7 +222,7 @@ describe('appendToCleanupSection', function () {
         expect(trim($sectionContent))->toBe('');
     });
 
-    it('does nothing when section heading is not found', function () {
+    it('does nothing when section heading is not found', function (): void {
         $command = $this->app->make(MakeCleanupTask::class);
         $command->setLaravel($this->app);
 

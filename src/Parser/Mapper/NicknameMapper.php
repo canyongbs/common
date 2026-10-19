@@ -44,7 +44,7 @@ class NicknameMapper extends AbstractMapper
     /**
      * @var array<string, string>
      */
-    protected $delimiters = [
+    protected array $delimiters = [
         '[' => ']',
         '{' => '}',
         '(' => ')',
@@ -107,7 +107,7 @@ class NicknameMapper extends AbstractMapper
     /**
      * @return string
      */
-    protected function buildRegexp()
+    protected function buildRegexp(): string
     {
         $regexp = '/^([';
 

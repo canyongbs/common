@@ -102,7 +102,7 @@ class ArchivingScope implements Scope
      */
     protected function addWithoutArchived(Builder $builder): void
     {
-        $builder->macro('withoutArchived', function (Builder $builder) {
+        $builder->macro('withoutArchived', function (Builder $builder): Builder {
             $model = $builder->getModel();
 
             $builder->whereNull(
@@ -118,7 +118,7 @@ class ArchivingScope implements Scope
      */
     protected function addOnlyArchived(Builder $builder): void
     {
-        $builder->macro('onlyArchived', function (Builder $builder) {
+        $builder->macro('onlyArchived', function (Builder $builder): Builder {
             $model = $builder->getModel();
 
             $builder->whereNotNull(
@@ -134,7 +134,7 @@ class ArchivingScope implements Scope
      */
     protected function addWithoutArchivedAndUnused(Builder $builder): void
     {
-        $builder->macro('withoutArchivedAndUnused', function (Builder $builder) {
+        $builder->macro('withoutArchivedAndUnused', function (Builder $builder): Builder {
             $model = $builder->getModel();
 
             if (! method_exists($model, 'used')) {
@@ -144,7 +144,7 @@ class ArchivingScope implements Scope
                 ));
             }
 
-            $builder->where(function (Builder $query) use ($model) {
+            $builder->where(function (Builder $query) use ($model): void {
                 $query->whereNull(
                     method_exists($model, 'getQualifiedArchivedAtColumn') ? $model->getQualifiedArchivedAtColumn() : $model->qualifyColumn('archived_at'),
                 )->orWhere(fn (Builder $query) => $model->used($query));

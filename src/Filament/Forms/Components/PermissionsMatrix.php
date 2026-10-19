@@ -63,11 +63,11 @@ class PermissionsMatrix extends Field
     {
         $this->default([]);
 
-        $this->loadStateFromRelationshipsUsing(function (PermissionsMatrix $component, Model $record) {
+        $this->loadStateFromRelationshipsUsing(function (PermissionsMatrix $component, Model $record): void {
             $component->state($record->permissions()->pluck('id')->all()); /** @phpstan-ignore method.notFound */
         });
 
-        $this->saveRelationshipsUsing(function (Model $record, array $state) {
+        $this->saveRelationshipsUsing(function (Model $record, array $state): void {
             $record->permissions()->sync(array_filter( /** @phpstan-ignore method.notFound */
                 $state,
                 function (string $value) use ($state): bool {

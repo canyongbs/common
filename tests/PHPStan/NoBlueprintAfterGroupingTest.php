@@ -46,20 +46,20 @@ $runPhpStanOnBlueprintAfterGroupingFixture = function (string $filePath): array 
         'output' => implode("\n", $outputLines),
     ];
 };
-it('reports Blueprint after() groupings that cannot be automatically flattened', function () use ($runPhpStanOnBlueprintAfterGroupingFixture) {
+it('reports Blueprint after() groupings that cannot be automatically flattened', function () use ($runPhpStanOnBlueprintAfterGroupingFixture): void {
     $result = $runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintAfterGroupingNonVariableReceiverFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.blueprintAfterGrouping');
 });
 
-it('does not report Blueprint after() groupings that can be automatically flattened', function () use ($runPhpStanOnBlueprintAfterGroupingFixture) {
+it('does not report Blueprint after() groupings that can be automatically flattened', function () use ($runPhpStanOnBlueprintAfterGroupingFixture): void {
     $result = $runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintAfterGroupingFlattenableFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report flattenable Blueprint after() groupings.\nOutput: {$result['output']}");
 });
 
-it('does not report the Blueprint after() column modifier', function () use ($runPhpStanOnBlueprintAfterGroupingFixture) {
+it('does not report the Blueprint after() column modifier', function () use ($runPhpStanOnBlueprintAfterGroupingFixture): void {
     $result = $runPhpStanOnBlueprintAfterGroupingFixture('tests/PHPStan/Fixtures/BlueprintColumnModifierAfterFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report the Blueprint after() column modifier.\nOutput: {$result['output']}");

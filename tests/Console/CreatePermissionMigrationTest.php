@@ -39,18 +39,18 @@ use Illuminate\Database\Console\Migrations\MigrateMakeCommand;
 use Illuminate\Database\Migrations\MigrationCreator;
 use Illuminate\Support\Facades\File;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->testDir = sys_get_temp_dir() . '/' . uniqid('common-permission-migration-test-');
     mkdir($this->testDir, 0755, true);
     $this->app->setBasePath($this->testDir);
     $this->migrationsDir = $this->app->databasePath('migrations');
 });
 
-afterEach(function () {
+afterEach(function (): void {
     File::deleteDirectory($this->testDir);
 });
 
-it('creates a permission migration file in database/migrations', function () {
+it('creates a permission migration file in database/migrations', function (): void {
     $this->artisan('make:permission-migration', ['name' => 'seed_permissions_for_example'])
         ->assertSuccessful();
 
@@ -59,7 +59,7 @@ it('creates a permission migration file in database/migrations', function () {
     expect($files)->toHaveCount(1);
 });
 
-it('falls back to the bundled placeholder stub when the app provides none', function () {
+it('falls back to the bundled placeholder stub when the app provides none', function (): void {
     $this->artisan('make:permission-migration', ['name' => 'seed_permissions_for_fallback'])
         ->assertSuccessful();
 
@@ -76,7 +76,7 @@ it('falls back to the bundled placeholder stub when the app provides none', func
         ->and($content)->toContain('guard-name');
 });
 
-it('honors an app-level stubs/permission-migration.stub override', function () {
+it('honors an app-level stubs/permission-migration.stub override', function (): void {
     // Discover where the creator actually looks for an app-level stub (its
     // customStubPath, captured when the command was constructed) and write the
     // override there. This keeps the test independent of base-path resolution

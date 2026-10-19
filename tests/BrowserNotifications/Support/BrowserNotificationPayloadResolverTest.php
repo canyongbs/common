@@ -37,7 +37,7 @@
 use CanyonGBS\Common\BrowserNotifications\Support\BrowserNotificationPayloadResolver;
 use Illuminate\Notifications\DatabaseNotification;
 
-it('resolves a structured Filament notification payload', function () {
+it('resolves a structured Filament notification payload', function (): void {
     $notification = new DatabaseNotification([
         'id' => '123e4567-e89b-12d3-a456-426614174000',
         'data' => [
@@ -60,7 +60,7 @@ it('resolves a structured Filament notification payload', function () {
         ->and($payload?->openInNewTab)->toBeTrue();
 });
 
-it('resolves a destination embedded in an existing HTML title', function () {
+it('resolves a destination embedded in an existing HTML title', function (): void {
     $notification = new DatabaseNotification([
         'id' => '123e4567-e89b-12d3-a456-426614174001',
         'data' => [
@@ -75,7 +75,7 @@ it('resolves a destination embedded in an existing HTML title', function () {
         ->and($payload?->actionUrl)->toBe('/requests/456');
 });
 
-it('resolves a destination embedded in an existing body', function () {
+it('resolves a destination embedded in an existing body', function (): void {
     $notification = new DatabaseNotification([
         'id' => '123e4567-e89b-12d3-a456-426614174002',
         'data' => [
@@ -90,7 +90,7 @@ it('resolves a destination embedded in an existing body', function () {
         ->and($payload?->actionUrl)->toBe('/requests/789');
 });
 
-it('does not resolve notifications that opt out of browser delivery', function () {
+it('does not resolve notifications that opt out of browser delivery', function (): void {
     $notification = new DatabaseNotification([
         'id' => '123e4567-e89b-12d3-a456-426614174003',
         'data' => [
@@ -102,7 +102,7 @@ it('does not resolve notifications that opt out of browser delivery', function (
     expect(app(BrowserNotificationPayloadResolver::class)->resolve($notification))->toBeNull();
 });
 
-it('does not resolve notifications without a destination', function () {
+it('does not resolve notifications without a destination', function (): void {
     $notification = new DatabaseNotification([
         'id' => '123e4567-e89b-12d3-a456-426614174004',
         'data' => [

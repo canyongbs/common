@@ -51,13 +51,13 @@ $makeRequest = function (array $server = [], array $headers = []): Request {
     return $request;
 };
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Never allow a real outbound request to Cloudflare during tests.
     Http::preventStrayRequests();
 });
 
-describe('resolve()', function () use ($makeRequest) {
-    beforeEach(function () {
+describe('resolve()', function () use ($makeRequest): void {
+    beforeEach(function (): void {
         // Fake the published lists so the resolver can verify requests against the
         // Cloudflare ranges without making a real external call.
         Http::fake([
@@ -66,7 +66,7 @@ describe('resolve()', function () use ($makeRequest) {
         ]);
     });
 
-    it('returns the CF-Connecting-IP when the request was delivered by Cloudflare', function () use ($makeRequest) {
+    it('returns the CF-Connecting-IP when the request was delivered by Cloudflare', function () use ($makeRequest): void {
         // The ALB appends the Cloudflare edge IP (173.245.48.10) as the last X-Forwarded-For hop.
         $request = $makeRequest(
             server: ['REMOTE_ADDR' => '10.0.0.5'],
@@ -79,7 +79,7 @@ describe('resolve()', function () use ($makeRequest) {
         expect(ClientIp::resolve($request))->toBe('203.0.113.10');
     });
 
-    it('falls back to the request IP when the last forwarded hop is not a Cloudflare IP', function () use ($makeRequest) {
+    it('falls back to the request IP when the last forwarded hop is not a Cloudflare IP', function () use ($makeRequest): void {
         // A client hitting the ALB directly: their real IP (198.51.100.9) is appended last,
         // so the spoofed CF-Connecting-IP must be ignored.
         $request = $makeRequest(
@@ -93,7 +93,7 @@ describe('resolve()', function () use ($makeRequest) {
         expect(ClientIp::resolve($request))->toBe('198.51.100.9');
     });
 
-    it('falls back to the request IP when there is no CF-Connecting-IP header', function () use ($makeRequest) {
+    it('falls back to the request IP when there is no CF-Connecting-IP header', function () use ($makeRequest): void {
         $request = $makeRequest(
             server: ['REMOTE_ADDR' => '10.0.0.5'],
             headers: [
@@ -104,7 +104,7 @@ describe('resolve()', function () use ($makeRequest) {
         expect(ClientIp::resolve($request))->toBe($request->ip());
     });
 
-    it('falls back to the request IP when there is no X-Forwarded-For header', function () use ($makeRequest) {
+    it('falls back to the request IP when there is no X-Forwarded-For header', function () use ($makeRequest): void {
         $request = $makeRequest(
             server: ['REMOTE_ADDR' => '198.51.100.9'],
             headers: [
@@ -115,7 +115,7 @@ describe('resolve()', function () use ($makeRequest) {
         expect(ClientIp::resolve($request))->toBe('198.51.100.9');
     });
 
-    it('ignores an invalid CF-Connecting-IP value and falls back', function () use ($makeRequest) {
+    it('ignores an invalid CF-Connecting-IP value and falls back', function () use ($makeRequest): void {
         $request = $makeRequest(
             server: ['REMOTE_ADDR' => '198.51.100.9'],
             headers: [
@@ -128,7 +128,7 @@ describe('resolve()', function () use ($makeRequest) {
     });
 });
 
-it('fetches the Cloudflare IP ranges from the published endpoints and caches them', function () {
+it('fetches the Cloudflare IP ranges from the published endpoints and caches them', function (): void {
     Cache::forget(ClientIp::CACHE_KEY);
 
     Http::fake([
@@ -154,7 +154,7 @@ it('fetches the Cloudflare IP ranges from the published endpoints and caches the
     Http::assertSentCount(2);
 });
 
-it('falls back to the static list and reports an exception when the endpoints cannot be fetched', function () {
+it('falls back to the static list and reports an exception when the endpoints cannot be fetched', function (): void {
     Exceptions::fake();
 
     Cache::forget(ClientIp::CACHE_KEY);
@@ -169,7 +169,7 @@ it('falls back to the static list and reports an exception when the endpoints ca
     Exceptions::assertReported(CloudflareIpRangesUnavailableException::class);
 });
 
-it('falls back to the static list and reports an exception when the endpoints return an empty list', function () {
+it('falls back to the static list and reports an exception when the endpoints return an empty list', function (): void {
     Exceptions::fake();
 
     Cache::forget(ClientIp::CACHE_KEY);
@@ -184,7 +184,7 @@ it('falls back to the static list and reports an exception when the endpoints re
     Exceptions::assertReported(CloudflareIpRangesUnavailableException::class);
 });
 
-it('falls back to the static list and reports an exception when only one endpoint returns an empty list', function () {
+it('falls back to the static list and reports an exception when only one endpoint returns an empty list', function (): void {
     Exceptions::fake();
 
     Cache::forget(ClientIp::CACHE_KEY);

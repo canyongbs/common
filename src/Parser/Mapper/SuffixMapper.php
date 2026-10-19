@@ -93,7 +93,7 @@ class SuffixMapper extends AbstractMapper
       *
       * @return bool
       */
-    protected function isMatchingSinglePart($parts): bool
+    protected function isMatchingSinglePart(array $parts): bool
     {
         if (! $this->matchSinglePart) {
             return false;

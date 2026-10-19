@@ -61,14 +61,14 @@ $commonBrowserNotificationMessage = function (): WebPushMessage {
     return (new WebPushMessage())->data(['common_browser_notification' => true]);
 };
 
-it('configures Web Push to use the browser notification report handler', function () {
+it('configures Web Push to use the browser notification report handler', function (): void {
     $channel = app(WebPushChannel::class);
     $reportHandler = (new ReflectionProperty(WebPushChannel::class, 'reportHandler'))->getValue($channel);
 
     expect($reportHandler)->toBeInstanceOf(BrowserNotificationReportHandler::class);
 });
 
-it('reports and retries transient browser notification failures', function (?int $status) use ($browserNotificationReportHandler, $browserNotificationDeliveryReport, $commonBrowserNotificationMessage) {
+it('reports and retries transient browser notification failures', function (?int $status) use ($browserNotificationReportHandler, $browserNotificationDeliveryReport, $commonBrowserNotificationMessage): void {
     Event::fake();
 
     expect(fn () => $browserNotificationReportHandler()->handleReport(
@@ -87,7 +87,7 @@ it('reports and retries transient browser notification failures', function (?int
     'service unavailable' => 503,
 ]);
 
-it('reports without retrying permanent browser notification failures', function (int $status) use ($browserNotificationReportHandler, $browserNotificationDeliveryReport, $commonBrowserNotificationMessage) {
+it('reports without retrying permanent browser notification failures', function (int $status) use ($browserNotificationReportHandler, $browserNotificationDeliveryReport, $commonBrowserNotificationMessage): void {
     Event::fake();
 
     expect(fn () => $browserNotificationReportHandler()->handleReport(
@@ -106,7 +106,7 @@ it('reports without retrying permanent browser notification failures', function 
     'unprocessable' => 422,
 ]);
 
-it('does not retry unrelated Web Push failures', function () use ($browserNotificationReportHandler, $browserNotificationDeliveryReport) {
+it('does not retry unrelated Web Push failures', function () use ($browserNotificationReportHandler, $browserNotificationDeliveryReport): void {
     $message = (new WebPushMessage())->data([]);
 
     expect(fn () => $browserNotificationReportHandler()->handleReport(

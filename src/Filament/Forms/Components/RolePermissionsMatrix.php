@@ -52,11 +52,11 @@ class RolePermissionsMatrix extends Field
     {
         $this->default([]);
 
-        $this->loadStateFromRelationshipsUsing(function (RolePermissionsMatrix $component, Model $record) {
+        $this->loadStateFromRelationshipsUsing(function (RolePermissionsMatrix $component, Model $record): void {
             $component->state($record->rolePermissions->pluck('permission')->all()); /** @phpstan-ignore property.notFound */
         });
 
-        $this->saveRelationshipsUsing(function (Model $record, array $state) {
+        $this->saveRelationshipsUsing(function (Model $record, array $state): void {
             $existing = $record->rolePermissions()->pluck('permission')->all(); /** @phpstan-ignore method.notFound */
             $selected = array_values(array_unique(array_filter($state)));
 

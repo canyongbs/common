@@ -46,13 +46,13 @@ $runPhpStanOnPolicyFixture = function (string $filePath): array {
         'output' => implode("\n", $outputLines),
     ];
 };
-it('does not trigger for policies that have both delete, force delete, restore, and their equivalent bulk actions defined', function () use ($runPhpStanOnPolicyFixture) {
+it('does not trigger for policies that have both delete, force delete, restore, and their equivalent bulk actions defined', function () use ($runPhpStanOnPolicyFixture): void {
     $result = $runPhpStanOnPolicyFixture('tests/PHPStan/Fixtures/PolicyWithBulkDeleteForceDeleteRestoreFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for policies with the appropriate bulk actions defined.\nOutput: {$result['output']}");
 });
 
-it('does trigger for policies that do not have both delete, force delete, restore, and their equivalent bulk actions defined', function () use ($runPhpStanOnPolicyFixture) {
+it('does trigger for policies that do not have both delete, force delete, restore, and their equivalent bulk actions defined', function () use ($runPhpStanOnPolicyFixture): void {
     $result = $runPhpStanOnPolicyFixture('tests/PHPStan/Fixtures/PolicyWithoutBulkDeleteForceDeleteRestoreFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);

@@ -42,13 +42,13 @@ use CanyonGBS\Common\Parser\Part\Salutation;
 /**
  * @return array
  */
-$getMapper = function () {
+$getMapper = function (): SalutationMapper {
     $english = new English();
 
     return new SalutationMapper($english->getSalutations());
 };
 
-dataset('provider', function () {
+dataset('provider', function (): array {
     return [
         [
             'input' => [

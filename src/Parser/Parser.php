@@ -176,7 +176,7 @@ class Parser
      *
      * @return Parser
      */
-    public function setWhitespace($whitespace): Parser
+    public function setWhitespace(string $whitespace): Parser
     {
         $this->whitespace = $whitespace;
 
@@ -348,7 +348,7 @@ class Parser
     /**
      * @return array<int, string>
      */
-    protected function getSuffixes()
+    protected function getSuffixes(): array
     {
         $suffixes = [];
 
@@ -363,7 +363,7 @@ class Parser
     /**
      * @return array<string, string>
      */
-    protected function getSalutations()
+    protected function getSalutations(): array
     {
         $salutations = [];
 

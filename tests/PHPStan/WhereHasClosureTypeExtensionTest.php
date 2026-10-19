@@ -46,26 +46,26 @@ $runPhpStanOnFixture = function (string $filePath): array {
         'output' => implode("\n", $outputLines),
     ];
 };
-it('types closure parameter for whereHas and related methods to archived model', function () use ($runPhpStanOnFixture) {
+it('types closure parameter for whereHas and related methods to archived model', function () use ($runPhpStanOnFixture): void {
     $result = $runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasClosureFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods in whereHas closure to a model with CanBeArchived.\nOutput: {$result['output']}");
 });
 
-it('reports errors for archive methods in whereHas closure to non-archived model', function () use ($runPhpStanOnFixture) {
+it('reports errors for archive methods in whereHas closure to non-archived model', function () use ($runPhpStanOnFixture): void {
     $result = $runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasClosureNegativeFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('withoutArchived');
 });
 
-it('types closure parameter for nested whereHas relations to archived model', function () use ($runPhpStanOnFixture) {
+it('types closure parameter for nested whereHas relations to archived model', function () use ($runPhpStanOnFixture): void {
     $result = $runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasNestedClosureFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods in nested whereHas closure to a model with CanBeArchived.\nOutput: {$result['output']}");
 });
 
-it('reports errors for archive methods in nested whereHas closure to non-archived model', function () use ($runPhpStanOnFixture) {
+it('reports errors for archive methods in nested whereHas closure to non-archived model', function () use ($runPhpStanOnFixture): void {
     $result = $runPhpStanOnFixture('tests/PHPStan/Fixtures/WhereHasNestedClosureNegativeFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);

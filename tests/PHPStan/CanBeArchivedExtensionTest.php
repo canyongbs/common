@@ -46,13 +46,13 @@ $runPhpStan = function (string $filePath): array {
         'output' => implode("\n", $outputLines),
     ];
 };
-it('recognizes archive methods on a builder for a model with CanBeArchived', function () use ($runPhpStan) {
+it('recognizes archive methods on a builder for a model with CanBeArchived', function () use ($runPhpStan): void {
     $result = $runPhpStan('tests/PHPStan/Fixtures/CanBeArchivedModelFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods on a model with CanBeArchived.\nOutput: {$result['output']}");
 });
 
-it('reports errors for archive methods on a builder for a model without CanBeArchived', function () use ($runPhpStan) {
+it('reports errors for archive methods on a builder for a model without CanBeArchived', function () use ($runPhpStan): void {
     $result = $runPhpStan('tests/PHPStan/Fixtures/NonArchivedModelFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -61,13 +61,13 @@ it('reports errors for archive methods on a builder for a model without CanBeArc
     expect($result['output'])->toContain('withoutArchivedAndUnused');
 });
 
-it('recognizes archive methods on a relation to a model with CanBeArchived', function () use ($runPhpStan) {
+it('recognizes archive methods on a relation to a model with CanBeArchived', function () use ($runPhpStan): void {
     $result = $runPhpStan('tests/PHPStan/Fixtures/CanBeArchivedRelationFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report errors for archive methods on a relation.\nOutput: {$result['output']}");
 });
 
-it('reports errors for archive methods on a relation to a model without CanBeArchived', function () use ($runPhpStan) {
+it('reports errors for archive methods on a relation to a model without CanBeArchived', function () use ($runPhpStan): void {
     $result = $runPhpStan('tests/PHPStan/Fixtures/NonArchivedRelationFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);

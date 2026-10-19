@@ -106,8 +106,8 @@ class VideoRichContentPlugin implements RichContentPlugin
                         ->url()
                         ->helperText('Supports YouTube, Vimeo, or direct video file URLs (.mp4, .webm, .ogg, .mov)')
                         ->rules([
-                            function () {
-                                return function (string $attribute, mixed $value, Closure $fail) {
+                            function (): Closure {
+                                return function (string $attribute, mixed $value, Closure $fail): void {
                                     if (! is_string($value)) {
                                         $fail('The URL must be a string.');
 

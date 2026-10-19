@@ -39,8 +39,8 @@ use CanyonGBS\Common\Health\Services\OpcacheStatusService;
 use Mockery\MockInterface;
 use Spatie\Health\Enums\Status;
 
-it('returns ok status when hit rate is above 99%', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns ok status when hit rate is above 99%', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'hits' => 9950,
@@ -54,8 +54,8 @@ it('returns ok status when hit rate is above 99%', function () {
     expect($result->status)->toBe(Status::ok());
 });
 
-it('returns warning status when hit rate is below 99% but above 95%', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns warning status when hit rate is below 99% but above 95%', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'hits' => 970,
@@ -69,8 +69,8 @@ it('returns warning status when hit rate is below 99% but above 95%', function (
     expect($result->status)->toBe(Status::warning());
 });
 
-it('returns failed status when hit rate is at or below 95%', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns failed status when hit rate is at or below 95%', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'hits' => 950,
@@ -84,8 +84,8 @@ it('returns failed status when hit rate is at or below 95%', function () {
     expect($result->status)->toBe(Status::failed());
 });
 
-it('returns failed status when hit rate is below 95%', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns failed status when hit rate is below 95%', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'hits' => 800,
@@ -99,8 +99,8 @@ it('returns failed status when hit rate is below 95%', function () {
     expect($result->status)->toBe(Status::failed());
 });
 
-it('returns ok status when there are no requests yet', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns ok status when there are no requests yet', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'hits' => 0,
@@ -114,8 +114,8 @@ it('returns ok status when there are no requests yet', function () {
     expect($result->status)->toBe(Status::ok());
 });
 
-it('returns failed status when opcache is not available', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns failed status when opcache is not available', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn(false);
     });
 

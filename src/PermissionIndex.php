@@ -78,7 +78,7 @@ class PermissionIndex
 
         $this->gateRegistered = true;
 
-        Gate::before(function (mixed $user, string $ability) {
+        Gate::before(function (mixed $user, string $ability): ?true {
             if (! $user instanceof Model) {
                 return null;
             }

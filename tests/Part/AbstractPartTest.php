@@ -36,7 +36,7 @@
 
 use CanyonGBS\Common\Parser\Part\AbstractPart;
 
-test('normalize', function () {
+test('normalize', function (): void {
     $part = $this->getMockBuilder(AbstractPart::class)
         ->setConstructorArgs(['abc'])
         ->onlyMethods([])
@@ -44,7 +44,7 @@ test('normalize', function () {
     expect($part->normalize())->toEqual('abc');
 });
 
-test('set value unwraps', function () {
+test('set value unwraps', function (): void {
     $part = $this->getMockBuilder(AbstractPart::class)
         ->setConstructorArgs(['abc'])
         ->onlyMethods([])

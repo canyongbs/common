@@ -46,41 +46,41 @@ $runPhpStanOnUseClientIpResolverFixture = function (string $filePath): array {
         'output' => implode("\n", $outputLines),
     ];
 };
-it('reports request ip() usage', function () use ($runPhpStanOnUseClientIpResolverFixture) {
+it('reports request ip() usage', function () use ($runPhpStanOnUseClientIpResolverFixture): void {
     $result = $runPhpStanOnUseClientIpResolverFixture('tests/PHPStan/Fixtures/RequestIpFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.useClientIpResolver');
 });
 
-it('reports request getClientIp() usage', function () use ($runPhpStanOnUseClientIpResolverFixture) {
+it('reports request getClientIp() usage', function () use ($runPhpStanOnUseClientIpResolverFixture): void {
     $result = $runPhpStanOnUseClientIpResolverFixture('tests/PHPStan/Fixtures/RequestClientIpAccessorFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.useClientIpResolver');
 });
 
-it('reports request helper ip() usage', function () use ($runPhpStanOnUseClientIpResolverFixture) {
+it('reports request helper ip() usage', function () use ($runPhpStanOnUseClientIpResolverFixture): void {
     $result = $runPhpStanOnUseClientIpResolverFixture('tests/PHPStan/Fixtures/RequestHelperIpFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.useClientIpResolver');
 });
 
-it('reports request facade ip() usage', function () use ($runPhpStanOnUseClientIpResolverFixture) {
+it('reports request facade ip() usage', function () use ($runPhpStanOnUseClientIpResolverFixture): void {
     $result = $runPhpStanOnUseClientIpResolverFixture('tests/PHPStan/Fixtures/RequestFacadeIpFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.useClientIpResolver');
 });
 
-it('does not report ClientIp::resolve() usage', function () use ($runPhpStanOnUseClientIpResolverFixture) {
+it('does not report ClientIp::resolve() usage', function () use ($runPhpStanOnUseClientIpResolverFixture): void {
     $result = $runPhpStanOnUseClientIpResolverFixture('tests/PHPStan/Fixtures/RequestIpAllowedFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report ClientIp::resolve() usage.\nOutput: {$result['output']}");
 });
 
-it('allows request IP accessor calls silenced with a specific inline ignore', function () use ($runPhpStanOnUseClientIpResolverFixture) {
+it('allows request IP accessor calls silenced with a specific inline ignore', function () use ($runPhpStanOnUseClientIpResolverFixture): void {
     $result = $runPhpStanOnUseClientIpResolverFixture('tests/PHPStan/Fixtures/RequestIpIgnoredFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should respect the inline ignore for request IP accessor usage.\nOutput: {$result['output']}");
