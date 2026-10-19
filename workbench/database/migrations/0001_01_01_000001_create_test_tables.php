@@ -41,21 +41,21 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up(): void
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('projects', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->timestamp('archived_at')->nullable();
             $table->timestamps();
         });
 
-        Schema::create('tasks', function (Blueprint $table) {
+        Schema::create('tasks', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
         });
 
-        Schema::create('images', function (Blueprint $table) {
+        Schema::create('images', function (Blueprint $table): void {
             $table->id();
             $table->morphs('imageable');
             $table->string('url');
@@ -63,32 +63,32 @@ return new class () extends Migration {
             $table->timestamps();
         });
 
-        Schema::create('comments', function (Blueprint $table) {
+        Schema::create('comments', function (Blueprint $table): void {
             $table->id();
             $table->morphs('commentable');
             $table->text('body');
             $table->timestamps();
         });
 
-        Schema::create('tags', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->timestamp('archived_at')->nullable();
             $table->timestamps();
         });
 
-        Schema::create('tag_task', function (Blueprint $table) {
+        Schema::create('tag_task', function (Blueprint $table): void {
             $table->foreignId('tag_id')->constrained()->cascadeOnDelete();
             $table->foreignId('task_id')->constrained()->cascadeOnDelete();
             $table->primary(['tag_id', 'task_id']);
         });
 
-        Schema::create('taggables', function (Blueprint $table) {
+        Schema::create('taggables', function (Blueprint $table): void {
             $table->foreignId('tag_id')->constrained()->cascadeOnDelete();
             $table->morphs('taggable');
         });
 
-        Schema::create('deployments', function (Blueprint $table) {
+        Schema::create('deployments', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('task_id')->constrained()->cascadeOnDelete();
             $table->string('commit_hash');
@@ -96,13 +96,13 @@ return new class () extends Migration {
             $table->timestamps();
         });
 
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->timestamps();
         });
 
-        Schema::create('articles', function (Blueprint $table) {
+        Schema::create('articles', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->string('name');
@@ -110,14 +110,14 @@ return new class () extends Migration {
             $table->timestamps();
         });
 
-        Schema::create('reviews', function (Blueprint $table) {
+        Schema::create('reviews', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('article_id')->constrained()->cascadeOnDelete();
             $table->text('body');
             $table->timestamps();
         });
 
-        Schema::create('attachments', function (Blueprint $table) {
+        Schema::create('attachments', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->boolean('is_used')->default(false);

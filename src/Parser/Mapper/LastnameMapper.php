@@ -171,7 +171,7 @@ class LastnameMapper extends AbstractMapper
      *
      * @return bool
      */
-    protected function isIgnoredPart($part)
+    protected function isIgnoredPart($part): bool
     {
         return $part instanceof Suffix || $part instanceof Nickname || $part instanceof Salutation;
     }
@@ -262,7 +262,7 @@ class LastnameMapper extends AbstractMapper
      *
      * @return int
      */
-    protected function skipNicknameParts($parts, $startIndex)
+    protected function skipNicknameParts(array $parts, $startIndex)
     {
         $total = count($parts);
 

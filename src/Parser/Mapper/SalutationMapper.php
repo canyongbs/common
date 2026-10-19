@@ -52,7 +52,7 @@ class SalutationMapper extends AbstractMapper
      * @param array<int|string> $salutations
      * @param int $maxIndex
      */
-    public function __construct(array $salutations, $maxIndex = 0)
+    public function __construct(array $salutations, int $maxIndex = 0)
     {
         $this->salutations = $salutations;
         $this->maxIndex = $maxIndex;

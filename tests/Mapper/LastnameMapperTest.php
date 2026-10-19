@@ -41,7 +41,7 @@ use CanyonGBS\Common\Parser\Part\Lastname;
 use CanyonGBS\Common\Parser\Part\LastnamePrefix;
 use CanyonGBS\Common\Parser\Part\Salutation;
 
-dataset('provider', function () {
+dataset('provider', function (): array {
     return [
         [
             'input' => ['Peter', 'Pan'],
@@ -83,7 +83,7 @@ dataset('provider', function () {
     ];
 });
 
-it('maps lastname parts correctly', function (array $input, array $expectation, array $arguments = []) {
+it('maps lastname parts correctly', function (array $input, array $expectation, array $arguments = []): void {
     $matchSingle = $arguments[0] ?? false;
     $mapper = new LastnameMapper((new English())->getLastnamePrefixes(), $matchSingle);
 

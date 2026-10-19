@@ -38,7 +38,7 @@ use CanyonGBS\Common\BrowserNotifications\DataTransferObjects\BrowserNotificatio
 use CanyonGBS\Common\BrowserNotifications\Notifications\BrowserNotification;
 use Workbench\App\Models\BrowserNotificationUser;
 
-it('preserves the notification content and uses its ID as the browser tag', function () {
+it('preserves the notification content and uses its ID as the browser tag', function (): void {
     $notification = new BrowserNotification(
         payload: new BrowserNotificationPayload(
             id: '123e4567-e89b-12d3-a456-426614174000',

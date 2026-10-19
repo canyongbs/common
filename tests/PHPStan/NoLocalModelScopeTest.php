@@ -46,7 +46,7 @@ $runPhpStanOnNoLocalModelScopeFixture = function (string $filePath): array {
         'output' => implode("\n", $outputLines),
     ];
 };
-it('reports models that define a local scope using the "scope" prefix convention', function () use ($runPhpStanOnNoLocalModelScopeFixture) {
+it('reports models that define a local scope using the "scope" prefix convention', function () use ($runPhpStanOnNoLocalModelScopeFixture): void {
     $result = $runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/ModelWithLocalScopeFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -54,7 +54,7 @@ it('reports models that define a local scope using the "scope" prefix convention
     expect($result['output'])->toContain('tappable scope');
 });
 
-it('reports models that define a local scope using the #[Scope] attribute', function () use ($runPhpStanOnNoLocalModelScopeFixture) {
+it('reports models that define a local scope using the #[Scope] attribute', function () use ($runPhpStanOnNoLocalModelScopeFixture): void {
     $result = $runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/ModelWithScopeAttributeFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -62,20 +62,20 @@ it('reports models that define a local scope using the #[Scope] attribute', func
     expect($result['output'])->toContain('tappable scope');
 });
 
-it('reports abstract models that define a local scope', function () use ($runPhpStanOnNoLocalModelScopeFixture) {
+it('reports abstract models that define a local scope', function () use ($runPhpStanOnNoLocalModelScopeFixture): void {
     $result = $runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/AbstractModelWithLocalScopeFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.noLocalModelScope');
 });
 
-it('does not report models that do not define a local scope', function () use ($runPhpStanOnNoLocalModelScopeFixture) {
+it('does not report models that do not define a local scope', function () use ($runPhpStanOnNoLocalModelScopeFixture): void {
     $result = $runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/ModelWithoutLocalScopeFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report models that do not define a local scope.\nOutput: {$result['output']}");
 });
 
-it('does not report non-model classes that define a method using the "scope" prefix', function () use ($runPhpStanOnNoLocalModelScopeFixture) {
+it('does not report non-model classes that define a method using the "scope" prefix', function () use ($runPhpStanOnNoLocalModelScopeFixture): void {
     $result = $runPhpStanOnNoLocalModelScopeFixture('tests/PHPStan/Fixtures/NonModelClassWithScopeMethodFixture.php');
 
     expect($result['output'])->not->toContain('Common.noLocalModelScope');

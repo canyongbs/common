@@ -41,7 +41,7 @@ use CanyonGBS\Common\Parser\Parser;
 /**
  * @return array
  */
-dataset('provider', function () {
+dataset('provider', function (): array {
     return [
         [
             'James Norrington',
@@ -590,14 +590,14 @@ dataset('provider', function () {
         ],
     ];
 });
-test('parse', function ($input, $expectation) {
+test('parse', function ($input, $expectation): void {
     $parser = new Parser();
     $name = $parser->parse($input);
 
     expect($name)->toBeInstanceOf(Name::class);
     expect($name->getAll())->toEqual($expectation);
 })->with('provider');
-test('set get whitespace', function () {
+test('set get whitespace', function (): void {
     $parser = new Parser();
     $parser->setWhitespace('abc');
     expect($parser->getWhitespace())->toBe('abc');
@@ -606,14 +606,14 @@ test('set get whitespace', function () {
     $parser->setWhitespace('   _');
     expect($parser->getWhitespace())->toBe('   _');
 });
-test('set get nickname delimiters', function () {
+test('set get nickname delimiters', function (): void {
     $parser = new Parser();
     $parser->setNicknameDelimiters(['[' => ']']);
     expect($parser->getNicknameDelimiters())->toBe(['[' => ']']);
     expect($parser->parse('[Jim]')->getNickname())->toBe('Jim');
     $this->assertNotSame('Jim', $parser->parse('(Jim)')->getNickname());
 });
-test('set max salutation index', function () {
+test('set max salutation index', function (): void {
     $parser = new Parser();
     expect($parser->getMaxSalutationIndex())->toBe(0);
     $parser->setMaxSalutationIndex(1);
@@ -626,7 +626,7 @@ test('set max salutation index', function () {
     expect($parser->getMaxSalutationIndex())->toBe(2);
     expect($parser->parse('Francis Mr')->getSalutation())->toBe('Mr.');
 });
-test('set max combined initials', function () {
+test('set max combined initials', function (): void {
     $parser = new Parser();
     expect($parser->getMaxCombinedInitials())->toBe(2);
     $parser->setMaxCombinedInitials(1);
@@ -639,7 +639,7 @@ test('set max combined initials', function () {
     expect($parser->getMaxCombinedInitials())->toBe(3);
     expect($parser->parse('Charles PAG Mountbatten-Windsor')->getInitials())->toBe('P A G');
 });
-test('parser and subparsers properly handle languages', function () {
+test('parser and subparsers properly handle languages', function (): void {
     $parser = new Parser([
         new German(),
     ]);

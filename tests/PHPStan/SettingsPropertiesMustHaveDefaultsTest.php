@@ -46,20 +46,20 @@ $runPhpStanOnSettingsFixture = function (string $filePath): array {
         'output' => implode("\n", $outputLines),
     ];
 };
-it('does not report Settings class properties that all have default values', function () use ($runPhpStanOnSettingsFixture) {
+it('does not report Settings class properties that all have default values', function () use ($runPhpStanOnSettingsFixture): void {
     $result = $runPhpStanOnSettingsFixture('tests/PHPStan/Fixtures/SettingsWithDefaultsFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report errors when all Settings properties have defaults.\nOutput: {$result['output']}");
 });
 
-it('reports Settings class properties that are missing default values', function () use ($runPhpStanOnSettingsFixture) {
+it('reports Settings class properties that are missing default values', function () use ($runPhpStanOnSettingsFixture): void {
     $result = $runPhpStanOnSettingsFixture('tests/PHPStan/Fixtures/SettingsWithoutDefaultsFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.settingsPropertyMissingDefault');
 });
 
-it('reports each property individually that is missing a default value', function () use ($runPhpStanOnSettingsFixture) {
+it('reports each property individually that is missing a default value', function () use ($runPhpStanOnSettingsFixture): void {
     $result = $runPhpStanOnSettingsFixture('tests/PHPStan/Fixtures/SettingsWithoutDefaultsFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -67,7 +67,7 @@ it('reports each property individually that is missing a default value', functio
     expect($result['output'])->toContain('$optionalValue');
 });
 
-it('does not report non-Settings class properties that are missing default values', function () use ($runPhpStanOnSettingsFixture) {
+it('does not report non-Settings class properties that are missing default values', function () use ($runPhpStanOnSettingsFixture): void {
     $result = $runPhpStanOnSettingsFixture('tests/PHPStan/Fixtures/NonSettingsWithoutDefaultsFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report missing defaults on non-Settings classes.\nOutput: {$result['output']}");

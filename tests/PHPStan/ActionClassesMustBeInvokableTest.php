@@ -46,13 +46,13 @@ $runPhpStanOnActionClassFixture = function (string $filePath): array {
         'output' => implode("\n", $outputLines),
     ];
 };
-it('does not report action classes that only expose __invoke publicly', function () use ($runPhpStanOnActionClassFixture) {
+it('does not report action classes that only expose __invoke publicly', function () use ($runPhpStanOnActionClassFixture): void {
     $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionInvokableFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report valid action classes.\nOutput: {$result['output']}");
 });
 
-it('reports action classes missing __invoke and exposing execute publicly', function () use ($runPhpStanOnActionClassFixture) {
+it('reports action classes missing __invoke and exposing execute publicly', function () use ($runPhpStanOnActionClassFixture): void {
     $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionMissingInvokeFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -60,7 +60,7 @@ it('reports action classes missing __invoke and exposing execute publicly', func
     expect($result['output'])->toContain('Common.actionClassHasDisallowedPublicMethod');
 });
 
-it('reports action classes that expose extra public methods', function () use ($runPhpStanOnActionClassFixture) {
+it('reports action classes that expose extra public methods', function () use ($runPhpStanOnActionClassFixture): void {
     $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionWithExtraPublicMethodFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -68,19 +68,19 @@ it('reports action classes that expose extra public methods', function () use ($
     expect($result['output'])->not->toContain('Common.actionClassMustBeInvokable');
 });
 
-it('does not report classes outside action namespaces', function () use ($runPhpStanOnActionClassFixture) {
+it('does not report classes outside action namespaces', function () use ($runPhpStanOnActionClassFixture): void {
     $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/NonActionOutsideNamespaceFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report classes outside action namespaces.\nOutput: {$result['output']}");
 });
 
-it('does not report abstract action classes', function () use ($runPhpStanOnActionClassFixture) {
+it('does not report abstract action classes', function () use ($runPhpStanOnActionClassFixture): void {
     $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/AbstractActionFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract action classes.\nOutput: {$result['output']}");
 });
 
-it('reports modular action namespaces matched by wildcard include patterns', function () use ($runPhpStanOnActionClassFixture) {
+it('reports modular action namespaces matched by wildcard include patterns', function () use ($runPhpStanOnActionClassFixture): void {
     $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ModularActionMissingInvokeFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -88,13 +88,13 @@ it('reports modular action namespaces matched by wildcard include patterns', fun
     expect($result['output'])->toContain('Common.actionClassHasDisallowedPublicMethod');
 });
 
-it('does not report classes in Filament actions namespaces excluded by default', function () use ($runPhpStanOnActionClassFixture) {
+it('does not report classes in Filament actions namespaces excluded by default', function () use ($runPhpStanOnActionClassFixture): void {
     $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/FilamentActionExcludedFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report classes in excluded Filament action namespaces.\nOutput: {$result['output']}");
 });
 
-it('does not report classes in nested Filament actions namespaces excluded by default', function () use ($runPhpStanOnActionClassFixture) {
+it('does not report classes in nested Filament actions namespaces excluded by default', function () use ($runPhpStanOnActionClassFixture): void {
     $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/NestedFilamentActionExcludedFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report classes in nested excluded Filament action namespaces.\nOutput: {$result['output']}");

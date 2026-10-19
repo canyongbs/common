@@ -36,7 +36,7 @@
 
 use CanyonGBS\Common\BrowserNotifications\BrowserNotificationsManager;
 
-it('is disabled until a consuming app explicitly configures availability', function () {
+it('is disabled until a consuming app explicitly configures availability', function (): void {
     $manager = new BrowserNotificationsManager();
 
     expect($manager->isEnabled())->toBeFalse()
@@ -48,7 +48,7 @@ it('is disabled until a consuming app explicitly configures availability', funct
         ->and($manager->isAvailable())->toBeTrue();
 });
 
-it('allows only supported browser push service endpoints by default', function (string $endpoint, bool $isAllowed) {
+it('allows only supported browser push service endpoints by default', function (string $endpoint, bool $isAllowed): void {
     expect((new BrowserNotificationsManager())->isSubscriptionEndpointAllowed($endpoint))->toBe($isAllowed);
 })->with([
     'Google Chrome and Edge' => ['https://fcm.googleapis.com/fcm/send/subscription', true],
@@ -66,7 +66,7 @@ it('allows only supported browser push service endpoints by default', function (
     'non-standard port' => ['https://fcm.googleapis.com:8443/fcm/send/subscription', false],
 ]);
 
-it('allows the consuming app to customize subscription endpoint validation', function () {
+it('allows the consuming app to customize subscription endpoint validation', function (): void {
     $manager = (new BrowserNotificationsManager())
         ->allowSubscriptionEndpointsUsing(fn (string $endpoint): bool => $endpoint === 'https://push.example.com/subscription');
 
@@ -75,6 +75,6 @@ it('allows the consuming app to customize subscription endpoint validation', fun
         ->and($manager->isSubscriptionEndpointAllowed('http://push.example.com/subscription'))->toBeFalse();
 });
 
-it('disables redirects for Web Push delivery', function () {
+it('disables redirects for Web Push delivery', function (): void {
     expect(config('webpush.client_options.allow_redirects'))->toBeFalse();
 });

@@ -43,11 +43,11 @@ use Workbench\App\Models\AuditableMember;
 use Workbench\App\Models\AuditableMembership;
 use Workbench\App\Models\AuditablePost;
 
-beforeEach(function () {
+beforeEach(function (): void {
     config()->set('audit.console', true);
 });
 
-it('records only the attached row when attaching a many-to-many relation', function () {
+it('records only the attached row when attaching a many-to-many relation', function (): void {
     $post = AuditablePost::create(['title' => 'Post']);
     $category = AuditableCategory::create(['name' => 'A']);
 
@@ -60,7 +60,7 @@ it('records only the attached row when attaching a many-to-many relation', funct
     expect((int) $audit->new_values['categories'][0]['id'])->toBe($category->id);
 });
 
-it('records only the removed row when detaching a many-to-many relation', function () {
+it('records only the removed row when detaching a many-to-many relation', function (): void {
     $post = AuditablePost::create(['title' => 'Post']);
     $a = AuditableCategory::create(['name' => 'A']);
     $b = AuditableCategory::create(['name' => 'B']);
@@ -76,7 +76,7 @@ it('records only the removed row when detaching a many-to-many relation', functi
     expect($audit->new_values['categories'])->toBe([]);
 });
 
-it('records both the added and removed rows when syncing a many-to-many relation', function () {
+it('records both the added and removed rows when syncing a many-to-many relation', function (): void {
     $post = AuditablePost::create(['title' => 'Post']);
     $a = AuditableCategory::create(['name' => 'A']);
     $b = AuditableCategory::create(['name' => 'B']);
@@ -93,7 +93,7 @@ it('records both the added and removed rows when syncing a many-to-many relation
     expect((int) $audit->new_values['categories'][0]['id'])->toBe($b->id);
 });
 
-it('records a pivot attribute change even when the related keys are unchanged', function () {
+it('records a pivot attribute change even when the related keys are unchanged', function (): void {
     $post = AuditablePost::create(['title' => 'Post']);
     $category = AuditableCategory::create(['name' => 'A']);
 
@@ -109,7 +109,7 @@ it('records a pivot attribute change even when the related keys are unchanged', 
     expect((int) $audit->new_values['categories'][0]['pivot']['sort'])->toBe(2);
 });
 
-it('records nothing changed for a no-op sync', function () {
+it('records nothing changed for a no-op sync', function (): void {
     $post = AuditablePost::create(['title' => 'Post']);
     $category = AuditableCategory::create(['name' => 'A']);
 
@@ -123,7 +123,7 @@ it('records nothing changed for a no-op sync', function () {
     expect($audit->new_values)->toBe([]);
 });
 
-it('records the diff for a morph to many relation', function () {
+it('records the diff for a morph to many relation', function (): void {
     $post = AuditablePost::create(['title' => 'Post']);
     $label = AuditableLabel::create(['name' => 'L']);
 
@@ -135,7 +135,7 @@ it('records the diff for a morph to many relation', function () {
     expect((int) $audit->new_values['labels'][0]['id'])->toBe($label->id);
 });
 
-it('suppresses the pivot model auditing while still recording the parent event', function () {
+it('suppresses the pivot model auditing while still recording the parent event', function (): void {
     $post = AuditablePost::create(['title' => 'Post']);
     $member = AuditableMember::create(['name' => 'M']);
 
@@ -149,7 +149,7 @@ it('suppresses the pivot model auditing while still recording the parent event',
     expect(Audit::query()->where('auditable_type', AuditableMembership::class)->count())->toBe(0);
 });
 
-it('resets the custom-event state on the model when the audit dispatch throws', function () {
+it('resets the custom-event state on the model when the audit dispatch throws', function (): void {
     Event::listen(AuditCustom::class, function (): void {
         throw new RuntimeException('audit dispatch failed');
     });

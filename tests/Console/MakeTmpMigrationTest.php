@@ -40,7 +40,7 @@ use Illuminate\Database\Migrations\MigrationCreator;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\File;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->travelTo(Carbon::create(2026, 5, 1, 12, 0, 0));
     $this->testDir = sys_get_temp_dir() . '/' . uniqid('common-migration-test-');
     mkdir($this->testDir, 0755, true);
@@ -49,12 +49,12 @@ beforeEach(function () {
     $this->migrationsDir = $this->app->databasePath('migrations');
 });
 
-afterEach(function () {
+afterEach(function (): void {
     File::deleteDirectory($this->testDir);
 });
 
-describe('name normalization', function () {
-    it('prepends tmp_ to the migration name', function () {
+describe('name normalization', function (): void {
+    it('prepends tmp_ to the migration name', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'add_column_to_users', '--no-cleanup' => true])
             ->assertSuccessful();
 
@@ -63,7 +63,7 @@ describe('name normalization', function () {
         expect($files)->toHaveCount(1);
     });
 
-    it('strips redundant tmp_ prefix provided by user', function () {
+    it('strips redundant tmp_ prefix provided by user', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'tmp_add_column_to_users', '--no-cleanup' => true])
             ->assertSuccessful();
 
@@ -76,8 +76,8 @@ describe('name normalization', function () {
     });
 });
 
-describe('file creation', function () {
-    it('creates a migration file in database/migrations', function () {
+describe('file creation', function (): void {
+    it('creates a migration file in database/migrations', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'seed_settings', '--no-cleanup' => true])
             ->assertSuccessful();
 
@@ -90,7 +90,7 @@ describe('file creation', function () {
         expect($content)->toContain('return new class extends Migration');
     });
 
-    it('supports --create option for table creation stub', function () {
+    it('supports --create option for table creation stub', function (): void {
         $this->artisan('make:tmp-migration', [
             'name' => 'create_temp_cache',
             '--create' => 'temp_cache',
@@ -107,15 +107,15 @@ describe('file creation', function () {
     });
 });
 
-describe('cleanup integration', function () {
-    it('skips cleanup task prompt with --no-cleanup', function () {
+describe('cleanup integration', function (): void {
+    it('skips cleanup task prompt with --no-cleanup', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'skip_test', '--no-cleanup' => true])
             ->assertSuccessful();
 
         expect(is_dir($this->cleanupDir))->toBeFalse();
     });
 
-    it('creates new cleanup task with migration path in Temporary Migrations section', function () {
+    it('creates new cleanup task with migration path in Temporary Migrations section', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'backfill_users'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'backfill_users')
@@ -135,7 +135,7 @@ describe('cleanup integration', function () {
             ->and($content)->toContain('tmp_backfill_users.php');
     });
 
-    it('appends to existing cleanup task', function () {
+    it('appends to existing cleanup task', function (): void {
         File::makeDirectory($this->cleanupDir, 0755, true);
         $existingFile = $this->cleanupDir . '/2026_04_30_existing_task.md';
         file_put_contents($existingFile, "---\ntitle: Existing Task\ncreated: 2026-04-30\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n");
@@ -150,7 +150,7 @@ describe('cleanup integration', function () {
         expect($content)->toContain('tmp_fix_data.php');
     });
 
-    it('skips cleanup task when user selects Skip', function () {
+    it('skips cleanup task when user selects Skip', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'some_migration'])
             ->expectsChoice('Cleanup task', 'Skip', ['Create new cleanup task', 'Skip'])
             ->assertSuccessful();
@@ -164,7 +164,7 @@ describe('cleanup integration', function () {
         expect($cleanupFiles)->toBeEmpty();
     });
 
-    it('uses clean name without tmp_ as suggested cleanup task name', function () {
+    it('uses clean name without tmp_ as suggested cleanup task name', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'backfill_roles'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'backfill_roles')
@@ -175,7 +175,7 @@ describe('cleanup integration', function () {
         expect($cleanupFiles)->toHaveCount(1);
     });
 
-    it('outputs created message for new cleanup task', function () {
+    it('outputs created message for new cleanup task', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'output_test'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'output_test')
@@ -183,7 +183,7 @@ describe('cleanup integration', function () {
             ->assertSuccessful();
     });
 
-    it('outputs updated message for existing cleanup task', function () {
+    it('outputs updated message for existing cleanup task', function (): void {
         File::makeDirectory($this->cleanupDir, 0755, true);
         file_put_contents(
             $this->cleanupDir . '/2026_04_30_existing.md',
@@ -198,17 +198,17 @@ describe('cleanup integration', function () {
     });
 });
 
-describe('migration creation failure', function () {
-    beforeEach(function () {
+describe('migration creation failure', function (): void {
+    beforeEach(function (): void {
         $mock = Mockery::mock(MigrationCreator::class);
         $mock->shouldReceive('create')->andThrow(new InvalidArgumentException('A migration with that name already exists.'));
 
-        $this->app->singleton(MakeTmpMigration::class, function () use ($mock) {
+        $this->app->singleton(MakeTmpMigration::class, function () use ($mock): MakeTmpMigration {
             return new MakeTmpMigration($mock, $this->app->make(Composer::class));
         });
     });
 
-    it('does not create cleanup task when migration creation fails', function () {
+    it('does not create cleanup task when migration creation fails', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'duplicate_test'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'duplicate_test')
@@ -220,7 +220,7 @@ describe('migration creation failure', function () {
         expect($cleanupFiles)->toBeEmpty();
     });
 
-    it('does not update existing cleanup task when migration creation fails', function () {
+    it('does not update existing cleanup task when migration creation fails', function (): void {
         File::makeDirectory($this->cleanupDir, 0755, true);
         $existingFile = $this->cleanupDir . '/2026_04_30_existing_task.md';
         $originalContent = "---\ntitle: Existing Task\ncreated: 2026-04-30\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n";
@@ -237,7 +237,7 @@ describe('migration creation failure', function () {
         expect($content)->toBe($originalContent);
     });
 
-    it('does not prompt for cleanup task with --no-cleanup when migration fails', function () {
+    it('does not prompt for cleanup task with --no-cleanup when migration fails', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'no_cleanup_fail', '--no-cleanup' => true])
             ->assertFailed();
 
@@ -247,8 +247,8 @@ describe('migration creation failure', function () {
     });
 });
 
-describe('cleanup task conflict', function () {
-    it('fails when a cleanup task with the same name already exists for today', function () {
+describe('cleanup task conflict', function (): void {
+    it('fails when a cleanup task with the same name already exists for today', function (): void {
         File::makeDirectory($this->cleanupDir, 0755, true);
         file_put_contents(
             $this->cleanupDir . '/2026_05_01_duplicate_name.md',
@@ -266,7 +266,7 @@ describe('cleanup task conflict', function () {
         expect($migrationFiles)->toBeEmpty();
     });
 
-    it('does not overwrite existing cleanup task file', function () {
+    it('does not overwrite existing cleanup task file', function (): void {
         File::makeDirectory($this->cleanupDir, 0755, true);
         $existingFile = $this->cleanupDir . '/2026_05_01_my_task.md';
         $originalContent = "---\ntitle: My Task\ncreated: 2026-05-01\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n";
@@ -281,7 +281,7 @@ describe('cleanup task conflict', function () {
         expect(file_get_contents($existingFile))->toBe($originalContent);
     });
 
-    it('succeeds when no conflict exists', function () {
+    it('succeeds when no conflict exists', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'unique_migration'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'unique_migration')
