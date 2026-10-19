@@ -45,7 +45,7 @@ use CanyonGBS\Common\Parser\Part\Nickname;
 use CanyonGBS\Common\Parser\Part\Salutation;
 use CanyonGBS\Common\Parser\Part\Suffix;
 
-test('to string', function () {
+test('to string', function (): void {
     $parts = [
         new Salutation('Mr', 'Mr.'),
         new Firstname('James'),
@@ -61,7 +61,7 @@ test('to string', function () {
     expect($name->getParts())->toBe($parts);
     expect((string) $name)->toBe('Mr. James (Jim) Morgan T. Smith I');
 });
-test('get nickname', function () {
+test('get nickname', function (): void {
     $name = new Name([
         new Nickname('Jim'),
     ]);
@@ -69,7 +69,7 @@ test('get nickname', function () {
     expect($name->getNickname())->toBe('Jim');
     expect($name->getNickname(true))->toBe('(Jim)');
 });
-test('getting lastname and lastname prefix separately', function () {
+test('getting lastname and lastname prefix separately', function (): void {
     $name = new Name([
         new Firstname('Frank'),
         new LastnamePrefix('van'),
@@ -81,12 +81,12 @@ test('getting lastname and lastname prefix separately', function () {
     expect($name->getLastname(true))->toBe('Delft');
     expect($name->getLastname())->toBe('van Delft');
 });
-test('get given name should return given name in given order', function () {
+test('get given name should return given name in given order', function (): void {
     $parser = new Parser();
     $name = $parser->parse('Schuler, J. Peter M.');
     expect($name->getGivenName())->toBe('J. Peter M.');
 });
-test('get full name should return the full name in given order', function () {
+test('get full name should return the full name in given order', function (): void {
     $parser = new Parser();
     $name = $parser->parse('Schuler, J. Peter M.');
     expect($name->getFullName())->toBe('J. Peter M. Schuler');

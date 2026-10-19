@@ -40,7 +40,7 @@ use Workbench\App\Models\Project;
 use Workbench\App\Models\Review;
 use Workbench\App\Models\Task;
 
-it('can archive a model', function () {
+it('can archive a model', function (): void {
     $project = Project::factory()->create();
 
     expect($project->isArchived())->toBeFalse();
@@ -53,7 +53,7 @@ it('can archive a model', function () {
     expect($project->archived_at)->toBeInstanceOf(Carbon::class);
 });
 
-it('can unarchive a model', function () {
+it('can unarchive a model', function (): void {
     $project = Project::factory()->create();
     $project->archive();
 
@@ -66,7 +66,7 @@ it('can unarchive a model', function () {
     expect($project->archived_at)->toBeNull();
 });
 
-it('fires archiving and archived events when archiving', function () {
+it('fires archiving and archived events when archiving', function (): void {
     $archivingFired = false;
     $archivedFired = false;
 
@@ -85,7 +85,7 @@ it('fires archiving and archived events when archiving', function () {
     expect($archivedFired)->toBeTrue();
 });
 
-it('fires unarchiving and unarchived events when unarchiving', function () {
+it('fires unarchiving and unarchived events when unarchiving', function (): void {
     $unarchivingFired = false;
     $unarchivedFired = false;
 
@@ -105,7 +105,7 @@ it('fires unarchiving and unarchived events when unarchiving', function () {
     expect($unarchivedFired)->toBeTrue();
 });
 
-it('can archive quietly without firing events', function () {
+it('can archive quietly without firing events', function (): void {
     $archivingFired = false;
     $archivedFired = false;
 
@@ -125,7 +125,7 @@ it('can archive quietly without firing events', function () {
     expect($archivedFired)->toBeFalse();
 });
 
-it('can unarchive quietly without firing events', function () {
+it('can unarchive quietly without firing events', function (): void {
     $unarchivingFired = false;
     $unarchivedFired = false;
 
@@ -146,7 +146,7 @@ it('can unarchive quietly without firing events', function () {
     expect($unarchivedFired)->toBeFalse();
 });
 
-it('can prevent archiving by returning false from archiving event', function () {
+it('can prevent archiving by returning false from archiving event', function (): void {
     Project::archiving(function (): bool {
         return false;
     });
@@ -158,7 +158,7 @@ it('can prevent archiving by returning false from archiving event', function () 
     expect($project->isArchived())->toBeFalse();
 });
 
-it('can prevent unarchiving by returning false from unarchiving event', function () {
+it('can prevent unarchiving by returning false from unarchiving event', function (): void {
     Project::unarchiving(function (): bool {
         return false;
     });
@@ -171,7 +171,7 @@ it('can prevent unarchiving by returning false from unarchiving event', function
     expect($project->isArchived())->toBeTrue();
 });
 
-it('updates the `updated_at` timestamp when archiving', function () {
+it('updates the `updated_at` timestamp when archiving', function (): void {
     $project = Project::factory()->create();
     $originalUpdatedAt = $project->updated_at;
 
@@ -184,7 +184,7 @@ it('updates the `updated_at` timestamp when archiving', function () {
     Carbon::setTestNow();
 });
 
-it('updates the `updated_at` timestamp when unarchiving', function () {
+it('updates the `updated_at` timestamp when unarchiving', function (): void {
     $project = Project::factory()->create();
     $project->archive();
     $originalUpdatedAt = $project->updated_at;
@@ -199,7 +199,7 @@ it('updates the `updated_at` timestamp when unarchiving', function () {
     Carbon::setTestNow();
 });
 
-it('does not persist other pending changes when archiving', function () {
+it('does not persist other pending changes when archiving', function (): void {
     $project = Project::factory()->create(['name' => 'Apollo']);
 
     $project->name = 'Gemini';
@@ -211,7 +211,7 @@ it('does not persist other pending changes when archiving', function () {
     expect($project->isDirty('name'))->toBeTrue();
 });
 
-it('does not persist other pending changes when unarchiving', function () {
+it('does not persist other pending changes when unarchiving', function (): void {
     $project = Project::factory()->create(['name' => 'Apollo']);
     $project->archive();
 
@@ -224,7 +224,7 @@ it('does not persist other pending changes when unarchiving', function () {
     expect($project->isDirty('name'))->toBeTrue();
 });
 
-it('archives a model with a pending attribute that is not a column', function () {
+it('archives a model with a pending attribute that is not a column', function (): void {
     $article = Article::factory()->create();
 
     $article->reviews_exists = false;
@@ -233,7 +233,7 @@ it('archives a model with a pending attribute that is not a column', function ()
     expect($article->fresh()->isArchived())->toBeTrue();
 });
 
-it('unarchives a model with a pending attribute that is not a column', function () {
+it('unarchives a model with a pending attribute that is not a column', function (): void {
     $article = Article::factory()->create();
     $article->archive();
 
@@ -243,7 +243,7 @@ it('unarchives a model with a pending attribute that is not a column', function 
     expect($article->fresh()->isArchived())->toBeFalse();
 });
 
-it('can bulk archive models using query builder', function () {
+it('can bulk archive models using query builder', function (): void {
     Project::factory()->count(3)->create();
 
     Project::query()->archive();
@@ -252,7 +252,7 @@ it('can bulk archive models using query builder', function () {
     expect(Project::onlyArchived()->count())->toBe(3);
 });
 
-it('can bulk unarchive models using query builder', function () {
+it('can bulk unarchive models using query builder', function (): void {
     Project::factory()->count(3)->create();
     Project::query()->archive();
 
@@ -264,7 +264,7 @@ it('can bulk unarchive models using query builder', function () {
     expect(Project::onlyArchived()->count())->toBe(0);
 });
 
-it('includes archived models in queries by default', function () {
+it('includes archived models in queries by default', function (): void {
     Project::factory()->create();
     $archivedProject = Project::factory()->create();
     $archivedProject->archive();
@@ -272,7 +272,7 @@ it('includes archived models in queries by default', function () {
     expect(Project::count())->toBe(2);
 });
 
-it('can exclude archived models with `withoutArchived` scope', function () {
+it('can exclude archived models with `withoutArchived` scope', function (): void {
     $activeProject = Project::factory()->create();
     $archivedProject = Project::factory()->create();
     $archivedProject->archive();
@@ -283,7 +283,7 @@ it('can exclude archived models with `withoutArchived` scope', function () {
     expect($projects->first()->id)->toBe($activeProject->id);
 });
 
-it('can get only archived models with `onlyArchived` scope', function () {
+it('can get only archived models with `onlyArchived` scope', function (): void {
     Project::factory()->create();
     $archivedProject = Project::factory()->create();
     $archivedProject->archive();
@@ -294,7 +294,7 @@ it('can get only archived models with `onlyArchived` scope', function () {
     expect($projects->first()->id)->toBe($archivedProject->id);
 });
 
-it('excludes archived and unused models with `withoutArchivedAndUnused` scope', function () {
+it('excludes archived and unused models with `withoutArchivedAndUnused` scope', function (): void {
     $activeProject = Project::factory()->create();
 
     $archivedUsedProject = Project::factory()->create();
@@ -313,11 +313,11 @@ it('excludes archived and unused models with `withoutArchivedAndUnused` scope', 
     ]);
 });
 
-it('throws `BadMethodCallException` when using `withoutArchivedAndUnused` without a `used` method', function () {
+it('throws `BadMethodCallException` when using `withoutArchivedAndUnused` without a `used` method', function (): void {
     Task::query()->withoutArchivedAndUnused();
 })->throws(BadMethodCallException::class);
 
-it('reads an eager-loaded relation existence attribute in `isUsed()` instead of querying', function () {
+it('reads an eager-loaded relation existence attribute in `isUsed()` instead of querying', function (): void {
     $article = Article::factory()->create();
     Review::factory()->create(['article_id' => $article->id]);
 
@@ -328,7 +328,7 @@ it('reads an eager-loaded relation existence attribute in `isUsed()` instead of 
     expect($article->isUsed())->toBeTrue();
 });
 
-it('memoizes the relation existence in `isUsed()` after the first check', function () {
+it('memoizes the relation existence in `isUsed()` after the first check', function (): void {
     $article = Article::factory()->create();
 
     expect($article->isUsed())->toBeFalse();
@@ -339,7 +339,7 @@ it('memoizes the relation existence in `isUsed()` after the first check', functi
     expect($article->fresh()->isUsed())->toBeTrue();
 });
 
-it('does not mark the model as dirty when memoizing the relation existence in `isUsed()`', function () {
+it('does not mark the model as dirty when memoizing the relation existence in `isUsed()`', function (): void {
     $article = Article::factory()->create();
 
     expect($article->isUsed())->toBeFalse();

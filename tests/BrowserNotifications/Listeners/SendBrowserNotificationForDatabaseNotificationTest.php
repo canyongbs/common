@@ -46,7 +46,7 @@ use Illuminate\Support\Str;
 use Minishlink\WebPush\ContentEncoding;
 use Workbench\App\Models\BrowserNotificationUser;
 
-it('dispatches one browser notification with the database notification payload', function () {
+it('dispatches one browser notification with the database notification payload', function (): void {
     $user = BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']);
     $subscription = $user->updatePushSubscription(
         'https://push.example.com/subscriptions/' . Str::uuid(),
@@ -84,7 +84,7 @@ it('dispatches one browser notification with the database notification payload',
     Queue::assertPushed(SendBrowserNotification::class, 1);
 });
 
-it('dispatches a separate browser notification job for each subscription', function () {
+it('dispatches a separate browser notification job for each subscription', function (): void {
     $user = BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']);
     $subscriptions = collect([
         $user->updatePushSubscription(
@@ -121,7 +121,7 @@ it('dispatches a separate browser notification job for each subscription', funct
     ));
 });
 
-it('does not send a browser notification when database notification creation rolls back', function () {
+it('does not send a browser notification when database notification creation rolls back', function (): void {
     config()->set('queue.default', 'sync');
 
     Notification::fake();
@@ -153,7 +153,7 @@ it('does not send a browser notification when database notification creation rol
     Notification::assertNothingSent();
 });
 
-it('sends a browser notification after database notification creation commits', function () {
+it('sends a browser notification after database notification creation commits', function (): void {
     config()->set('queue.default', 'sync');
 
     Notification::fake();
@@ -180,7 +180,7 @@ it('sends a browser notification after database notification creation commits', 
     Notification::assertSentTo($user, BrowserNotification::class);
 });
 
-it('does not query subscriptions or dispatch when the consuming app disables the feature', function () {
+it('does not query subscriptions or dispatch when the consuming app disables the feature', function (): void {
     app(BrowserNotificationsManager::class)->availableUsing(fn (): bool => false);
 
     Queue::fake();
@@ -196,7 +196,7 @@ it('does not query subscriptions or dispatch when the consuming app disables the
     Queue::assertNothingPushed();
 });
 
-it('does not dispatch a custom browser notification payload without a destination', function () {
+it('does not dispatch a custom browser notification payload without a destination', function (): void {
     $user = BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']);
     $user->updatePushSubscription(
         'https://push.example.com/subscriptions/' . Str::uuid(),
@@ -235,7 +235,7 @@ it('does not dispatch a custom browser notification payload without a destinatio
     expect($endpointWasChecked)->toBeFalse();
 });
 
-it('isolates browser notification failures from database notification creation', function () {
+it('isolates browser notification failures from database notification creation', function (): void {
     $manager = app(BrowserNotificationsManager::class);
     $manager->availableUsing(fn (): bool => false);
 

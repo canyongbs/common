@@ -39,7 +39,7 @@ use CanyonGBS\Common\Parser\Part\Firstname;
 use CanyonGBS\Common\Parser\Part\Lastname;
 use CanyonGBS\Common\Parser\Part\Middlename;
 
-dataset('provider', function () {
+dataset('provider', function (): array {
     return [
         [
             'input' => [
@@ -119,7 +119,7 @@ dataset('provider', function () {
     ];
 });
 
-it('maps middlename parts correctly', function (array $input, array $expectation, array $arguments = []) {
+it('maps middlename parts correctly', function (array $input, array $expectation, array $arguments = []): void {
     $mapWithoutLastname = $arguments[0] ?? false;
 
     $mapper = new MiddlenameMapper($mapWithoutLastname);

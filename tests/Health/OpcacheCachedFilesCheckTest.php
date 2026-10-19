@@ -39,8 +39,8 @@ use CanyonGBS\Common\Health\Services\OpcacheStatusService;
 use Mockery\MockInterface;
 use Spatie\Health\Enums\Status;
 
-it('returns ok status when cached scripts are well below max', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns ok status when cached scripts are well below max', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'num_cached_scripts' => 3000,
@@ -54,8 +54,8 @@ it('returns ok status when cached scripts are well below max', function () {
     expect($result->status)->toBe(Status::ok());
 });
 
-it('returns warning status when cached scripts reach 90% of max', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns warning status when cached scripts reach 90% of max', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'num_cached_scripts' => 9000,
@@ -69,8 +69,8 @@ it('returns warning status when cached scripts reach 90% of max', function () {
     expect($result->status)->toBe(Status::warning());
 });
 
-it('returns warning status when cached scripts are between 90% and 100% of max', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns warning status when cached scripts are between 90% and 100% of max', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'num_cached_scripts' => 9500,
@@ -84,8 +84,8 @@ it('returns warning status when cached scripts are between 90% and 100% of max',
     expect($result->status)->toBe(Status::warning());
 });
 
-it('returns failed status when cached scripts reach max', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns failed status when cached scripts reach max', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'num_cached_scripts' => 10000,
@@ -99,8 +99,8 @@ it('returns failed status when cached scripts reach max', function () {
     expect($result->status)->toBe(Status::failed());
 });
 
-it('returns failed status when cached scripts exceed max', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns failed status when cached scripts exceed max', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'num_cached_scripts' => 10500,
@@ -114,8 +114,8 @@ it('returns failed status when cached scripts exceed max', function () {
     expect($result->status)->toBe(Status::failed());
 });
 
-it('returns failed status when opcache is not available', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns failed status when opcache is not available', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn(false);
     });
 
@@ -124,8 +124,8 @@ it('returns failed status when opcache is not available', function () {
     expect($result->status)->toBe(Status::failed());
 });
 
-it('returns failed status when max_cached_keys is zero', function () {
-    $this->mock(OpcacheStatusService::class, function (MockInterface $mock) {
+it('returns failed status when max_cached_keys is zero', function (): void {
+    $this->mock(OpcacheStatusService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('getStatus')->andReturn([
             'opcache_statistics' => [
                 'num_cached_scripts' => 0,

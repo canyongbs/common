@@ -56,7 +56,7 @@ use Workbench\App\Policies\ArticlePolicy;
 use Workbench\App\Policies\ImagePolicy;
 use Workbench\App\Policies\TaskPolicy;
 
-beforeEach(function () {
+beforeEach(function (): void {
     ArticlePolicy::reset();
     ImagePolicy::reset();
     TaskPolicy::reset();
@@ -71,8 +71,8 @@ beforeEach(function () {
     $this->actingAs(User::create(['name' => 'Ada', 'email' => 'ada@example.com']));
 });
 
-it('unarchives every record when the model does not define `used()`', function () {
-    Image::factory()->count(3)->create()->each(fn (Image $image) => $image->archive());
+it('unarchives every record when the model does not define `used()`', function (): void {
+    Image::factory()->count(3)->create()->each(fn (Image $image): bool => $image->archive());
 
     Livewire::test(ListImages::class)
         ->selectTableRecords(Image::query()->pluck('id')->all())
@@ -82,7 +82,7 @@ it('unarchives every record when the model does not define `used()`', function (
     expect(Image::query()->onlyArchived()->count())->toBe(0);
 });
 
-it('unarchives used and unused records', function () {
+it('unarchives used and unused records', function (): void {
     $usedArticle = Article::factory()->create();
     Review::factory()->create(['article_id' => $usedArticle->id]);
     $usedArticle->archive();
@@ -99,7 +99,7 @@ it('unarchives used and unused records', function () {
     expect($unusedArticle->refresh()->isArchived())->toBeFalse();
 });
 
-it('only processes the selected records', function () {
+it('only processes the selected records', function (): void {
     $selectedArticle = Article::factory()->create();
     $selectedArticle->archive();
 
@@ -115,7 +115,7 @@ it('only processes the selected records', function () {
     expect($unselectedArticle->refresh()->isArchived())->toBeTrue();
 });
 
-it('skips records that are not archived', function (bool $fetchesSelectedRecords) {
+it('skips records that are not archived', function (bool $fetchesSelectedRecords): void {
     ArticleResource::$fetchesSelectedRecords = $fetchesSelectedRecords;
 
     $archivedArticle = Article::factory()->create();
@@ -138,7 +138,7 @@ it('skips records that are not archived', function (bool $fetchesSelectedRecords
     'not fetching records' => false,
 ]);
 
-it('does nothing when no records are selected', function () {
+it('does nothing when no records are selected', function (): void {
     $article = Article::factory()->create();
     $article->archive();
 
@@ -149,7 +149,7 @@ it('does nothing when no records are selected', function () {
     expect($article->refresh()->isArchived())->toBeTrue();
 });
 
-it('processes chunked selections', function () {
+it('processes chunked selections', function (): void {
     ArticleResource::$selectedRecordsChunkSize = 50;
 
     $category = Category::factory()->create();
@@ -165,7 +165,7 @@ it('processes chunked selections', function () {
     expect(Article::query()->onlyArchived()->count())->toBe(0);
 });
 
-it('has unarchive styling', function () {
+it('has unarchive styling', function (): void {
     Article::factory()->create();
 
     Livewire::test(ListArticles::class)
@@ -177,7 +177,7 @@ it('has unarchive styling', function () {
         ->assertActionExists(TestAction::make('unarchive')->table()->bulk(), fn (BulkAction $action): bool => $action->getModalIcon() === Heroicon::OutlinedArchiveBoxXMark);
 });
 
-it('counts cancelled unarchive operations as failures', function () {
+it('counts cancelled unarchive operations as failures', function (): void {
     $cancelledArticle = Article::factory()->create();
     $cancelledArticle->archive();
 
@@ -201,7 +201,7 @@ it('counts cancelled unarchive operations as failures', function () {
     expect($article->refresh()->isArchived())->toBeFalse();
 });
 
-it('counts records that throw during processing as failures', function () {
+it('counts records that throw during processing as failures', function (): void {
     $failingArticle = Article::factory()->create();
     $failingArticle->archive();
 
@@ -223,7 +223,7 @@ it('counts records that throw during processing as failures', function () {
     expect($article->refresh()->isArchived())->toBeFalse();
 });
 
-it('processes records in a bulk query without model events when not fetching records', function () {
+it('processes records in a bulk query without model events when not fetching records', function (): void {
     ArticleResource::$fetchesSelectedRecords = false;
 
     $unarchivingEventFired = false;
@@ -232,7 +232,7 @@ it('processes records in a bulk query without model events when not fetching rec
         $unarchivingEventFired = true;
     });
 
-    Article::factory()->count(3)->create()->each(fn (Article $article) => $article->archive());
+    Article::factory()->count(3)->create()->each(fn (Article $article): bool => $article->archive());
 
     Livewire::test(ListArticles::class)
         ->selectTableRecords(Article::query()->pluck('id')->all())
@@ -243,7 +243,7 @@ it('processes records in a bulk query without model events when not fetching rec
     expect(Article::query()->onlyArchived()->count())->toBe(0);
 });
 
-it('reports a complete failure when a bulk statement fails', function () {
+it('reports a complete failure when a bulk statement fails', function (): void {
     ArticleResource::$fetchesSelectedRecords = false;
 
     DB::statement(<<<'SQL'
@@ -266,7 +266,7 @@ it('reports a complete failure when a bulk statement fails', function () {
     expect($article->refresh()->isArchived())->toBeTrue();
 });
 
-it('throws when the model does not use the `CanBeArchived` trait', function () {
+it('throws when the model does not use the `CanBeArchived` trait', function (): void {
     $task = Task::factory()->create();
 
     Livewire::test(ListTasks::class)
@@ -274,8 +274,8 @@ it('throws when the model does not use the `CanBeArchived` trait', function () {
         ->callAction(TestAction::make('unarchive')->table()->bulk());
 })->throws(Exception::class, 'The [UnarchiveBulkAction] requires the model to use the [CanBeArchived] trait.');
 
-describe('authorization', function () {
-    it('is hidden when the user is not authorized to delete any records', function () {
+describe('authorization', function (): void {
+    it('is hidden when the user is not authorized to delete any records', function (): void {
         ArticlePolicy::$abilities['deleteAny'] = false;
 
         Article::factory()->create();
@@ -284,7 +284,7 @@ describe('authorization', function () {
             ->assertActionHidden(TestAction::make('unarchive')->table()->bulk());
     });
 
-    it('does not check the `archive` ability for each record by default', function () {
+    it('does not check the `archive` ability for each record by default', function (): void {
         ArticlePolicy::$abilities['archive'] = false;
 
         $article = Article::factory()->create();
@@ -298,7 +298,7 @@ describe('authorization', function () {
         expect($article->refresh()->isArchived())->toBeFalse();
     });
 
-    it('skips records that fail individual `archive` authorization when it is enabled', function () {
+    it('skips records that fail individual `archive` authorization when it is enabled', function (): void {
         ArticleResource::$authorizesIndividualRecords = true;
 
         $article = Article::factory()->create();
@@ -317,7 +317,7 @@ describe('authorization', function () {
         expect($deniedArticle->refresh()->isArchived())->toBeTrue();
     });
 
-    it('reports skipped records alongside the successful count when individual authorization fails', function () {
+    it('reports skipped records alongside the successful count when individual authorization fails', function (): void {
         ArticleResource::$authorizesIndividualRecords = true;
 
         Article::factory()->create()->archive();
@@ -338,11 +338,11 @@ describe('authorization', function () {
             );
     });
 
-    it('reports when no records could be processed because of authorization', function () {
+    it('reports when no records could be processed because of authorization', function (): void {
         ArticleResource::$authorizesIndividualRecords = true;
         ArticlePolicy::$abilities['archive'] = false;
 
-        Article::factory()->count(2)->create()->each(fn (Article $article) => $article->archive());
+        Article::factory()->count(2)->create()->each(fn (Article $article): bool => $article->archive());
 
         Livewire::test(ListArticles::class)
             ->selectTableRecords(Article::query()->pluck('id')->all())
@@ -358,7 +358,7 @@ describe('authorization', function () {
         expect(Article::query()->onlyArchived()->count())->toBe(2);
     });
 
-    it('does not authorize individual records when not fetching records', function () {
+    it('does not authorize individual records when not fetching records', function (): void {
         ArticleResource::$authorizesIndividualRecords = true;
         ArticleResource::$fetchesSelectedRecords = false;
         ArticlePolicy::$abilities['archive'] = false;
@@ -374,7 +374,7 @@ describe('authorization', function () {
         expect($article->refresh()->isArchived())->toBeFalse();
     });
 
-    it('authorizes records with the `archive` ability when the policy has an `archive` method', function () {
+    it('authorizes records with the `archive` ability when the policy has an `archive` method', function (): void {
         ArticleResource::$authorizesIndividualRecords = true;
         ArticlePolicy::$abilities['archive'] = false;
 
@@ -389,7 +389,7 @@ describe('authorization', function () {
         expect($article->refresh()->isArchived())->toBeTrue();
     });
 
-    it('ignores the delete ability when the policy has an `archive` method', function () {
+    it('ignores the delete ability when the policy has an `archive` method', function (): void {
         ArticleResource::$authorizesIndividualRecords = true;
         ArticlePolicy::$abilities['delete'] = false;
 
@@ -405,12 +405,12 @@ describe('authorization', function () {
     });
 });
 
-describe('backwards compatibility', function () {
-    it('falls back to the delete ability when the policy has no `archive` method', function () {
+describe('backwards compatibility', function (): void {
+    it('falls back to the delete ability when the policy has no `archive` method', function (): void {
         ImageResource::$authorizesIndividualRecords = true;
         ImagePolicy::$abilities['delete'] = false;
 
-        Image::factory()->count(2)->create()->each(fn (Image $image) => $image->archive());
+        Image::factory()->count(2)->create()->each(fn (Image $image): bool => $image->archive());
 
         Livewire::test(ListImages::class)
             ->selectTableRecords(Image::query()->pluck('id')->all())
@@ -420,10 +420,10 @@ describe('backwards compatibility', function () {
         expect(Image::query()->onlyArchived()->count())->toBe(2);
     });
 
-    it('unarchives records using the delete ability when the policy has no `archive` method', function () {
+    it('unarchives records using the delete ability when the policy has no `archive` method', function (): void {
         ImageResource::$authorizesIndividualRecords = true;
 
-        Image::factory()->count(2)->create()->each(fn (Image $image) => $image->archive());
+        Image::factory()->count(2)->create()->each(fn (Image $image): bool => $image->archive());
 
         Livewire::test(ListImages::class)
             ->selectTableRecords(Image::query()->pluck('id')->all())

@@ -101,7 +101,7 @@ $mergeTagDefinitions = function (): array {
     ];
 };
 
-dataset('converted rich content documents', function () use ($mergeTagDefinitions, $mergeTagDoc, $mergeTagParagraph, $mergeTagText, $mergeTagNode) {
+dataset('converted rich content documents', function () use ($mergeTagDefinitions, $mergeTagDoc, $mergeTagParagraph, $mergeTagText, $mergeTagNode): array {
     return [
         'label match splits a text node into five nodes' => [
             'mergeTags' => $mergeTagDefinitions(),
@@ -302,7 +302,7 @@ dataset('converted rich content documents', function () use ($mergeTagDefinition
     ];
 });
 
-dataset('unconverted rich content documents', function () use ($mergeTagDefinitions, $mergeTagDoc, $mergeTagParagraph, $mergeTagText, $mergeTagNode) {
+dataset('unconverted rich content documents', function () use ($mergeTagDefinitions, $mergeTagDoc, $mergeTagParagraph, $mergeTagText, $mergeTagNode): array {
     return [
         'an unknown merge tag' => [
             'mergeTags' => $mergeTagDefinitions(),
@@ -391,15 +391,15 @@ dataset('unconverted rich content documents', function () use ($mergeTagDefiniti
     ];
 });
 
-it('converts literal merge tags into merge tag nodes', function (array $mergeTags, array $input, array $expectation) {
+it('converts literal merge tags into merge tag nodes', function (array $mergeTags, array $input, array $expectation): void {
     expect((new ConvertLiteralMergeTags())($input, $mergeTags))->toBe($expectation);
 })->with('converted rich content documents');
 
-it('returns the document unchanged when there is nothing to convert', function (array $mergeTags, array $input) {
+it('returns the document unchanged when there is nothing to convert', function (array $mergeTags, array $input): void {
     expect((new ConvertLiteralMergeTags())($input, $mergeTags))->toBe($input);
 })->with('unconverted rich content documents');
 
-it('accepts a bare list of nodes as the document root', function () use ($mergeTagParagraph, $mergeTagText, $mergeTagDefinitions, $mergeTagNode) {
+it('accepts a bare list of nodes as the document root', function () use ($mergeTagParagraph, $mergeTagText, $mergeTagDefinitions, $mergeTagNode): void {
     $converted = (new ConvertLiteralMergeTags())(
         [$mergeTagParagraph($mergeTagText('Hey {{ recipient name }}!'))],
         $mergeTagDefinitions(),
@@ -412,21 +412,21 @@ it('accepts a bare list of nodes as the document root', function () use ($mergeT
     )]);
 });
 
-it('returns null when the document is null', function () use ($mergeTagDefinitions) {
+it('returns null when the document is null', function () use ($mergeTagDefinitions): void {
     expect((new ConvertLiteralMergeTags())(null, $mergeTagDefinitions()))->toBeNull();
 });
 
-it('returns an empty document unchanged', function () use ($mergeTagDefinitions) {
+it('returns an empty document unchanged', function () use ($mergeTagDefinitions): void {
     expect((new ConvertLiteralMergeTags())([], $mergeTagDefinitions()))->toBe([]);
 });
 
-it('ignores merge tags that are not defined as strings', function () use ($mergeTagDoc, $mergeTagParagraph, $mergeTagText) {
+it('ignores merge tags that are not defined as strings', function () use ($mergeTagDoc, $mergeTagParagraph, $mergeTagText): void {
     $input = $mergeTagDoc($mergeTagParagraph($mergeTagText('Hey {{ recipient name }}!')));
 
-    expect((new ConvertLiteralMergeTags())($input, ['recipient name' => fn () => 'Jane Doe']))->toBe($input);
+    expect((new ConvertLiteralMergeTags())($input, ['recipient name' => fn (): string => 'Jane Doe']))->toBe($input);
 });
 
-it('converts every merge tag within a document containing many nodes', function () use ($mergeTagDoc, $mergeTagParagraph, $mergeTagText, $mergeTagDefinitions, $mergeTagNode) {
+it('converts every merge tag within a document containing many nodes', function () use ($mergeTagDoc, $mergeTagParagraph, $mergeTagText, $mergeTagDefinitions, $mergeTagNode): void {
     $converted = (new ConvertLiteralMergeTags())(
         $mergeTagDoc(
             $mergeTagParagraph($mergeTagText("Hey {{ recipient's name }},")),

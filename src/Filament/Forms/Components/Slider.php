@@ -100,7 +100,7 @@ class Slider extends Field
     /**
      * @return scalar | null
      */
-    public function getMaxValue()
+    public function getMaxValue(): mixed
     {
         return $this->evaluate($this->maxValue);
     }
@@ -108,7 +108,7 @@ class Slider extends Field
     /**
      * @return scalar | null
      */
-    public function getMinValue()
+    public function getMinValue(): mixed
     {
         return $this->evaluate($this->minValue);
     }

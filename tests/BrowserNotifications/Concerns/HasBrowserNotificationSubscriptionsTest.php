@@ -40,7 +40,7 @@ use Illuminate\Support\Str;
 use Workbench\App\Models\BrowserNotificationUser;
 use Workbench\App\Models\PushSubscription;
 
-it('routes only subscriptions allowed immediately before delivery', function () {
+it('routes only subscriptions allowed immediately before delivery', function (): void {
     $user = BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']);
 
     $allowedSubscription = new PushSubscription();
@@ -56,7 +56,7 @@ it('routes only subscriptions allowed immediately before delivery', function () 
         ->first()->endpoint->toBe($allowedSubscription->endpoint);
 });
 
-it('routes a browser notification only to its selected subscription', function () {
+it('routes a browser notification only to its selected subscription', function (): void {
     $user = BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']);
     $firstSubscription = $user->updatePushSubscription(
         endpoint: 'https://push.example.com/subscriptions/' . Str::uuid(),

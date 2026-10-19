@@ -39,7 +39,7 @@ use CanyonGBS\Common\Parser\Part\Firstname;
 use CanyonGBS\Common\Parser\Part\Lastname;
 use CanyonGBS\Common\Parser\Part\Salutation;
 
-dataset('provider', function () {
+dataset('provider', function (): array {
     return [
         [
             'input' => [
@@ -88,7 +88,7 @@ dataset('provider', function () {
     ];
 });
 
-it('maps firstname parts correctly', function (array $input, array $expectation) {
+it('maps firstname parts correctly', function (array $input, array $expectation): void {
     $mapper = new FirstnameMapper();
 
     $result = $mapper->map($input);

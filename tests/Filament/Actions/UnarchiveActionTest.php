@@ -50,7 +50,7 @@ use Workbench\App\Models\User;
 use Workbench\App\Policies\ArticlePolicy;
 use Workbench\App\Policies\ProjectPolicy;
 
-beforeEach(function () {
+beforeEach(function (): void {
     ProjectPolicy::reset();
     ArticlePolicy::reset();
 
@@ -59,7 +59,7 @@ beforeEach(function () {
     $this->actingAs(User::create(['name' => 'Ada', 'email' => 'ada@example.com']));
 });
 
-it('looks like an unarchive action', function () {
+it('looks like an unarchive action', function (): void {
     $project = Project::factory()->create(['name' => 'Apollo']);
     $project->archive();
 
@@ -73,7 +73,7 @@ it('looks like an unarchive action', function () {
         ->assertActionExists('unarchive', fn (Action $action): bool => $action->getGroupedIcon() === Heroicon::ArchiveBoxXMark);
 });
 
-it('unarchives the record without redirecting', function () {
+it('unarchives the record without redirecting', function (): void {
     $project = Project::factory()->create();
     $project->archive();
 
@@ -85,7 +85,7 @@ it('unarchives the record without redirecting', function () {
     expect($project->refresh()->isArchived())->toBeFalse();
 });
 
-it('unarchives the record from the view page', function () {
+it('unarchives the record from the view page', function (): void {
     $project = Project::factory()->create();
     $project->archive();
 
@@ -97,14 +97,14 @@ it('unarchives the record from the view page', function () {
     expect($project->refresh()->isArchived())->toBeFalse();
 });
 
-it('is hidden when the record is not archived', function () {
+it('is hidden when the record is not archived', function (): void {
     $project = Project::factory()->create();
 
     Livewire::test(EditProject::class, ['record' => $project->getRouteKey()])
         ->assertActionHidden('unarchive');
 });
 
-it('does not unarchive when the unarchiving event is cancelled', function () {
+it('does not unarchive when the unarchiving event is cancelled', function (): void {
     Project::unarchiving(fn (): bool => false);
 
     $project = Project::factory()->create();
@@ -117,7 +117,7 @@ it('does not unarchive when the unarchiving event is cancelled', function () {
     expect($project->refresh()->isArchived())->toBeTrue();
 });
 
-it('throws when the model does not use the `CanBeArchived` trait', function () {
+it('throws when the model does not use the `CanBeArchived` trait', function (): void {
     $task = Task::factory()->create();
 
     UnarchiveAction::make()
@@ -125,8 +125,8 @@ it('throws when the model does not use the `CanBeArchived` trait', function () {
         ->isHidden();
 })->throws(Exception::class, 'The [UnarchiveAction] requires the model to use the [CanBeArchived] trait.');
 
-describe('authorization', function () {
-    it('is hidden when the user is not authorized to unarchive with the policy\'s `archive` method', function () {
+describe('authorization', function (): void {
+    it('is hidden when the user is not authorized to unarchive with the policy\'s `archive` method', function (): void {
         ArticlePolicy::$abilities['archive'] = false;
 
         $article = Article::factory()->create();
@@ -136,7 +136,7 @@ describe('authorization', function () {
             ->assertActionHidden('unarchive');
     });
 
-    it('ignores the delete ability for a used record when the policy has an `archive` method', function () {
+    it('ignores the delete ability for a used record when the policy has an `archive` method', function (): void {
         ArticlePolicy::$abilities['delete'] = false;
 
         $article = Article::factory()->create();
@@ -151,7 +151,7 @@ describe('authorization', function () {
         expect($article->refresh()->isArchived())->toBeFalse();
     });
 
-    it('ignores the delete ability for an unused record when the policy has an `archive` method', function () {
+    it('ignores the delete ability for an unused record when the policy has an `archive` method', function (): void {
         ArticlePolicy::$abilities['delete'] = false;
 
         $article = Article::factory()->create();
@@ -166,8 +166,8 @@ describe('authorization', function () {
     });
 });
 
-describe('backwards compatibility', function () {
-    it('is hidden when the user is not authorized to delete', function () {
+describe('backwards compatibility', function (): void {
+    it('is hidden when the user is not authorized to delete', function (): void {
         ProjectPolicy::$abilities['delete'] = false;
 
         $project = Project::factory()->create();
@@ -177,7 +177,7 @@ describe('backwards compatibility', function () {
             ->assertActionHidden('unarchive');
     });
 
-    it('unarchives a record using the delete ability when the policy has no `archive` method', function () {
+    it('unarchives a record using the delete ability when the policy has no `archive` method', function (): void {
         $project = Project::factory()->create();
         $project->archive();
 

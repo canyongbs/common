@@ -39,7 +39,7 @@ use CanyonGBS\Common\Support\PermissionResolver;
 use Illuminate\Support\Facades\DB;
 use Workbench\App\Models\User;
 
-it('resolves a user\'s permissions with a single query and memoizes the result', function () {
+it('resolves a user\'s permissions with a single query and memoizes the result', function (): void {
     $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
     $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
@@ -59,7 +59,7 @@ it('resolves a user\'s permissions with a single query and memoizes the result',
     expect(DB::getQueryLog())->toHaveCount(1);
 });
 
-it('re-queries the permission set after being flushed', function () {
+it('re-queries the permission set after being flushed', function (): void {
     $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
     $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);

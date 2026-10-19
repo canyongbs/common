@@ -36,7 +36,7 @@
 
 use function Pest\Laravel\get;
 
-it('serves a service worker that deduplicates by notification ID and opens its destination', function () {
+it('serves a service worker that deduplicates by notification ID and opens its destination', function (): void {
     get(route('common.browser-notifications.service-worker'))
         ->assertSuccessful()
         ->assertHeader('Service-Worker-Allowed', '/')
@@ -46,7 +46,7 @@ it('serves a service worker that deduplicates by notification ID and opens its d
         ->assertSee("const actionUrl = event.notification.data?.action_url ?? '/'", false);
 });
 
-it('does not serve the service worker when VAPID is not configured', function () {
+it('does not serve the service worker when VAPID is not configured', function (): void {
     config()->set('webpush.vapid.private_key', null);
 
     get(route('common.browser-notifications.service-worker'))->assertNotFound();

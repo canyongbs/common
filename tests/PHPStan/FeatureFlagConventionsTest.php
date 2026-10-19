@@ -46,7 +46,7 @@ $runPhpStanOnFeatureFlagConventionsFixture = function (string $filePath): array 
         'output' => implode("\n", $outputLines),
     ];
 };
-it('reports classes in the features namespace that do not extend a feature flag base class', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+it('reports classes in the features namespace that do not extend a feature flag base class', function () use ($runPhpStanOnFeatureFlagConventionsFixture): void {
     $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/FeatureNotExtendingBaseFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -54,7 +54,7 @@ it('reports classes in the features namespace that do not extend a feature flag 
     expect($result['output'])->not->toContain('Common.featureFlagClassMustEndInFeature');
 });
 
-it('reports feature flag classes that do not end in "Feature"', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+it('reports feature flag classes that do not end in "Feature"', function () use ($runPhpStanOnFeatureFlagConventionsFixture): void {
     $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/FeatureMissingSuffixFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -62,7 +62,7 @@ it('reports feature flag classes that do not end in "Feature"', function () use 
     expect($result['output'])->not->toContain('Common.featureMustExtendFeatureFlagAbstracts');
 });
 
-it('reports landlord feature flag classes that do not end in "Feature"', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+it('reports landlord feature flag classes that do not end in "Feature"', function () use ($runPhpStanOnFeatureFlagConventionsFixture): void {
     $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/LandlordFeatureMissingSuffixFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -70,7 +70,7 @@ it('reports landlord feature flag classes that do not end in "Feature"', functio
     expect($result['output'])->not->toContain('Common.featureMustExtendFeatureFlagAbstracts');
 });
 
-it('reports feature flag classes that extend a base class outside the features namespace but are misnamed', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+it('reports feature flag classes that extend a base class outside the features namespace but are misnamed', function () use ($runPhpStanOnFeatureFlagConventionsFixture): void {
     $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/OutsideNamespaceExtendsBaseFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -78,13 +78,13 @@ it('reports feature flag classes that extend a base class outside the features n
     expect($result['output'])->not->toContain('Common.featureMustExtendFeatureFlagAbstracts');
 });
 
-it('does not report a valid feature flag class', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+it('does not report a valid feature flag class', function () use ($runPhpStanOnFeatureFlagConventionsFixture): void {
     $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/ValidFeatureFlagFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report a valid feature flag class.\nOutput: {$result['output']}");
 });
 
-it('does not report abstract feature flag classes in the features namespace', function () use ($runPhpStanOnFeatureFlagConventionsFixture) {
+it('does not report abstract feature flag classes in the features namespace', function () use ($runPhpStanOnFeatureFlagConventionsFixture): void {
     $result = $runPhpStanOnFeatureFlagConventionsFixture('tests/PHPStan/Fixtures/FeatureFlag/AbstractFeatureInNamespaceFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract feature flag classes.\nOutput: {$result['output']}");
