@@ -1,6 +1,6 @@
 ---
 name: building-tabbed-record-pages
-description: "Use when building or changing a Filament record page that brings a record's overview, edit forms, and related records together on one page with tabs — a `Manage<Model>` page registered as the resource's `view` route, whose contained tabs hold an infolist (optionally with per-section edit actions), the page's edit form, extra forms with their own Save button, relation managers, or widgets. Trigger when replacing separate View / Edit / `ManageRelatedRecords` pages or record sub-navigation with tabs, implementing `getTabComponents()`, adding a form or relation manager tab, linking to a tab with `?tab=`, redirecting old sub-page URLs, or testing such a page. Do not use for: resources that keep their separate record pages or sub-navigation, list pages, organizing schema and component classes (use `structuring-filament-code`), or general test conventions (use `writing-tests`)."
+description: "Use when building or changing a Filament record page that brings a record's overview, edit forms, and related records together on one page with tabs — a `Manage<Model>` page registered as the resource's `view` route, whose contained tabs hold an infolist (optionally with per-section edit actions), the page's edit form, extra forms with their own Save button, relation managers, or widgets. Trigger when replacing separate View / Edit / `ManageRelatedRecords` pages or record sub-navigation with tabs, implementing `getTabComponents()`, adding a form or relation manager tab, linking to a tab with `?tab=`, handling old sub-page URLs, or testing such a page. Do not use for: resources that keep their separate record pages or sub-navigation, list pages, organizing schema and component classes (use `structuring-filament-code`), or general test conventions (use `writing-tests`)."
 user-invocable: false
 license: Elastic-2.0
 metadata:
@@ -150,7 +150,25 @@ public function saveFormComponentOnly(Component $component): void
 
 Relation manager tabs hide themselves through the manager's `canViewForRecord()`, which also makes mounting the manager directly return 403.
 
-Tabs don't fall back to the first visible one: a user who gets in but can't see the `''` tab lands on an empty panel unless `mount()` sets `activeRelationManager` to a tab they can see.
+Tabs don't fall back to a visible one: an active tab that is hidden from the user, or no longer exists, renders an empty panel. That happens to anyone who gets in without being able to see the `''` tab, and to anyone following an old or mistyped `?tab=` link. Always open the first visible tab instead:
+
+```php
+public function mount(int | string $record): void
+{
+    parent::mount($record);
+
+    $visibleTabs = array_map(strval(...), array_keys(array_filter(
+        $this->getTabComponents(),
+        fn (?Tab $tab): bool => $tab?->isVisible() ?? false,
+    )));
+
+    if (! in_array($this->activeRelationManager ?? '', $visibleTabs, strict: true)) {
+        $firstVisibleTab = $visibleTabs[0] ?? '';
+
+        $this->activeRelationManager = ($firstVisibleTab === '') ? null : $firstVisibleTab;
+    }
+}
+```
 
 ## Extra Forms With Their Own Save Button
 
@@ -188,10 +206,18 @@ public function saveSettings(): void
 {
     $record = $this->getRecord();
 
+    assert($record instanceof Project);
+
     ProjectResource::authorizeEdit($record);
 
-    // `getState()` validates and saves the schema's relationships.
-    DB::transaction(fn () => $record->update($this->settingsForm->getState()));
+    DB::transaction(function () use ($record): void {
+        // `getState()` validates and saves the schema's relationships.
+        $data = $this->settingsForm->getState();
+
+        $record->is_public = $data['is_public'];
+        $record->default_role = $data['default_role'];
+        $record->save();
+    });
 
     $this->getSavedNotification()?->send();
 }
@@ -240,7 +266,7 @@ public static function getPages(): array
         'index' => ListProjects::route('/'),
         'create' => CreateProject::route('/create'),
         'view' => ManageProject::route('/{record}'),
-        'edit' => RedirectToProjectTab::route('/{record}/edit'),
+        'edit' => RedirectToProjectTab::route('/{record}/edit'), // Linked from sent notifications.
     ];
 }
 ```
@@ -259,11 +285,9 @@ public static function getPages(): array
     }
     ```
 
-## Replacing Released Pages
+## Old Sub-Page URLs
 
-Skip this section if the old sub-pages were never released.
-
-Keep each old route, pointing at a redirect page, so bookmarks and sent links land on the matching tab. Each old route's last URL segment must be an existing tab key, or the page opens on an empty tab:
+When sub-pages become tabs, remove their routes and point every link in the app at `view` with the right `tab`. Keep an old route only when notifications that were already sent (mail, database, etc.) link to it, because those links can't be updated: point it at a redirect page, and change the notification to link to the tab from now on. Each kept route's last URL segment must be an existing tab key, or the page opens on an empty tab:
 
 ```php
 class RedirectToProjectTab extends Page
@@ -281,10 +305,10 @@ class RedirectToProjectTab extends Page
 }
 ```
 
-When a `ManageRelatedRecords` page becomes a relation manager tab, its links may carry state the relation manager doesn't read from the URL by default:
+If a kept route was a `ManageRelatedRecords` page, its links may carry state the relation manager doesn't read from the URL by default:
 
-- **Table state:** re-declare the URL properties the old links used, e.g. `#[Url(as: 'filters')] public ?array $tableFilters = null;`.
-- **Its own tabs:** alias `$activeTab` away from `tab`, which the page owns: `#[Url(as: 'state')] public ?string $activeTab = null;`.
+- **Table state:** re-declare the URL properties those links used, e.g. `#[Url(as: 'filters')] public ?array $tableFilters = null;`.
+- **Its own tabs:** alias `$activeTab` away from `tab`, which the page owns (`#[Url(as: 'state')] public ?string $activeTab = null;`), and have the redirect move the link's incoming `tab` value to `state` before overwriting `tab`.
 - **Table actions (`?tableAction=…`):** the redirect must also add `actionComponent` set to the manager's `getDefaultActionUrlIdentifier()`, and the manager should clear that state in `mountDefaultActions()` so it doesn't reopen on every tab switch.
 
 ## Testing
@@ -312,13 +336,13 @@ Livewire::test(MembersRelationManager::class, ['ownerRecord' => $project, 'pageC
     ->assertForbidden();
 ```
 
-Cover which tabs each kind of user sees (read the labels of the rendered `role="tab"` elements), that only the selected tab renders its form, that unsaved edits survive switching tabs, that every save method rejects users who can't edit, and that each released old URL redirects to its tab.
+Cover which tabs each kind of user sees (read the labels of the rendered `role="tab"` elements), which tab opens when the requested one is hidden or unknown, that only the selected tab renders its form, that unsaved edits survive switching tabs, that every save method rejects users who can't edit, and that each kept old URL redirects to its tab.
 
 ## Checklist
 
 - One `Manage<Model>` page extending `EditRecord`, registered as `view`, with the view title and breadcrumb; no record sub-navigation.
-- `#[Url(as: 'tab')] $activeRelationManager`, combined tabs, `->contained()`; `''` is the default tab.
+- `#[Url(as: 'tab')] $activeRelationManager`, combined tabs, `->contained()`; `''` is the default tab; `mount()` falls back to the first visible tab.
 - Each tab's content comes from a schema class, the content tab, `makeFormContentComponent()`, or `getRelationManagerTabComponent()`.
 - `authorizeAccess()` admits anyone who can use a tab; each tab is hidden from users who can't use it; `save()`, `saveFormComponentOnly()`, and every extra save method call `authorizeEdit()`.
 - Infolist sections edit themselves with an `EditAction` nesting the shared schema class.
-- Every link to the record points at `view` with the right `tab`; released old URLs redirect; nested resources' `getIndexUrl()` points at their tab.
+- Every link to the record points at `view` with the right `tab`; old routes are removed unless sent notifications link to them, in which case they redirect; nested resources' `getIndexUrl()` points at their tab.
