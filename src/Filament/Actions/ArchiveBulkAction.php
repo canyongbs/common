@@ -127,15 +127,14 @@ class ArchiveBulkAction extends BulkAction
                         if ($shouldDeleteUnused) {
                             $action->archivedCount = $query->clone()
                                 ->where(fn (Builder $query) => $modelInstance->used($query)) /** @phpstan-ignore method.notFound */
-                                ->archive(); /** @phpstan-ignore method.notFound */
+                                ->withoutArchived() /** @phpstan-ignore method.notFound */
+                                ->archive();
                             $action->deletedCount = $query->clone()
                                 ->whereNot(fn (Builder $query) => $modelInstance->used($query)) /** @phpstan-ignore method.notFound */
                                 ->delete();
                         } else {
-                            $action->archivedCount = $query->archive(); /** @phpstan-ignore method.notFound */
+                            $action->archivedCount = $query->withoutArchived()->archive(); /** @phpstan-ignore method.notFound */
                         }
-
-                        $action->reportBulkProcessingSuccessfulRecordsCount($action->archivedCount + $action->deletedCount);
                     } catch (Throwable $exception) {
                         $action->reportCompleteBulkProcessingFailure();
 
@@ -160,6 +159,10 @@ class ArchiveBulkAction extends BulkAction
 
                 $records->each(static function (Model $record) use ($action, &$isFirstException): void {
                     $shouldArchive = ($action->usedKeys === null) || array_key_exists($record->getKey(), $action->usedKeys);
+
+                    if ($shouldArchive && $record->isArchived()) { /** @phpstan-ignore method.notFound */
+                        return;
+                    }
 
                     try {
                         if ($shouldArchive) {

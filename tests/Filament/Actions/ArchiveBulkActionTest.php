@@ -95,19 +95,29 @@ it('only processes the selected records', function () {
     expect($unselectedArticle->refresh()->isArchived())->toBeFalse();
 });
 
-it('includes already-archived used records in the archived count', function () {
+it('skips records that are already archived', function (bool $fetchesSelectedRecords) {
+    ArticleResource::$fetchesSelectedRecords = $fetchesSelectedRecords;
+
     $usedArticles = Article::factory()->count(2)->create();
     $usedArticles->each(fn (Article $article) => Review::factory()->create(['article_id' => $article->id]));
 
-    $usedArticles->first()->archive();
+    $archivedArticle = $usedArticles->first();
+    $archivedArticle->archive();
+    $archivedAt = $archivedArticle->refresh()->archived_at;
+
+    $this->travel(1)->minutes();
 
     Livewire::test(ListArticles::class)
         ->selectTableRecords($usedArticles->pluck('id')->all())
         ->callAction(TestAction::make('archive')->table()->bulk())
-        ->assertNotified('2 archived');
+        ->assertNotified(Notification::make()->success()->title('1 archived'));
 
-    expect(Article::query()->onlyArchived()->count())->toBe(2);
-});
+    expect($archivedArticle->refresh()->archived_at->equalTo($archivedAt))->toBeTrue();
+    expect($usedArticles->last()->refresh()->isArchived())->toBeTrue();
+})->with([
+    'fetching records' => true,
+    'not fetching records' => false,
+]);
 
 it('does nothing when no records are selected', function () {
     Article::factory()->create();

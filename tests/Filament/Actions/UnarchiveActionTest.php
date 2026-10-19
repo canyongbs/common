@@ -69,6 +69,7 @@ it('looks like an unarchive action', function () {
         ->assertActionExists('unarchive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Unarchive Apollo')
         ->assertActionExists('unarchive', fn (Action $action): bool => $action->getModalSubmitActionLabel() === 'Unarchive')
         ->assertActionExists('unarchive', fn (Action $action): bool => $action->getModalIcon() === Heroicon::OutlinedArchiveBoxXMark)
+        ->assertActionExists('unarchive', fn (Action $action): bool => $action->getTableIcon() === Heroicon::ArchiveBoxXMark)
         ->assertActionExists('unarchive', fn (Action $action): bool => $action->getGroupedIcon() === Heroicon::ArchiveBoxXMark);
 });
 

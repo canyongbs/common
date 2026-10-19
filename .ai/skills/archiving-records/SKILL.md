@@ -120,7 +120,7 @@ $table->toolbarActions([
 ]);
 ```
 
-- The record actions are hidden unless they apply. `ArchiveAction` redirects to the index on success.
+- The record actions are hidden unless they apply, and the bulk actions skip selected records that are already archived or unarchived. `ArchiveAction` redirects to the index on success.
 - When `isUsed()` returns `false`, `ArchiveAction` deletes the record instead (closures can branch on `shouldDeleteInsteadOfArchive()`). `ArchiveBulkAction` likewise deletes selected records that are not `used()`.
 - Outside an Edit/View page, such as a table record action, pass your own `authorize()`, and `successRedirectUrl()` for `ArchiveAction`.
 

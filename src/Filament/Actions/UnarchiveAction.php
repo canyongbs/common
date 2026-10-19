@@ -65,6 +65,8 @@ class UnarchiveAction extends Action
 
         $this->defaultColor('gray');
 
+        $this->tableIcon(Heroicon::ArchiveBoxXMark);
+
         $this->groupedIcon(Heroicon::ArchiveBoxXMark);
 
         $this->modalIcon(Heroicon::OutlinedArchiveBoxXMark);

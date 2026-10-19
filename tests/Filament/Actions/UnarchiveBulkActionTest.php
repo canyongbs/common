@@ -115,18 +115,28 @@ it('only processes the selected records', function () {
     expect($unselectedArticle->refresh()->isArchived())->toBeTrue();
 });
 
-it('includes records that are not archived in the unarchived count', function () {
-    $articles = Article::factory()->count(2)->create();
+it('skips records that are not archived', function (bool $fetchesSelectedRecords) {
+    ArticleResource::$fetchesSelectedRecords = $fetchesSelectedRecords;
 
-    $articles->first()->archive();
+    $archivedArticle = Article::factory()->create();
+    $archivedArticle->archive();
+
+    $article = Article::factory()->create();
+    $updatedAt = $article->refresh()->updated_at;
+
+    $this->travel(1)->minutes();
 
     Livewire::test(ListArticles::class)
-        ->selectTableRecords($articles->pluck('id')->all())
+        ->selectTableRecords([$archivedArticle->getKey(), $article->getKey()])
         ->callAction(TestAction::make('unarchive')->table()->bulk())
-        ->assertNotified('2 unarchived');
+        ->assertNotified(Notification::make()->success()->title('1 unarchived'));
 
-    expect(Article::query()->onlyArchived()->count())->toBe(0);
-});
+    expect($archivedArticle->refresh()->isArchived())->toBeFalse();
+    expect($article->refresh()->updated_at->equalTo($updatedAt))->toBeTrue();
+})->with([
+    'fetching records' => true,
+    'not fetching records' => false,
+]);
 
 it('does nothing when no records are selected', function () {
     $article = Article::factory()->create();

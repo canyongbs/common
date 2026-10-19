@@ -79,6 +79,7 @@ it('looks like an archive action when the model does not define `isUsed()`', fun
         ->assertActionExists('archive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Archive Apollo')
         ->assertActionExists('archive', fn (Action $action): bool => $action->getModalSubmitActionLabel() === 'Archive')
         ->assertActionExists('archive', fn (Action $action): bool => $action->getModalIcon() === Heroicon::OutlinedArchiveBox)
+        ->assertActionExists('archive', fn (Action $action): bool => $action->getTableIcon() === Heroicon::ArchiveBox)
         ->assertActionExists('archive', fn (Action $action): bool => $action->getGroupedIcon() === Heroicon::ArchiveBox);
 });
 
@@ -159,6 +160,7 @@ describe('deleting unused records', function () {
             ->assertActionExists('archive', fn (Action $action): bool => ((string) $action->getModalHeading()) === 'Delete Signals')
             ->assertActionExists('archive', fn (Action $action): bool => $action->getModalSubmitActionLabel() === 'Delete')
             ->assertActionExists('archive', fn (Action $action): bool => $action->getModalIcon() === Heroicon::OutlinedTrash)
+            ->assertActionExists('archive', fn (Action $action): bool => $action->getTableIcon() === Heroicon::Trash)
             ->assertActionExists('archive', fn (Action $action): bool => $action->getGroupedIcon() === Heroicon::Trash);
     });
 

@@ -72,6 +72,8 @@ class ArchiveAction extends Action
 
         $this->defaultColor(fn (Model $record): string => $this->shouldDeleteInsteadOfArchive($record) ? 'danger' : 'warning');
 
+        $this->tableIcon(fn (Model $record): Heroicon => $this->shouldDeleteInsteadOfArchive($record) ? Heroicon::Trash : Heroicon::ArchiveBox);
+
         $this->groupedIcon(fn (Model $record): Heroicon => $this->shouldDeleteInsteadOfArchive($record) ? Heroicon::Trash : Heroicon::ArchiveBox);
 
         $this->modalIcon(fn (Model $record): Heroicon => $this->shouldDeleteInsteadOfArchive($record) ? Heroicon::OutlinedTrash : Heroicon::OutlinedArchiveBox);

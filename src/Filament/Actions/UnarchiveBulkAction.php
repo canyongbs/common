@@ -100,8 +100,7 @@ class UnarchiveBulkAction extends BulkAction
                     $action->getSelectedRecords();
 
                     try {
-                        $action->unarchivedCount = $action->getSelectedRecordsQuery()->unarchive(); /** @phpstan-ignore method.notFound */
-                        $action->reportBulkProcessingSuccessfulRecordsCount($action->unarchivedCount);
+                        $action->unarchivedCount = $action->getSelectedRecordsQuery()->onlyArchived()->unarchive(); /** @phpstan-ignore method.notFound */
                     } catch (Throwable $exception) {
                         $action->reportCompleteBulkProcessingFailure();
 
@@ -116,6 +115,10 @@ class UnarchiveBulkAction extends BulkAction
                 $isFirstException = true;
 
                 $records->each(static function (Model $record) use ($action, &$isFirstException): void {
+                    if (! $record->isArchived()) { /** @phpstan-ignore method.notFound */
+                        return;
+                    }
+
                     try {
                         $record->unarchive() /** @phpstan-ignore method.notFound */
                             ? $action->unarchivedCount++
