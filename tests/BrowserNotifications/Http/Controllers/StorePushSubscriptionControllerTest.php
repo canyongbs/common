@@ -56,14 +56,14 @@ $browserNotificationSubscriptionKeys = function (string $authToken = 'browser-au
     ];
 };
 
-it('requires authentication', function () use ($browserNotificationSubscriptionKeys) {
+it('requires authentication', function () use ($browserNotificationSubscriptionKeys): void {
     postJson(route('common.browser-notifications.subscriptions.store'), [
         'endpoint' => 'https://push.example.com/subscriptions/' . Str::uuid(),
         'keys' => $browserNotificationSubscriptionKeys(),
     ])->assertUnauthorized();
 });
 
-it('stores a validated subscription using the modern content encoding', function () use ($browserNotificationSubscriptionKeys) {
+it('stores a validated subscription using the modern content encoding', function () use ($browserNotificationSubscriptionKeys): void {
     $user = BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']);
 
     actingAs($user);
@@ -83,7 +83,7 @@ it('stores a validated subscription using the modern content encoding', function
     ]);
 });
 
-it('rejects malformed subscription payloads', function () {
+it('rejects malformed subscription payloads', function (): void {
     actingAs(BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']));
 
     postJson(route('common.browser-notifications.subscriptions.store'), [
@@ -94,7 +94,7 @@ it('rejects malformed subscription payloads', function () {
         ->assertJsonValidationErrors(['endpoint', 'keys.p256dh', 'keys.auth', 'contentEncoding']);
 });
 
-it('rejects subscription endpoints that the consuming app does not allow', function () use ($browserNotificationSubscriptionKeys) {
+it('rejects subscription endpoints that the consuming app does not allow', function () use ($browserNotificationSubscriptionKeys): void {
     actingAs(BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']));
 
     postJson(route('common.browser-notifications.subscriptions.store'), [
@@ -104,7 +104,7 @@ it('rejects subscription endpoints that the consuming app does not allow', funct
         ->assertJsonValidationErrors(['endpoint']);
 });
 
-it('rejects malformed subscription keys', function () use ($browserNotificationBase64UrlEncode) {
+it('rejects malformed subscription keys', function () use ($browserNotificationBase64UrlEncode): void {
     actingAs(BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']));
 
     postJson(route('common.browser-notifications.subscriptions.store'), [
@@ -117,7 +117,7 @@ it('rejects malformed subscription keys', function () use ($browserNotificationB
         ->assertJsonValidationErrors(['keys.p256dh', 'keys.auth']);
 });
 
-it('does not transfer an endpoint between users', function () use ($browserNotificationSubscriptionKeys) {
+it('does not transfer an endpoint between users', function () use ($browserNotificationSubscriptionKeys): void {
     $endpoint = 'https://push.example.com/subscriptions/' . Str::uuid();
     $owner = BrowserNotificationUser::create(['name' => 'Owner', 'email' => Str::uuid() . '@example.com']);
     $otherUser = BrowserNotificationUser::create(['name' => 'Other', 'email' => Str::uuid() . '@example.com']);
@@ -136,7 +136,7 @@ it('does not transfer an endpoint between users', function () use ($browserNotif
     expect(PushSubscription::query()->sole()->subscribable_id)->toBe($owner->getKey());
 });
 
-it('transfers an endpoint when the current browser proves possession of its keys', function () use ($browserNotificationSubscriptionKeys) {
+it('transfers an endpoint when the current browser proves possession of its keys', function () use ($browserNotificationSubscriptionKeys): void {
     $endpoint = 'https://push.example.com/subscriptions/' . Str::uuid();
     $keys = $browserNotificationSubscriptionKeys();
     $owner = BrowserNotificationUser::create(['name' => 'Owner', 'email' => Str::uuid() . '@example.com']);
@@ -154,7 +154,7 @@ it('transfers an endpoint when the current browser proves possession of its keys
     expect(PushSubscription::query()->sole()->subscribable_id)->toBe($otherUser->getKey());
 });
 
-it('does not accept subscriptions when the consuming app disables the feature', function () use ($browserNotificationSubscriptionKeys) {
+it('does not accept subscriptions when the consuming app disables the feature', function () use ($browserNotificationSubscriptionKeys): void {
     app(BrowserNotificationsManager::class)->availableUsing(fn (): bool => false);
 
     actingAs(BrowserNotificationUser::create(['name' => 'Ada', 'email' => Str::uuid() . '@example.com']));

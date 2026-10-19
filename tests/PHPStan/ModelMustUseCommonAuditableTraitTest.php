@@ -51,32 +51,32 @@ $runPhpStanOnModelMustUseCommonAuditableTraitFixture = function (string $filePat
     ];
 };
 
-it('reports models that use a forbidden auditing trait directly', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture) {
+it('reports models that use a forbidden auditing trait directly', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture): void {
     $result = $runPhpStanOnModelMustUseCommonAuditableTraitFixture('tests/PHPStan/Fixtures/Auditing/ModelUsingForbiddenAuditableTraitFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.modelMustUseCommonAuditableTrait');
 });
 
-it('does not report models that use the common auditable trait wrapping the forbidden trait', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture) {
+it('does not report models that use the common auditable trait wrapping the forbidden trait', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture): void {
     $result = $runPhpStanOnModelMustUseCommonAuditableTraitFixture('tests/PHPStan/Fixtures/Auditing/ModelUsingCommonAuditableTraitFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report models that use the common auditable trait.\nOutput: {$result['output']}");
 });
 
-it('does not report models that do not use any auditing trait', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture) {
+it('does not report models that do not use any auditing trait', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture): void {
     $result = $runPhpStanOnModelMustUseCommonAuditableTraitFixture('tests/PHPStan/Fixtures/Auditing/ModelWithoutAuditableTraitFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report models without an auditing trait.\nOutput: {$result['output']}");
 });
 
-it('does not report abstract models', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture) {
+it('does not report abstract models', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture): void {
     $result = $runPhpStanOnModelMustUseCommonAuditableTraitFixture('tests/PHPStan/Fixtures/Auditing/AbstractModelUsingForbiddenAuditableTraitFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract models.\nOutput: {$result['output']}");
 });
 
-it('does not report classes that are not models', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture) {
+it('does not report classes that are not models', function () use ($runPhpStanOnModelMustUseCommonAuditableTraitFixture): void {
     $result = $runPhpStanOnModelMustUseCommonAuditableTraitFixture('tests/PHPStan/Fixtures/Auditing/NonModelUsingForbiddenAuditableTraitFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report classes that are not models.\nOutput: {$result['output']}");

@@ -46,7 +46,7 @@ $runPhpStanOnShouldBeUniqueJobFixture = function (string $filePath): array {
         'output' => implode("\n", $outputLines),
     ];
 };
-it('reports jobs implementing ShouldBeUnique that do not define uniqueFor', function () use ($runPhpStanOnShouldBeUniqueJobFixture) {
+it('reports jobs implementing ShouldBeUnique that do not define uniqueFor', function () use ($runPhpStanOnShouldBeUniqueJobFixture): void {
     $result = $runPhpStanOnShouldBeUniqueJobFixture('tests/PHPStan/Fixtures/JobMissingUniqueForFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
@@ -54,45 +54,45 @@ it('reports jobs implementing ShouldBeUnique that do not define uniqueFor', func
     expect($result['output'])->toContain('uniqueFor');
 });
 
-it('reports jobs implementing ShouldBeUniqueUntilProcessing that do not define uniqueFor', function () use ($runPhpStanOnShouldBeUniqueJobFixture) {
+it('reports jobs implementing ShouldBeUniqueUntilProcessing that do not define uniqueFor', function () use ($runPhpStanOnShouldBeUniqueJobFixture): void {
     $result = $runPhpStanOnShouldBeUniqueJobFixture('tests/PHPStan/Fixtures/JobUniqueUntilProcessingMissingUniqueForFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.shouldBeUniqueJobMustDefineUniqueFor');
 });
 
-it('reports jobs that inherit ShouldBeUnique but do not define uniqueFor anywhere', function () use ($runPhpStanOnShouldBeUniqueJobFixture) {
+it('reports jobs that inherit ShouldBeUnique but do not define uniqueFor anywhere', function () use ($runPhpStanOnShouldBeUniqueJobFixture): void {
     $result = $runPhpStanOnShouldBeUniqueJobFixture('tests/PHPStan/Fixtures/JobInheritingShouldBeUniqueMissingUniqueForFixture.php');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('Common.shouldBeUniqueJobMustDefineUniqueFor');
 });
 
-it('does not report jobs that define a uniqueFor property', function () use ($runPhpStanOnShouldBeUniqueJobFixture) {
+it('does not report jobs that define a uniqueFor property', function () use ($runPhpStanOnShouldBeUniqueJobFixture): void {
     $result = $runPhpStanOnShouldBeUniqueJobFixture('tests/PHPStan/Fixtures/JobWithUniqueForPropertyFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report jobs that define a uniqueFor property.\nOutput: {$result['output']}");
 });
 
-it('does not report jobs that define a uniqueFor method', function () use ($runPhpStanOnShouldBeUniqueJobFixture) {
+it('does not report jobs that define a uniqueFor method', function () use ($runPhpStanOnShouldBeUniqueJobFixture): void {
     $result = $runPhpStanOnShouldBeUniqueJobFixture('tests/PHPStan/Fixtures/JobWithUniqueForMethodFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report jobs that define a uniqueFor method.\nOutput: {$result['output']}");
 });
 
-it('does not report jobs that inherit a uniqueFor definition from a parent', function () use ($runPhpStanOnShouldBeUniqueJobFixture) {
+it('does not report jobs that inherit a uniqueFor definition from a parent', function () use ($runPhpStanOnShouldBeUniqueJobFixture): void {
     $result = $runPhpStanOnShouldBeUniqueJobFixture('tests/PHPStan/Fixtures/JobInheritingUniqueForFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report jobs that inherit a uniqueFor definition from a parent.\nOutput: {$result['output']}");
 });
 
-it('does not report classes that do not implement ShouldBeUnique', function () use ($runPhpStanOnShouldBeUniqueJobFixture) {
+it('does not report classes that do not implement ShouldBeUnique', function () use ($runPhpStanOnShouldBeUniqueJobFixture): void {
     $result = $runPhpStanOnShouldBeUniqueJobFixture('tests/PHPStan/Fixtures/JobNotUniqueFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report classes that do not implement ShouldBeUnique.\nOutput: {$result['output']}");
 });
 
-it('does not report abstract jobs that implement ShouldBeUnique', function () use ($runPhpStanOnShouldBeUniqueJobFixture) {
+it('does not report abstract jobs that implement ShouldBeUnique', function () use ($runPhpStanOnShouldBeUniqueJobFixture): void {
     $result = $runPhpStanOnShouldBeUniqueJobFixture('tests/PHPStan/Fixtures/AbstractUniqueJobFixture.php');
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report abstract jobs that implement ShouldBeUnique.\nOutput: {$result['output']}");

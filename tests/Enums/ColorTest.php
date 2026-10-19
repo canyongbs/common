@@ -36,8 +36,8 @@
 
 use CanyonGBS\Common\Enums\Color;
 
-describe('Color enum values', function () {
-    it('exposes the additional common colors', function () {
+describe('Color enum values', function (): void {
+    it('exposes the additional common colors', function (): void {
         expect(Color::Black->value)->toBe('black')
             ->and(Color::LightGray->value)->toBe('light-gray')
             ->and(Color::Gray->value)->toBe('gray')
@@ -46,8 +46,8 @@ describe('Color enum values', function () {
     });
 });
 
-describe('Color::isShade()', function () {
-    it('marks the additional common colors as shades', function (Color $color) {
+describe('Color::isShade()', function (): void {
+    it('marks the additional common colors as shades', function (Color $color): void {
         expect($color->isShade())->toBeTrue();
     })->with([
         'black' => Color::Black,
@@ -56,7 +56,7 @@ describe('Color::isShade()', function () {
         'navy' => Color::Navy,
     ]);
 
-    it('does not mark palette colors as shades', function (Color $color) {
+    it('does not mark palette colors as shades', function (Color $color): void {
         expect($color->isShade())->toBeFalse();
     })->with([
         'gray' => Color::Gray,
@@ -66,27 +66,27 @@ describe('Color::isShade()', function () {
     ]);
 });
 
-describe('Color::getRgb()', function () {
-    it('returns black for the Black shade', function () {
+describe('Color::getRgb()', function (): void {
+    it('returns black for the Black shade', function (): void {
         expect(Color::Black->getRgb())->toBe('rgb(0, 0, 0)');
     });
 
-    it('returns navy for the Navy shade', function () {
+    it('returns navy for the Navy shade', function (): void {
         expect(Color::Navy->getRgb())->toBe('rgb(0, 0, 128)');
     });
 
-    it('returns an rgb string for every color', function (Color $color) {
+    it('returns an rgb string for every color', function (Color $color): void {
         expect($color->getRgb())->toStartWith('rgb(');
     })->with(Color::cases());
 });
 
-describe('Color::getLabel()', function () {
-    it('humanizes multi-word color names', function () {
+describe('Color::getLabel()', function (): void {
+    it('humanizes multi-word color names', function (): void {
         expect(Color::LightGray->getLabel())->toBe('Light Gray')
             ->and(Color::DarkGray->getLabel())->toBe('Dark Gray');
     });
 
-    it('keeps single-word color names intact', function () {
+    it('keeps single-word color names intact', function (): void {
         expect(Color::Gray->getLabel())->toBe('Gray')
             ->and(Color::Red->getLabel())->toBe('Red')
             ->and(Color::Navy->getLabel())->toBe('Navy');

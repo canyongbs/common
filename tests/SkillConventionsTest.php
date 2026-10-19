@@ -45,14 +45,14 @@
  * The `skillFrontmatter()` helper and the `skills` dataset are shared from
  * `tests/Pest.php`.
  */
-it('is licensed under `Elastic-2.0`', function (string $name, string $path) {
+it('is licensed under `Elastic-2.0`', function (string $name, string $path): void {
     $frontmatter = skillFrontmatter($path);
 
     expect($frontmatter)->toHaveKey('license')
         ->and($frontmatter['license'])->toBe('Elastic-2.0');
 })->with('skills');
 
-it('is authored by `canyongbs`', function (string $name, string $path) {
+it('is authored by `canyongbs`', function (string $name, string $path): void {
     $frontmatter = skillFrontmatter($path);
 
     expect($frontmatter)->toHaveKey('metadata')

@@ -39,7 +39,7 @@ use CanyonGBS\Common\Models\Role;
 use Workbench\App\Enums\ArticlePermission;
 use Workbench\App\Models\User;
 
-it('grants abilities held through a role via the gate', function () {
+it('grants abilities held through a role via the gate', function (): void {
     PermissionIndex::register([ArticlePermission::class]);
 
     $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
@@ -52,7 +52,7 @@ it('grants abilities held through a role via the gate', function () {
     expect($user->can(ArticlePermission::View))->toBeTrue();
 });
 
-it('denies abilities that are not held', function () {
+it('denies abilities that are not held', function (): void {
     PermissionIndex::register([ArticlePermission::class]);
 
     $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
@@ -65,7 +65,7 @@ it('denies abilities that are not held', function () {
     expect($user->can(ArticlePermission::Delete))->toBeFalse();
 });
 
-it('does not resolve abilities through roles when no permissions are registered', function () {
+it('does not resolve abilities through roles when no permissions are registered', function (): void {
     $user = User::create(['name' => 'Ada', 'email' => 'ada@example.com']);
 
     $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);

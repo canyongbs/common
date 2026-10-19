@@ -49,7 +49,7 @@ $makePermissionsMatrix = function (): PermissionsMatrix {
         ->permissionGroupModel(PermissionGroup::class);
 };
 
-beforeEach(function () {
+beforeEach(function (): void {
     foreach (['Article', 'Project', 'Task'] as $permissionGroupName) {
         $permissionGroup = PermissionGroup::query()->create(['name' => $permissionGroupName]);
         $permissionPrefix = str($permissionGroupName)->slug('_');
@@ -59,14 +59,14 @@ beforeEach(function () {
     }
 });
 
-it('lists every permission group when no permission groups are hidden', function () use ($makePermissionsMatrix) {
+it('lists every permission group when no permission groups are hidden', function () use ($makePermissionsMatrix): void {
     expect($makePermissionsMatrix()->getAvailablePermissions())
         ->toHaveKeys(['Article', 'Project', 'Task'])
         ->and($makePermissionsMatrix()->getAvailablePermissions()['Article'])
         ->toHaveKeys(['view-any', 'create']);
 });
 
-it('leaves hidden permission groups out of the matrix', function () use ($makePermissionsMatrix) {
+it('leaves hidden permission groups out of the matrix', function () use ($makePermissionsMatrix): void {
     $availablePermissions = $makePermissionsMatrix()
         ->hiddenPermissionGroups(['Project', 'Task'])
         ->getAvailablePermissions();
@@ -74,7 +74,7 @@ it('leaves hidden permission groups out of the matrix', function () use ($makePe
     expect(array_keys($availablePermissions))->toBe(['Article']);
 });
 
-it('resolves hidden permission groups from a closure', function () use ($makePermissionsMatrix) {
+it('resolves hidden permission groups from a closure', function () use ($makePermissionsMatrix): void {
     $availablePermissions = $makePermissionsMatrix()
         ->hiddenPermissionGroups(fn (): array => ['Task'])
         ->getAvailablePermissions();
@@ -82,14 +82,14 @@ it('resolves hidden permission groups from a closure', function () use ($makePer
     expect(array_keys($availablePermissions))->toBe(['Article', 'Project']);
 });
 
-describe('saving', function () {
-    beforeEach(function () {
+describe('saving', function (): void {
+    beforeEach(function (): void {
         Filament::setCurrentPanel('testing');
 
         $this->actingAs(User::create(['name' => 'Ada', 'email' => 'ada@example.com']));
     });
 
-    it('keeps permissions from hidden permission groups when the record is saved', function () {
+    it('keeps permissions from hidden permission groups when the record is saved', function (): void {
         $visiblePermission = Permission::query()->where('name', 'article.view-any')->firstOrFail();
         $hiddenPermission = Permission::query()->where('name', 'task.view-any')->firstOrFail();
 
@@ -107,7 +107,7 @@ describe('saving', function () {
             ->toEqualCanonicalizing([$visiblePermission->getKey(), $hiddenPermission->getKey()]);
     });
 
-    it('keeps permissions from hidden permission groups when visible permissions are removed', function () {
+    it('keeps permissions from hidden permission groups when visible permissions are removed', function (): void {
         $visiblePermission = Permission::query()->where('name', 'article.view-any')->firstOrFail();
         $hiddenPermission = Permission::query()->where('name', 'task.view-any')->firstOrFail();
 

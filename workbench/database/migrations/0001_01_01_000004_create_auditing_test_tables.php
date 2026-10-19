@@ -41,49 +41,49 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up(): void
     {
-        Schema::create('audit_posts', function (Blueprint $table) {
+        Schema::create('audit_posts', function (Blueprint $table): void {
             $table->id();
             $table->string('title');
             $table->timestamps();
         });
 
-        Schema::create('audit_categories', function (Blueprint $table) {
+        Schema::create('audit_categories', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->timestamps();
         });
 
-        Schema::create('audit_category_post', function (Blueprint $table) {
+        Schema::create('audit_category_post', function (Blueprint $table): void {
             $table->foreignId('post_id')->constrained('audit_posts')->cascadeOnDelete();
             $table->foreignId('category_id')->constrained('audit_categories')->cascadeOnDelete();
             $table->unsignedInteger('sort')->nullable();
             $table->primary(['post_id', 'category_id']);
         });
 
-        Schema::create('audit_labels', function (Blueprint $table) {
+        Schema::create('audit_labels', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->timestamps();
         });
 
-        Schema::create('audit_labelables', function (Blueprint $table) {
+        Schema::create('audit_labelables', function (Blueprint $table): void {
             $table->foreignId('label_id')->constrained('audit_labels')->cascadeOnDelete();
             $table->morphs('labelable');
         });
 
-        Schema::create('audit_members', function (Blueprint $table) {
+        Schema::create('audit_members', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->timestamps();
         });
 
-        Schema::create('audit_member_post', function (Blueprint $table) {
+        Schema::create('audit_member_post', function (Blueprint $table): void {
             $table->foreignId('post_id')->constrained('audit_posts')->cascadeOnDelete();
             $table->foreignId('member_id')->constrained('audit_members')->cascadeOnDelete();
             $table->primary(['post_id', 'member_id']);
         });
 
-        Schema::create('audits', function (Blueprint $table) {
+        Schema::create('audits', function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->string('user_type')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();

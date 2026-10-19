@@ -54,7 +54,7 @@ trait CanModifyPermissions /** @phpstan-ignore trait.unused */
             ->values()
             ->unique()
             ->diff(array_keys($groups))
-            ->reduce(function (array $carry, string $name) {
+            ->reduce(function (array $carry, string $name): array {
                 $id = (string) Str::orderedUuid();
 
                 $carry[0][$name] = $id;
@@ -110,7 +110,7 @@ trait CanModifyPermissions /** @phpstan-ignore trait.unused */
     public function renamePermissions(array $names, string $guardName): void
     {
         collect($names)
-            ->each(function (string $newName, string $oldName) use ($guardName) {
+            ->each(function (string $newName, string $oldName) use ($guardName): void {
                 DB::table('permissions')
                     ->where('guard_name', $guardName)
                     ->where('name', $oldName)
@@ -126,7 +126,7 @@ trait CanModifyPermissions /** @phpstan-ignore trait.unused */
     public function renamePermissionGroups(array $groups): void
     {
         collect($groups)
-            ->each(function (string $newName, string $oldName) {
+            ->each(function (string $newName, string $oldName): void {
                 DB::table('permission_groups')
                     ->where('name', $oldName)
                     ->update([
