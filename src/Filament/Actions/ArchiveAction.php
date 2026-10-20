@@ -41,6 +41,7 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\Page;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
@@ -119,8 +120,8 @@ class ArchiveAction extends Action
         });
 
         $this->authorize(function (Model $record, Component $livewire): bool {
-            if ((! $livewire instanceof EditRecord) && (! $livewire instanceof ViewRecord)) {
-                throw new Exception('Unsupported Livewire component for [ArchiveAction] authorization. It must be used within [EditRecord] or [ViewRecord], or a custom [authorize()] function must be used.');
+            if (! $livewire instanceof Page) {
+                throw new Exception('Unsupported Livewire component for [ArchiveAction] authorization. It must be used within a resource page, or a custom [authorize()] function must be used.');
             }
 
             $ability = $this->shouldDeleteInsteadOfArchive($record) ? 'delete' : $this->getArchiveAbility($record);
@@ -128,9 +129,9 @@ class ArchiveAction extends Action
             return $livewire::getResource()::can($ability, $record);
         });
 
-        $this->successRedirectUrl(function (Component $livewire): string {
+        $this->successRedirectUrl(function (Component $livewire): ?string {
             if ((! $livewire instanceof EditRecord) && (! $livewire instanceof ViewRecord)) {
-                throw new Exception('Unsupported Livewire component for [ArchiveAction] redirect. It must be used within [EditRecord] or [ViewRecord], or a custom [successRedirectUrl()] function must be used.');
+                return null;
             }
 
             return $livewire::getResource()::getUrl('index');
