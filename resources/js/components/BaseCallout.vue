@@ -77,7 +77,7 @@
         warning: {
             icon: ExclamationTriangleIcon,
             surface: 'bg-amber-50 ring-amber-600/20',
-            largeIcon: 'bg-amber-400 text-white',
+            largeIcon: 'bg-amber-500 text-white',
             smallIcon: 'text-amber-600',
             title: 'text-amber-800',
             text: 'text-amber-700',

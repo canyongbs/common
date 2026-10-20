@@ -56,14 +56,14 @@
     <BaseTable role="status" :aria-label="label" class="animate-pulse">
         <BaseTableHeader>
             <tr>
-                <th v-for="col in columns" :key="col" class="px-4 py-3">
+                <th v-for="col in columns" :key="col" class="px-4 py-3 sm:first:ps-6 sm:last:pe-6">
                     <div class="h-3 rounded bg-gray-200" :class="col === 1 ? 'w-16' : 'w-20'"></div>
                 </th>
             </tr>
         </BaseTableHeader>
         <BaseTableBody>
             <tr v-for="row in rows" :key="row">
-                <td v-for="col in columns" :key="col" class="px-4 py-4">
+                <td v-for="col in columns" :key="col" class="px-4 py-4 sm:first:ps-6 sm:last:pe-6">
                     <div
                         class="h-3 rounded"
                         :class="[
