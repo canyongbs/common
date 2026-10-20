@@ -103,7 +103,7 @@ Bulk actions check `deleteAny` once. When `archive` or `delete` has record-depen
 
 ## Filament Actions
 
-`ArchiveAction` and `UnarchiveAction` are header actions for `EditRecord` / `ViewRecord` pages or table record actions on any resource page; `ArchiveBulkAction` and `UnarchiveBulkAction` are table bulk actions. All four live in `CanyonGBS\Common\Filament\Actions`.
+`ArchiveAction` and `UnarchiveAction` are header actions for `EditRecord` / `ViewRecord` pages or table record actions on any resource page or relation manager; `ArchiveBulkAction` and `UnarchiveBulkAction` are table bulk actions. All four live in `CanyonGBS\Common\Filament\Actions`.
 
 ```php
 protected function getHeaderActions(): array
@@ -127,7 +127,7 @@ $table
 
 - The record actions are hidden unless they apply, and the bulk actions skip selected records that are already archived or unarchived. `ArchiveAction` redirects to the index on success from an Edit/View page, and stays on the page in a table.
 - When `isUsed()` returns `false`, `ArchiveAction` deletes the record instead (closures can branch on `shouldDeleteInsteadOfArchive()`). `ArchiveBulkAction` likewise deletes selected records that are not `used()`.
-- Outside a resource page, such as a relation manager, pass your own `authorize()`.
+- They authorize through the resource page or relation manager they are on, and are hidden in read-only relation managers. Anywhere else, pass your own `authorize()`.
 
 ---
 

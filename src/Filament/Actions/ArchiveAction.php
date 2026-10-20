@@ -41,9 +41,9 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
 use Filament\Resources\Pages\EditRecord;
-use Filament\Resources\Pages\Page;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
 
@@ -119,14 +119,10 @@ class ArchiveAction extends Action
             $this->success();
         });
 
-        $this->authorize(function (Model $record, Component $livewire): bool {
-            if (! $livewire instanceof Page) {
-                throw new Exception('Unsupported Livewire component for [ArchiveAction] authorization. It must be used within a resource page, or a custom [authorize()] function must be used.');
-            }
-
+        $this->authorize(function (Model $record, Component $livewire): Response {
             $ability = $this->shouldDeleteInsteadOfArchive($record) ? 'delete' : $this->getArchiveAbility($record);
 
-            return $livewire::getResource()::can($ability, $record);
+            return $this->getArchiveAuthorizationResponse($ability, $record, $livewire);
         });
 
         $this->successRedirectUrl(function (Component $livewire): ?string {

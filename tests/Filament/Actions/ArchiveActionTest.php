@@ -45,8 +45,10 @@ use Workbench\App\Filament\Resources\Articles\Pages\ListArticles;
 use Workbench\App\Filament\Resources\Articles\Pages\ViewArticle;
 use Workbench\App\Filament\Resources\Attachments\Pages\EditAttachment;
 use Workbench\App\Filament\Resources\Projects\Pages\EditProject;
+use Workbench\App\Filament\Resources\Projects\Pages\ManageProjectTags;
 use Workbench\App\Filament\Resources\Projects\Pages\ViewProject;
 use Workbench\App\Filament\Resources\Projects\ProjectResource;
+use Workbench\App\Filament\Resources\Projects\RelationManagers\TagsRelationManager;
 use Workbench\App\Filament\Resources\Tags\Pages\EditTag;
 use Workbench\App\Filament\Resources\Tasks\Pages\EditTask;
 use Workbench\App\Models\Article;
@@ -117,6 +119,32 @@ it('archives the record from a table without redirecting', function (): void {
         ->assertNoRedirect();
 
     expect($article->refresh()->isArchived())->toBeTrue();
+});
+
+it('archives the record from a relation manager without redirecting', function (): void {
+    $project = Project::factory()->create();
+    $tag = Tag::factory()->create();
+    $project->tags()->attach($tag);
+
+    Livewire::test(TagsRelationManager::class, ['ownerRecord' => $project, 'pageClass' => EditProject::class])
+        ->callAction(TestAction::make('archive')->table($tag))
+        ->assertNotified('Archived')
+        ->assertNoRedirect();
+
+    expect($tag->refresh()->isArchived())->toBeTrue();
+});
+
+it('archives the record from a related records page without redirecting', function (): void {
+    $project = Project::factory()->create();
+    $tag = Tag::factory()->create();
+    $project->tags()->attach($tag);
+
+    Livewire::test(ManageProjectTags::class, ['record' => $project->getRouteKey()])
+        ->callAction(TestAction::make('archive')->table($tag))
+        ->assertNotified('Archived')
+        ->assertNoRedirect();
+
+    expect($tag->refresh()->isArchived())->toBeTrue();
 });
 
 it('is hidden when the record is already archived', function (): void {
@@ -355,6 +383,37 @@ describe('authorization', function (): void {
 
         Livewire::test(ListArticles::class)
             ->assertActionHidden(TestAction::make('archive')->table($article));
+    });
+
+    it('is hidden in a relation manager when the user is not authorized to archive with the policy\'s `archive` method', function (): void {
+        TagPolicy::$abilities['archive'] = false;
+
+        $project = Project::factory()->create();
+        $tag = Tag::factory()->create();
+        $project->tags()->attach($tag);
+
+        Livewire::test(TagsRelationManager::class, ['ownerRecord' => $project, 'pageClass' => EditProject::class])
+            ->assertActionHidden(TestAction::make('archive')->table($tag));
+    });
+
+    it('is hidden in a read-only relation manager', function (): void {
+        $project = Project::factory()->create();
+        $tag = Tag::factory()->create();
+        $project->tags()->attach($tag);
+
+        Livewire::test(TagsRelationManager::class, ['ownerRecord' => $project, 'pageClass' => ViewProject::class])
+            ->assertActionHidden(TestAction::make('archive')->table($tag));
+    });
+
+    it('is hidden on a related records page when the user is not authorized to archive with the policy\'s `archive` method', function (): void {
+        TagPolicy::$abilities['archive'] = false;
+
+        $project = Project::factory()->create();
+        $tag = Tag::factory()->create();
+        $project->tags()->attach($tag);
+
+        Livewire::test(ManageProjectTags::class, ['record' => $project->getRouteKey()])
+            ->assertActionHidden(TestAction::make('archive')->table($tag));
     });
 });
 
