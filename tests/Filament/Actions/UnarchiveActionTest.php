@@ -36,23 +36,30 @@
 
 use CanyonGBS\Common\Filament\Actions\UnarchiveAction;
 use Filament\Actions\Action;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Filament\Support\Icons\Heroicon;
 use Livewire\Livewire;
 use Workbench\App\Filament\Resources\Articles\Pages\EditArticle;
+use Workbench\App\Filament\Resources\Articles\Pages\ListArticles;
 use Workbench\App\Filament\Resources\Projects\Pages\EditProject;
+use Workbench\App\Filament\Resources\Projects\Pages\ManageProjectTags;
 use Workbench\App\Filament\Resources\Projects\Pages\ViewProject;
+use Workbench\App\Filament\Resources\Projects\RelationManagers\TagsRelationManager;
 use Workbench\App\Models\Article;
 use Workbench\App\Models\Project;
 use Workbench\App\Models\Review;
+use Workbench\App\Models\Tag;
 use Workbench\App\Models\Task;
 use Workbench\App\Models\User;
 use Workbench\App\Policies\ArticlePolicy;
 use Workbench\App\Policies\ProjectPolicy;
+use Workbench\App\Policies\TagPolicy;
 
 beforeEach(function (): void {
     ProjectPolicy::reset();
     ArticlePolicy::reset();
+    TagPolicy::reset();
 
     Filament::setCurrentPanel('testing');
 
@@ -95,6 +102,46 @@ it('unarchives the record from the view page', function (): void {
         ->assertNoRedirect();
 
     expect($project->refresh()->isArchived())->toBeFalse();
+});
+
+it('unarchives the record from a table', function (): void {
+    $article = Article::factory()->create();
+    $article->archive();
+
+    Livewire::test(ListArticles::class)
+        ->callAction(TestAction::make('unarchive')->table($article))
+        ->assertNotified('Unarchived')
+        ->assertNoRedirect();
+
+    expect($article->refresh()->isArchived())->toBeFalse();
+});
+
+it('unarchives the record from a relation manager', function (): void {
+    $project = Project::factory()->create();
+    $tag = Tag::factory()->create();
+    $tag->archive();
+    $project->tags()->attach($tag);
+
+    Livewire::test(TagsRelationManager::class, ['ownerRecord' => $project, 'pageClass' => EditProject::class])
+        ->callAction(TestAction::make('unarchive')->table($tag))
+        ->assertNotified('Unarchived')
+        ->assertNoRedirect();
+
+    expect($tag->refresh()->isArchived())->toBeFalse();
+});
+
+it('unarchives the record from a related records page', function (): void {
+    $project = Project::factory()->create();
+    $tag = Tag::factory()->create();
+    $tag->archive();
+    $project->tags()->attach($tag);
+
+    Livewire::test(ManageProjectTags::class, ['record' => $project->getRouteKey()])
+        ->callAction(TestAction::make('unarchive')->table($tag))
+        ->assertNotified('Unarchived')
+        ->assertNoRedirect();
+
+    expect($tag->refresh()->isArchived())->toBeFalse();
 });
 
 it('is hidden when the record is not archived', function (): void {
@@ -163,6 +210,50 @@ describe('authorization', function (): void {
             ->assertNotified('Unarchived');
 
         expect($article->refresh()->isArchived())->toBeFalse();
+    });
+
+    it('is hidden in a table when the user is not authorized to unarchive with the policy\'s `archive` method', function (): void {
+        ArticlePolicy::$abilities['archive'] = false;
+
+        $article = Article::factory()->create();
+        $article->archive();
+
+        Livewire::test(ListArticles::class)
+            ->assertActionHidden(TestAction::make('unarchive')->table($article));
+    });
+
+    it('is hidden in a relation manager when the user is not authorized to unarchive with the policy\'s `archive` method', function (): void {
+        TagPolicy::$abilities['archive'] = false;
+
+        $project = Project::factory()->create();
+        $tag = Tag::factory()->create();
+        $tag->archive();
+        $project->tags()->attach($tag);
+
+        Livewire::test(TagsRelationManager::class, ['ownerRecord' => $project, 'pageClass' => EditProject::class])
+            ->assertActionHidden(TestAction::make('unarchive')->table($tag));
+    });
+
+    it('is hidden in a read-only relation manager', function (): void {
+        $project = Project::factory()->create();
+        $tag = Tag::factory()->create();
+        $tag->archive();
+        $project->tags()->attach($tag);
+
+        Livewire::test(TagsRelationManager::class, ['ownerRecord' => $project, 'pageClass' => ViewProject::class])
+            ->assertActionHidden(TestAction::make('unarchive')->table($tag));
+    });
+
+    it('is hidden on a related records page when the user is not authorized to unarchive with the policy\'s `archive` method', function (): void {
+        TagPolicy::$abilities['archive'] = false;
+
+        $project = Project::factory()->create();
+        $tag = Tag::factory()->create();
+        $tag->archive();
+        $project->tags()->attach($tag);
+
+        Livewire::test(ManageProjectTags::class, ['record' => $project->getRouteKey()])
+            ->assertActionHidden(TestAction::make('unarchive')->table($tag));
     });
 });
 

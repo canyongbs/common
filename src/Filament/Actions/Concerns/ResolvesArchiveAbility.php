@@ -36,8 +36,14 @@
 
 namespace CanyonGBS\Common\Filament\Actions\Concerns;
 
+use Exception;
+use Filament\Resources\Pages\ManageRelatedRecords;
+use Filament\Resources\Pages\Page;
+use Filament\Resources\RelationManagers\RelationManager;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Component;
 
 trait ResolvesArchiveAbility
 {
@@ -46,5 +52,18 @@ trait ResolvesArchiveAbility
         $policy = Gate::getPolicyFor($record::class);
 
         return (filled($policy) && method_exists($policy, 'archive')) ? 'archive' : 'delete';
+    }
+
+    protected function getArchiveAuthorizationResponse(string $ability, Model $record, Component $livewire): Response
+    {
+        if (($livewire instanceof RelationManager) && $livewire->isReadOnly()) {
+            return Response::deny();
+        }
+
+        return match (true) {
+            ($livewire instanceof RelationManager) || ($livewire instanceof ManageRelatedRecords) => $livewire->getAuthorizationResponse($ability, $record),
+            $livewire instanceof Page => $livewire::getResource()::getAuthorizationResponse($ability, $record),
+            default => throw new Exception('Unsupported Livewire component for [' . class_basename($this) . '] authorization. It must be used within a resource page or relation manager, or a custom [authorize()] function must be used.'),
+        };
     }
 }

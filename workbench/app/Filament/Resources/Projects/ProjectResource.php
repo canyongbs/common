@@ -39,7 +39,9 @@ namespace Workbench\App\Filament\Resources\Projects;
 use Filament\Resources\Resource;
 use Workbench\App\Filament\Resources\Projects\Pages\EditProject;
 use Workbench\App\Filament\Resources\Projects\Pages\ListProjects;
+use Workbench\App\Filament\Resources\Projects\Pages\ManageProjectTags;
 use Workbench\App\Filament\Resources\Projects\Pages\ViewProject;
+use Workbench\App\Filament\Resources\Projects\RelationManagers\TagsRelationManager;
 use Workbench\App\Models\Project;
 
 /**
@@ -51,12 +53,20 @@ class ProjectResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    public static function getRelations(): array
+    {
+        return [
+            TagsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListProjects::route('/'),
             'view' => ViewProject::route('/{record}'),
             'edit' => EditProject::route('/{record}/edit'),
+            'tags' => ManageProjectTags::route('/{record}/tags'),
         ];
     }
 }

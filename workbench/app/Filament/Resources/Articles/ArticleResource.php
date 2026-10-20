@@ -36,7 +36,9 @@
 
 namespace Workbench\App\Filament\Resources\Articles;
 
+use CanyonGBS\Common\Filament\Actions\ArchiveAction;
 use CanyonGBS\Common\Filament\Actions\ArchiveBulkAction;
+use CanyonGBS\Common\Filament\Actions\UnarchiveAction;
 use CanyonGBS\Common\Filament\Actions\UnarchiveBulkAction;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
@@ -66,6 +68,10 @@ class ArticleResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name'),
+            ])
+            ->recordActions([
+                ArchiveAction::make(),
+                UnarchiveAction::make(),
             ])
             ->toolbarActions([
                 ArchiveBulkAction::make()

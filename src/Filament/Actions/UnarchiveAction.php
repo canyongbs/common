@@ -40,9 +40,8 @@ use CanyonGBS\Common\Filament\Actions\Concerns\ResolvesArchiveAbility;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanCustomizeProcess;
-use Filament\Resources\Pages\EditRecord;
-use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
 
@@ -99,13 +98,7 @@ class UnarchiveAction extends Action
             $this->success();
         });
 
-        $this->authorize(function (Model $record, Component $livewire): bool {
-            if ((! $livewire instanceof EditRecord) && (! $livewire instanceof ViewRecord)) {
-                throw new Exception('Unsupported Livewire component for [UnarchiveAction] authorization. It must be used within [EditRecord] or [ViewRecord], or a custom [authorize()] function must be used.');
-            }
-
-            return $livewire::getResource()::can($this->getArchiveAbility($record), $record);
-        });
+        $this->authorize(fn (Model $record, Component $livewire): Response => $this->getArchiveAuthorizationResponse($this->getArchiveAbility($record), $record, $livewire));
     }
 
     public static function getDefaultName(): ?string
