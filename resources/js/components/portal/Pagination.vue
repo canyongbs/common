@@ -95,14 +95,14 @@
     <nav
         aria-label="Pagination"
         role="navigation"
-        class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 border-t border-gray-200 px-6 py-3"
+        class="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 border-t border-gray-200 px-4 py-3 sm:px-6"
         :class="lastPage <= 1 && 'hidden md:grid'"
     >
         <button
             v-if="currentPage > 1"
             type="button"
             @click="emit('fetchPreviousPage')"
-            class="justify-self-start md:hidden relative inline-grid grid-flow-col items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium outline-none transition duration-75 text-gray-950 ring-1 ring-gray-950/10 hover:bg-gray-50 focus-visible:ring-2"
+            class="justify-self-start md:hidden relative inline-grid grid-flow-col items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium outline-none transition duration-75 text-gray-950 ring-1 ring-gray-950/10 hover:bg-gray-50 focus-visible:ring-2"
         >
             Previous
         </button>
@@ -115,14 +115,14 @@
             v-if="currentPage < lastPage"
             type="button"
             @click="emit('fetchNextPage')"
-            class="col-start-3 justify-self-end md:hidden relative inline-grid grid-flow-col items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium outline-none transition duration-75 text-gray-950 ring-1 ring-gray-950/10 hover:bg-gray-50 focus-visible:ring-2"
+            class="col-start-3 justify-self-end md:hidden relative inline-grid grid-flow-col items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium outline-none transition duration-75 text-gray-950 ring-1 ring-gray-950/10 hover:bg-gray-50 focus-visible:ring-2"
         >
             Next
         </button>
 
         <ol
             v-if="lastPage > 1"
-            class="hidden md:flex col-start-3 justify-self-end divide-x divide-gray-200 rounded-lg bg-white shadow-sm ring-1 ring-gray-950/10"
+            class="hidden md:flex col-start-3 justify-self-end divide-x divide-gray-200 rounded-md bg-white shadow-sm ring-1 ring-gray-950/10"
         >
             <li>
                 <button
@@ -130,7 +130,7 @@
                     :disabled="currentPage === 1"
                     aria-label="Previous page"
                     @click="emit('fetchPreviousPage')"
-                    class="relative flex overflow-hidden p-2 transition duration-75 outline-none rounded-s-lg enabled:hover:bg-gray-50 enabled:focus-visible:z-10 enabled:focus-visible:ring-2 enabled:focus-visible:ring-brand-600"
+                    class="relative flex overflow-hidden p-2 transition duration-75 outline-none rounded-s-md enabled:hover:bg-gray-50 enabled:focus-visible:z-10 enabled:focus-visible:ring-2 enabled:focus-visible:ring-brand-600"
                 >
                     <ChevronLeftIcon class="size-5 text-gray-400 transition duration-75" />
                 </button>
@@ -169,7 +169,7 @@
                     :disabled="currentPage === lastPage"
                     aria-label="Next page"
                     @click="emit('fetchNextPage')"
-                    class="relative flex overflow-hidden p-2 transition duration-75 outline-none rounded-e-lg enabled:hover:bg-gray-50 enabled:focus-visible:z-10 enabled:focus-visible:ring-2 enabled:focus-visible:ring-brand-600"
+                    class="relative flex overflow-hidden p-2 transition duration-75 outline-none rounded-e-md enabled:hover:bg-gray-50 enabled:focus-visible:z-10 enabled:focus-visible:ring-2 enabled:focus-visible:ring-brand-600"
                 >
                     <ChevronRightIcon class="size-5 text-gray-400 transition duration-75" />
                 </button>
