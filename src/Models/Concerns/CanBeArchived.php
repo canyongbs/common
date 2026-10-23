@@ -217,7 +217,7 @@ trait CanBeArchived
         $column = $this->getArchivedAtColumn();
 
         // A record created without the column has no original value for it,
-        // which is recorded as null, the same as an `updated` audit would.
+        // which is recorded as null, the same as an `updated` audit records it.
         if (array_key_exists($column, $this->getChanges())) {
             $clone->original[$column] = $this->getPrevious()[$column] ?? null;
         }
