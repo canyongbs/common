@@ -237,24 +237,23 @@ trait CanBeArchived
      */
     protected function getArchivedEventAttributes(): array
     {
-        assert($this instanceof Auditable);
-
-        $column = $this->getArchivedAtColumn();
-
-        if (! $this->isAttributeAuditable($column)) {
-            return [[], []];
-        }
-
-        return [
-            [$column => Arr::get($this->original, $column)],
-            [$column => Arr::get($this->attributes, $column)],
-        ];
+        return $this->getArchiveAuditAttributes();
     }
 
     /**
      * @return array{0: array<string, mixed>, 1: array<string, mixed>}
      */
     protected function getUnarchivedEventAttributes(): array
+    {
+        return $this->getArchiveAuditAttributes();
+    }
+
+    /**
+     * The auditing package resolves a getter per event name, so both events share this one.
+     *
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+     */
+    protected function getArchiveAuditAttributes(): array
     {
         assert($this instanceof Auditable);
 
