@@ -44,9 +44,19 @@ Project::query()->withoutArchived()->get();   // exclude archived — you must c
 Project::query()->onlyArchived()->get();       // only archived
 Project::query()->get();                        // all records (archived included by default)
 
-Project::query()->where('completed', true)->archive();   // bulk archive
-Project::query()->onlyArchived()->unarchive();            // bulk unarchive
+Project::query()->where('completed', true)->archive();   // bulk archive: fires no model events, so no hooks and no audits
+Project::query()->onlyArchived()->unarchive();            // bulk unarchive: fires no model events, so no hooks and no audits
 ```
+
+Use the bulk query only when skipping hooks and audits is intended. Otherwise archive per record. The closure must be block-bodied and return `void`: `archive()` returns `false` when a listener cancels it, and `eachById` stops at the first `false`, so an arrow function would silently skip the remaining records.
+
+```php
+Project::query()->withoutArchived()->eachById(function (Project $record): void {
+    $record->archive();
+});
+```
+
+If the volume makes per-record archiving a real concern, ask the user rather than choosing.
 
 ## Archived-but-Still-Used Records
 
@@ -93,7 +103,16 @@ In tables where `isUsed()` runs per row, eager-load the check to avoid N+1: `$ta
 
 `archiving`, `archived`, `unarchiving`, and `unarchived` fire around the operation; returning `false` from `archiving` or `unarchiving` cancels it.
 
-`archive()` and `unarchive()` only write `archived_at` and `updated_at`: they do not fire Eloquent's save events or persist other pending changes.
+`archive()` and `unarchive()` only write `archived_at` and `updated_at`: they do not fire Eloquent's save events or persist other pending changes. Afterwards, `wasChanged()`, `getChanges()` and `getPrevious()` report the columns they wrote, as after `save()`.
+
+## Auditing
+
+Models that implement owen-it's `Auditable` record one `archived` or `unarchived` audit per `archive()` / `unarchive()`, with the old and new values of the archived-at column, with no per-model code. Common adds both events to `audit.events` at boot.
+
+- To opt a model out, set `$auditEvents` without them. owen-it matches events with an unanchored regex, so listing `archived` also matches `unarchived`.
+- Override `getArchivedEventAttributes()` / `getUnarchivedEventAttributes()` to change the payload.
+- The `*Quietly()` methods and the query-builder `archive()` / `unarchive()` record nothing. Bulk queries fire no model events, the same as Eloquent's bulk `update()` / `delete()`.
+- Writes made in an `archiving` hook are audited separately, as `updated`.
 
 ## Authorization
 
@@ -127,6 +146,7 @@ $table
 
 - The record actions are hidden unless they apply, and the bulk actions skip selected records that are already archived or unarchived. `ArchiveAction` redirects to the index on success from an Edit/View page, and stays on the page in a table.
 - When `isUsed()` returns `false`, `ArchiveAction` deletes the record instead (closures can branch on `shouldDeleteInsteadOfArchive()`). `ArchiveBulkAction` likewise deletes selected records that are not `used()`.
+- The bulk actions archive and unarchive per record by default. `->fetchSelectedRecords(false)` switches them to a single bulk query, which skips hooks and audits and deletes unused records with a bulk `delete()`. Don't add it to a model with archiving hooks or audits without asking the user.
 - They authorize through the resource page or relation manager they are on, and are hidden in read-only relation managers. Anywhere else, pass your own `authorize()`.
 
 ---
