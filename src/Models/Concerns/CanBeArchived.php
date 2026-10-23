@@ -197,11 +197,6 @@ trait CanBeArchived
         return $this->qualifyColumn($this->getArchivedAtColumn());
     }
 
-    /**
-     * Audits are built from the difference between `original` and `attributes`,
-     * which archiving has already synced, so the audit is taken from a copy that
-     * restores the previous archive time without touching this model.
-     */
     protected function recordArchiveAudit(string $event): void
     {
         $clone = $this->cloneForArchiveAudit();
@@ -217,6 +212,11 @@ trait CanBeArchived
         app(ArchiveAuditObserver::class)->{$event}($clone);
     }
 
+    /**
+     * Audits are built from the difference between `original` and `attributes`,
+     * which archiving has already synced, so the audit is taken from a copy that
+     * restores the previous archive time without touching this model.
+     */
     protected function cloneForArchiveAudit(): static
     {
         $clone = clone $this;
