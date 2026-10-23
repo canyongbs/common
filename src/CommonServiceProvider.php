@@ -48,6 +48,7 @@ use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
 use CanyonGBS\Common\Console\Commands\Publish;
 use CanyonGBS\Common\Database\Migrations\PermissionMigrationCreator;
+use CanyonGBS\Common\Support\Auditing\RegisterArchiveAuditEvents;
 use CanyonGBS\Common\Support\PermissionResolver;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
@@ -129,6 +130,8 @@ class CommonServiceProvider extends PackageServiceProvider
                 ->needs(ReportHandlerInterface::class)
                 ->give(BrowserNotificationReportHandler::class);
         });
+
+        $this->app->booted(fn () => app(RegisterArchiveAuditEvents::class)());
 
         FilamentAsset::register([
             Js::make('browser-notifications', __DIR__ . '/../resources/js/dist/filament/browser-notifications.js')
