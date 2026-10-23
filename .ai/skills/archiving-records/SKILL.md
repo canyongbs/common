@@ -48,13 +48,15 @@ Project::query()->where('completed', true)->archive();   // bulk archive: fires 
 Project::query()->onlyArchived()->unarchive();            // bulk unarchive: fires no model events, so no hooks and no audits
 ```
 
-Use the bulk query only when skipping hooks and audits is intended. Otherwise archive per record. The closure must be block-bodied and return `void`: `archive()` returns `false` when a listener cancels it, and `eachById` stops at the first `false`, so an arrow function would silently skip the remaining records.
+Use the bulk query only when skipping hooks and audits is intended. Otherwise archive per record:
 
 ```php
 Project::query()->withoutArchived()->eachById(function (Project $record): void {
     $record->archive();
 });
 ```
+
+The callback must be block-bodied and return `void`: `archive()` returns `false` when a listener cancels it, and `eachById` stops at the first `false`, so an arrow function would silently skip the remaining records.
 
 If the volume makes per-record archiving a real concern, ask the user rather than choosing.
 
@@ -107,10 +109,10 @@ In tables where `isUsed()` runs per row, eager-load the check to avoid N+1: `$ta
 
 ## Auditing
 
-Models that implement owen-it's `Auditable` record one `archived` or `unarchived` audit per `archive()` / `unarchive()`, with the old and new values of the archived-at column, with no per-model code. Common adds both events to `audit.events` at boot.
+Models that implement owen-it's `Auditable` record one `archived` or `unarchived` audit per `archive()` / `unarchive()` that changes the archived-at column, recording its old and new values. A call that leaves the value unchanged, such as unarchiving a record that is not archived, records nothing. No per-model code is needed. Common adds both events to `audit.events` at boot.
 
 - To opt a model out, set `$auditEvents` without them. owen-it matches events with an unanchored regex, so listing `archived` also matches `unarchived`.
-- Override `getArchivedEventAttributes()` / `getUnarchivedEventAttributes()` to change the payload.
+- Override `getArchivedEventAttributes()` / `getUnarchivedEventAttributes()` to change one event's payload, or `getArchiveAuditAttributes()` to change both.
 - The `*Quietly()` methods and the query-builder `archive()` / `unarchive()` record nothing. Bulk queries fire no model events, the same as Eloquent's bulk `update()` / `delete()`.
 - Writes made in an `archiving` hook are audited separately, as `updated`.
 
