@@ -96,6 +96,7 @@ class UnarchiveBulkAction extends BulkAction
                 }
 
                 if (! $action->shouldFetchSelectedRecords()) {
+                    // Unarchives with a single query, which fires no model events, so `unarchiving` hooks and audits do not run.
                     // Initializes the selection counts used by the notifications.
                     $action->getSelectedRecords();
 

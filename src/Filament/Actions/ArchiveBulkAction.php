@@ -118,6 +118,7 @@ class ArchiveBulkAction extends BulkAction
                 $shouldDeleteUnused = $action->shouldDeleteUnusedRecords();
 
                 if (! $action->shouldFetchSelectedRecords()) {
+                    // Archives with a single query, which fires no model events, so `archiving` hooks and audits do not run.
                     // Initializes the selection counts used by the notifications.
                     $action->getSelectedRecords();
 
