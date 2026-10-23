@@ -448,7 +448,7 @@ describe('auditing', function (): void {
     });
 
     it('does not record an `unarchived` audit when unarchiving a model that is not archived', function (): void {
-        $project = AuditableProject::create(['title' => 'Project'])->fresh();
+        $project = AuditableProject::create(['title' => 'Project']);
 
         expect($project->unarchive())->toBeTrue()
             ->and($project->audits()->where('event', 'unarchived')->exists())->toBeFalse();

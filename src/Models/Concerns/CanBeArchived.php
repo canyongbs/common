@@ -61,27 +61,11 @@ trait CanBeArchived
         }
 
         static::archived(function (self $model): void {
-            if (! $model->wasChanged($model->getArchivedAtColumn())) {
-                return;
-            }
-
-            $clone = $model->cloneForArchiveAudit();
-
-            assert($clone instanceof Auditable);
-
-            app(ArchiveAuditObserver::class)->archived($clone);
+            $model->recordArchiveAudit('archived');
         });
 
         static::unarchived(function (self $model): void {
-            if (! $model->wasChanged($model->getArchivedAtColumn())) {
-                return;
-            }
-
-            $clone = $model->cloneForArchiveAudit();
-
-            assert($clone instanceof Auditable);
-
-            app(ArchiveAuditObserver::class)->unarchived($clone);
+            $model->recordArchiveAudit('unarchived');
         });
     }
 
@@ -218,6 +202,21 @@ trait CanBeArchived
      * which archiving has already synced, so the audit is taken from a copy that
      * restores the previous archive time without touching this model.
      */
+    protected function recordArchiveAudit(string $event): void
+    {
+        $clone = $this->cloneForArchiveAudit();
+
+        assert($clone instanceof Auditable);
+
+        $column = $this->getArchivedAtColumn();
+
+        if (($clone->original[$column] ?? null) === ($clone->attributes[$column] ?? null)) {
+            return;
+        }
+
+        app(ArchiveAuditObserver::class)->{$event}($clone);
+    }
+
     protected function cloneForArchiveAudit(): static
     {
         $clone = clone $this;
