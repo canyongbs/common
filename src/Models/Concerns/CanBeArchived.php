@@ -61,6 +61,10 @@ trait CanBeArchived
         }
 
         static::archived(function (self $model): void {
+            if (! $model->wasChanged($model->getArchivedAtColumn())) {
+                return;
+            }
+
             $clone = $model->cloneForArchiveAudit();
 
             assert($clone instanceof Auditable);
@@ -69,6 +73,10 @@ trait CanBeArchived
         });
 
         static::unarchived(function (self $model): void {
+            if (! $model->wasChanged($model->getArchivedAtColumn())) {
+                return;
+            }
+
             $clone = $model->cloneForArchiveAudit();
 
             assert($clone instanceof Auditable);

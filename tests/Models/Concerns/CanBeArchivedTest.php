@@ -444,6 +444,24 @@ describe('auditing', function (): void {
             ->and($audits[1]->new_values['archived_at'])->not->toBe($audits[0]->new_values['archived_at']);
     });
 
+    it('does not record an `unarchived` audit when unarchiving a model that is not archived', function (): void {
+        $project = AuditableProject::create(['title' => 'Project'])->fresh();
+
+        expect($project->unarchive())->toBeTrue()
+            ->and($project->audits()->where('event', 'unarchived')->exists())->toBeFalse();
+    });
+
+    it('does not record an `archived` audit when the archive time does not change', function (): void {
+        $this->freezeTime();
+
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        $project->archive();
+        $project->archive();
+
+        expect($project->audits()->where('event', 'archived')->count())->toBe(1);
+    });
+
     it('does not record an `updated` audit when archiving or unarchiving', function (): void {
         $project = AuditableProject::create(['title' => 'Project']);
 
