@@ -83,6 +83,13 @@ return new class () extends Migration {
             $table->primary(['post_id', 'member_id']);
         });
 
+        Schema::create('audit_projects', function (Blueprint $table): void {
+            $table->id();
+            $table->string('title');
+            $table->timestamp('archived_at')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('audits', function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->string('user_type')->nullable();
@@ -104,6 +111,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('audits');
+        Schema::dropIfExists('audit_projects');
         Schema::dropIfExists('audit_member_post');
         Schema::dropIfExists('audit_members');
         Schema::dropIfExists('audit_labelables');

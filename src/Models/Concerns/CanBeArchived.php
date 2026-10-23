@@ -36,9 +36,12 @@
 
 namespace CanyonGBS\Common\Models\Concerns;
 
+use CanyonGBS\Common\Models\Observers\ArchiveAuditObserver;
 use CanyonGBS\Common\Models\Scopes\ArchivingScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Events\QueuedClosure;
+use Illuminate\Support\Arr;
+use OwenIt\Auditing\Contracts\Auditable;
 
 /**
  * @method static Builder<static> onlyArchived()
@@ -52,6 +55,26 @@ trait CanBeArchived
     public static function bootCanBeArchived(): void
     {
         static::addGlobalScope(new ArchivingScope());
+
+        if (! is_subclass_of(static::class, Auditable::class)) {
+            return;
+        }
+
+        static::archived(function (self $model): void {
+            $clone = $model->cloneForArchiveAudit();
+
+            assert($clone instanceof Auditable);
+
+            app(ArchiveAuditObserver::class)->archived($clone);
+        });
+
+        static::unarchived(function (self $model): void {
+            $clone = $model->cloneForArchiveAudit();
+
+            assert($clone instanceof Auditable);
+
+            app(ArchiveAuditObserver::class)->unarchived($clone);
+        });
     }
 
     public function initializeCanBeArchived(): void
@@ -82,6 +105,9 @@ trait CanBeArchived
         }
 
         $query->update($columns);
+
+        $this->changes = Arr::only($this->getDirty(), array_keys($columns));
+        $this->previous = array_intersect_key($this->getRawOriginal(), $this->changes);
 
         $this->syncOriginalAttributes(array_keys($columns));
 
@@ -116,6 +142,9 @@ trait CanBeArchived
         }
 
         $query->update($columns);
+
+        $this->changes = Arr::only($this->getDirty(), array_keys($columns));
+        $this->previous = array_intersect_key($this->getRawOriginal(), $this->changes);
 
         $this->syncOriginalAttributes(array_keys($columns));
 
@@ -174,5 +203,63 @@ trait CanBeArchived
     public function getQualifiedArchivedAtColumn(): string
     {
         return $this->qualifyColumn($this->getArchivedAtColumn());
+    }
+
+    /**
+     * Audits are built from the difference between `original` and `attributes`,
+     * which archiving has already synced, so the audit is taken from a copy that
+     * restores the previous archive time without touching this model.
+     */
+    protected function cloneForArchiveAudit(): static
+    {
+        $clone = clone $this;
+
+        $column = $this->getArchivedAtColumn();
+
+        // A record created without the column has no original value for it,
+        // which is recorded as null, the same as an `updated` audit would.
+        if (array_key_exists($column, $this->getChanges())) {
+            $clone->original[$column] = $this->getPrevious()[$column] ?? null;
+        }
+
+        return $clone;
+    }
+
+    /**
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+     */
+    protected function getArchivedEventAttributes(): array
+    {
+        assert($this instanceof Auditable);
+
+        $column = $this->getArchivedAtColumn();
+
+        if (! $this->isAttributeAuditable($column)) {
+            return [[], []];
+        }
+
+        return [
+            [$column => Arr::get($this->original, $column)],
+            [$column => Arr::get($this->attributes, $column)],
+        ];
+    }
+
+    /**
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+     */
+    protected function getUnarchivedEventAttributes(): array
+    {
+        assert($this instanceof Auditable);
+
+        $column = $this->getArchivedAtColumn();
+
+        if (! $this->isAttributeAuditable($column)) {
+            return [[], []];
+        }
+
+        return [
+            [$column => Arr::get($this->original, $column)],
+            [$column => Arr::get($this->attributes, $column)],
+        ];
     }
 }
