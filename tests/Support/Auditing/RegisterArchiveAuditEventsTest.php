@@ -73,3 +73,11 @@ it('treats a keyed event as already configured', function (): void {
 
     expect(config('audit.events'))->toBe(['created', 'unarchived', 'archived' => 'getCustomArchivedAttributes']);
 });
+
+it('leaves a non-array events config untouched', function (): void {
+    config()->set('audit.events', null);
+
+    app(RegisterArchiveAuditEvents::class)();
+
+    expect(config('audit.events'))->toBeNull();
+});

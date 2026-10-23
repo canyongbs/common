@@ -42,7 +42,9 @@ class RegisterArchiveAuditEvents
     {
         $events = config('audit.events', ['created', 'updated', 'deleted', 'restored']);
 
-        assert(is_array($events));
+        if (! is_array($events)) {
+            return;
+        }
 
         foreach (['unarchived', 'archived'] as $event) {
             // A string key maps the event to a custom attribute getter.
