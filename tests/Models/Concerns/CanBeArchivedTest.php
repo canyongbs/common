@@ -39,6 +39,7 @@ use Illuminate\Support\Carbon;
 use OwenIt\Auditing\Models\Audit;
 use Workbench\App\Models\Article;
 use Workbench\App\Models\AuditableProject;
+use Workbench\App\Models\AuditableProjectWithCustomArchivedColumn;
 use Workbench\App\Models\AuditableProjectWithCustomArchivedGetter;
 use Workbench\App\Models\AuditableProjectWithoutArchiveAudits;
 use Workbench\App\Models\Project;
@@ -478,6 +479,27 @@ describe('auditing', function (): void {
 
         expect($archivedAudit->new_values)->toBe(['custom' => 'new'])
             ->and($unarchivedAudit->new_values)->toBe(['archived_at' => null]);
+    });
+
+    it('records archive audits on a custom archived-at column', function (): void {
+        $project = AuditableProjectWithCustomArchivedColumn::create(['title' => 'Project']);
+
+        $project->archive();
+
+        $retiredAt = $project->fresh()->getRawOriginal('retired_at');
+
+        $archivedAudit = $project->audits()->where('event', 'archived')->sole();
+
+        expect($retiredAt)->not->toBeNull()
+            ->and($archivedAudit->old_values)->toBe(['retired_at' => null])
+            ->and($archivedAudit->new_values)->toBe(['retired_at' => $retiredAt]);
+
+        $project->unarchive();
+
+        $unarchivedAudit = $project->audits()->where('event', 'unarchived')->sole();
+
+        expect($unarchivedAudit->old_values)->toBe(['retired_at' => $retiredAt])
+            ->and($unarchivedAudit->new_values)->toBe(['retired_at' => null]);
     });
 
     it('does not record an `updated` audit when archiving or unarchiving', function (): void {

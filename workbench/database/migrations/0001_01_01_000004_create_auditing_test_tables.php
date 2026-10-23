@@ -87,6 +87,7 @@ return new class () extends Migration {
             $table->id();
             $table->string('title');
             $table->timestamp('archived_at')->nullable();
+            $table->timestamp('retired_at')->nullable();
             $table->timestamps();
         });
 
