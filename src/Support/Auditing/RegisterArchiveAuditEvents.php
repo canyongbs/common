@@ -44,15 +44,50 @@ class RegisterArchiveAuditEvents
 
         assert(is_array($events));
 
-        foreach (['archived', 'unarchived'] as $event) {
+        foreach (['unarchived', 'archived'] as $event) {
             // A string key maps the event to a custom attribute getter.
             if (in_array($event, $events, true) || array_key_exists($event, $events)) {
                 continue;
             }
 
-            $events[] = $event;
+            $events = $this->insertBeforeFirstMatch($events, $event);
         }
 
         config()->set('audit.events', $events);
+    }
+
+    /**
+     * The auditing package resolves an event's getter from the first configured entry whose
+     * unanchored pattern matches it, so an `archived` entry would capture `unarchived` too.
+     *
+     * @param array<int|string, string> $events
+     *
+     * @return array<int|string, string>
+     */
+    protected function insertBeforeFirstMatch(array $events, string $event): array
+    {
+        $result = [];
+        $inserted = false;
+
+        foreach ($events as $key => $value) {
+            $pattern = sprintf('/%s/', preg_replace('/\*+/', '.*', is_int($key) ? $value : $key));
+
+            if (! $inserted && preg_match($pattern, $event)) {
+                $result[] = $event;
+                $inserted = true;
+            }
+
+            if (is_int($key)) {
+                $result[] = $value;
+            } else {
+                $result[$key] = $value;
+            }
+        }
+
+        if (! $inserted) {
+            $result[] = $event;
+        }
+
+        return $result;
     }
 }

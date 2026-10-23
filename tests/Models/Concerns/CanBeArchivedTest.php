@@ -34,10 +34,12 @@
 </COPYRIGHT>
 */
 
+use CanyonGBS\Common\Support\Auditing\RegisterArchiveAuditEvents;
 use Illuminate\Support\Carbon;
 use OwenIt\Auditing\Models\Audit;
 use Workbench\App\Models\Article;
 use Workbench\App\Models\AuditableProject;
+use Workbench\App\Models\AuditableProjectWithCustomArchivedGetter;
 use Workbench\App\Models\AuditableProjectWithoutArchiveAudits;
 use Workbench\App\Models\Project;
 use Workbench\App\Models\Review;
@@ -460,6 +462,22 @@ describe('auditing', function (): void {
         $project->archive();
 
         expect($project->audits()->where('event', 'archived')->count())->toBe(1);
+    });
+
+    it('keeps a custom `archived` getter from capturing `unarchived` audits', function (): void {
+        config()->set('audit.events', ['created', 'archived' => 'getCustomArchivedAttributes']);
+
+        app(RegisterArchiveAuditEvents::class)();
+
+        $project = AuditableProjectWithCustomArchivedGetter::create(['title' => 'Project']);
+        $project->archive();
+        $project->unarchive();
+
+        $archivedAudit = $project->audits()->where('event', 'archived')->sole();
+        $unarchivedAudit = $project->audits()->where('event', 'unarchived')->sole();
+
+        expect($archivedAudit->new_values)->toBe(['custom' => 'new'])
+            ->and($unarchivedAudit->new_values)->toBe(['archived_at' => null]);
     });
 
     it('does not record an `updated` audit when archiving or unarchiving', function (): void {

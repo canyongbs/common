@@ -46,7 +46,7 @@ it('appends the archive audit events to the configured events', function (): voi
 
     app(RegisterArchiveAuditEvents::class)();
 
-    expect(config('audit.events'))->toBe(['created', 'updated', 'archived', 'unarchived']);
+    expect(config('audit.events'))->toBe(['created', 'updated', 'unarchived', 'archived']);
 });
 
 it('starts from the auditing package defaults when no events are configured', function (): void {
@@ -54,7 +54,7 @@ it('starts from the auditing package defaults when no events are configured', fu
 
     app(RegisterArchiveAuditEvents::class)();
 
-    expect(config('audit.events'))->toBe(['created', 'updated', 'deleted', 'restored', 'archived', 'unarchived']);
+    expect(config('audit.events'))->toBe(['created', 'updated', 'deleted', 'restored', 'unarchived', 'archived']);
 });
 
 it('does not duplicate events that are already configured', function (): void {
@@ -63,7 +63,7 @@ it('does not duplicate events that are already configured', function (): void {
     app(RegisterArchiveAuditEvents::class)();
     app(RegisterArchiveAuditEvents::class)();
 
-    expect(config('audit.events'))->toBe(['created', 'archived', 'unarchived']);
+    expect(config('audit.events'))->toBe(['created', 'unarchived', 'archived']);
 });
 
 it('treats a keyed event as already configured', function (): void {
@@ -71,5 +71,5 @@ it('treats a keyed event as already configured', function (): void {
 
     app(RegisterArchiveAuditEvents::class)();
 
-    expect(config('audit.events'))->toBe(['created', 'archived' => 'getCustomArchivedAttributes', 'unarchived']);
+    expect(config('audit.events'))->toBe(['created', 'unarchived', 'archived' => 'getCustomArchivedAttributes']);
 });
