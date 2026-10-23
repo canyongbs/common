@@ -100,7 +100,6 @@ class UnarchiveBulkAction extends BulkAction
                     $action->getSelectedRecords();
 
                     // Unarchives with a single query, which fires no model events, so `unarchiving` hooks and audits do not run.
-
                     try {
                         $action->unarchivedCount = $action->getSelectedRecordsQuery()->onlyArchived()->unarchive(); /** @phpstan-ignore method.notFound */
                     } catch (Throwable $exception) {

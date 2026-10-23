@@ -122,7 +122,6 @@ class ArchiveBulkAction extends BulkAction
                     $action->getSelectedRecords();
 
                     // Archives with a single query, which fires no model events, so `archiving` hooks and audits do not run.
-
                     try {
                         $query = $action->getSelectedRecordsQuery();
 
