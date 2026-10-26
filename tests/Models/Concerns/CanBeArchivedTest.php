@@ -34,8 +34,14 @@
 </COPYRIGHT>
 */
 
+use CanyonGBS\Common\Support\Auditing\RegisterArchiveAuditEvents;
 use Illuminate\Support\Carbon;
+use OwenIt\Auditing\Models\Audit;
 use Workbench\App\Models\Article;
+use Workbench\App\Models\AuditableProject;
+use Workbench\App\Models\AuditableProjectWithCustomArchivedColumn;
+use Workbench\App\Models\AuditableProjectWithCustomArchivedGetter;
+use Workbench\App\Models\AuditableProjectWithoutArchiveAudits;
 use Workbench\App\Models\Project;
 use Workbench\App\Models\Review;
 use Workbench\App\Models\Task;
@@ -224,6 +230,43 @@ it('does not persist other pending changes when unarchiving', function (): void 
     expect($project->isDirty('name'))->toBeTrue();
 });
 
+it('reports the archive column as changed after archiving', function (): void {
+    $project = Project::factory()->create()->fresh();
+
+    expect($project->wasChanged('archived_at'))->toBeFalse();
+
+    $project->archive();
+
+    expect($project->wasChanged('archived_at'))->toBeTrue()
+        ->and($project->getPrevious())->toHaveKey('archived_at')
+        ->and($project->getPrevious()['archived_at'])->toBeNull();
+});
+
+it('reports the previous archive time after unarchiving', function (): void {
+    $project = Project::factory()->create();
+    $project->archive();
+
+    $project = $project->fresh();
+    $archivedAt = $project->getRawOriginal('archived_at');
+
+    expect($archivedAt)->not->toBeNull();
+
+    $project->unarchive();
+
+    expect($project->getPrevious()['archived_at'])->toBe($archivedAt);
+});
+
+it('does not report unsaved attributes as changed after archiving', function (): void {
+    $project = Project::factory()->create(['name' => 'Apollo']);
+
+    $project->name = 'Gemini';
+
+    $project->archive();
+
+    expect($project->getChanges())->toHaveKey('archived_at')
+        ->not->toHaveKey('name');
+});
+
 it('archives a model with a pending attribute that is not a column', function (): void {
     $article = Article::factory()->create();
 
@@ -344,4 +387,251 @@ it('does not mark the model as dirty when memoizing the relation existence in `i
 
     expect($article->isUsed())->toBeFalse();
     expect($article->isDirty())->toBeFalse();
+});
+
+describe('auditing', function (): void {
+    beforeEach(function (): void {
+        config()->set('audit.console', true);
+    });
+
+    it('records an `archived` audit when archiving', function (bool $isQueued): void {
+        config()->set('audit.queue.enable', $isQueued);
+
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->audits()->where('event', 'archived')->exists())->toBeFalse();
+
+        $project->archive();
+
+        $audit = $project->audits()->where('event', 'archived')->sole();
+
+        expect($audit->old_values)->toBe(['archived_at' => null])
+            ->and($audit->new_values)->toBe(['archived_at' => $project->fresh()->getRawOriginal('archived_at')]);
+    })->with(['queued' => true, 'not queued' => false]);
+
+    it('records an `unarchived` audit when unarchiving', function (bool $isQueued): void {
+        config()->set('audit.queue.enable', $isQueued);
+
+        $project = AuditableProject::create(['title' => 'Project']);
+        $project->archive();
+
+        $archivedAt = $project->fresh()->getRawOriginal('archived_at');
+
+        expect($archivedAt)->not->toBeNull()
+            ->and($project->audits()->where('event', 'unarchived')->exists())->toBeFalse();
+
+        $project->unarchive();
+
+        $audit = $project->audits()->where('event', 'unarchived')->sole();
+
+        expect($audit->old_values)->toBe(['archived_at' => $archivedAt])
+            ->and($audit->new_values)->toBe(['archived_at' => null]);
+    })->with(['queued' => true, 'not queued' => false]);
+
+    it('records the previous archive time when archiving an already-archived model', function (): void {
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->audits()->where('event', 'archived')->exists())->toBeFalse();
+
+        $project->archive();
+
+        $this->travel(1)->minutes();
+
+        $project->archive();
+
+        $audits = $project->audits()->where('event', 'archived')->oldest('id')->get();
+
+        expect($audits)->toHaveCount(2)
+            ->and($audits[1]->old_values['archived_at'])->not->toBeNull()
+            ->and($audits[1]->old_values['archived_at'])->toBe($audits[0]->new_values['archived_at'])
+            ->and($audits[1]->new_values['archived_at'])->not->toBe($audits[0]->new_values['archived_at']);
+    });
+
+    it('does not record an `unarchived` audit when unarchiving a model that is not archived', function (): void {
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->unarchive())->toBeTrue()
+            ->and($project->audits()->where('event', 'unarchived')->exists())->toBeFalse();
+    });
+
+    it('does not record an `archived` audit when the archive time does not change', function (): void {
+        $this->freezeTime();
+
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        $project->archive();
+        $project->archive();
+
+        expect($project->audits()->where('event', 'archived')->count())->toBe(1);
+    });
+
+    it('keeps a custom `archived` getter from capturing `unarchived` audits', function (): void {
+        config()->set('audit.events', ['created', 'archived' => 'getCustomArchivedAttributes']);
+
+        app(RegisterArchiveAuditEvents::class)();
+
+        $project = AuditableProjectWithCustomArchivedGetter::create(['title' => 'Project']);
+        $project->archive();
+        $project->unarchive();
+
+        $archivedAudit = $project->audits()->where('event', 'archived')->sole();
+        $unarchivedAudit = $project->audits()->where('event', 'unarchived')->sole();
+
+        expect($archivedAudit->new_values)->toBe(['custom' => 'new'])
+            ->and($unarchivedAudit->new_values)->toBe(['archived_at' => null]);
+    });
+
+    it('records archive audits on a custom archived-at column', function (): void {
+        $project = AuditableProjectWithCustomArchivedColumn::create(['title' => 'Project']);
+
+        $project->archive();
+
+        $retiredAt = $project->fresh()->getRawOriginal('retired_at');
+
+        $archivedAudit = $project->audits()->where('event', 'archived')->sole();
+
+        expect($retiredAt)->not->toBeNull()
+            ->and($archivedAudit->old_values)->toBe(['retired_at' => null])
+            ->and($archivedAudit->new_values)->toBe(['retired_at' => $retiredAt]);
+
+        $project->unarchive();
+
+        $unarchivedAudit = $project->audits()->where('event', 'unarchived')->sole();
+
+        expect($unarchivedAudit->old_values)->toBe(['retired_at' => $retiredAt])
+            ->and($unarchivedAudit->new_values)->toBe(['retired_at' => null]);
+    });
+
+    it('does not record an `updated` audit when archiving or unarchiving', function (): void {
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->audits()->where('event', 'updated')->exists())->toBeFalse();
+
+        $project->archive();
+        $project->unarchive();
+
+        expect($project->audits()->where('event', 'updated')->exists())->toBeFalse()
+            ->and($project->audits()->where('event', 'archived')->count())->toBe(1)
+            ->and($project->audits()->where('event', 'unarchived')->count())->toBe(1);
+    });
+
+    it('records the archive alongside an `updated` audit from an `archiving` hook', function (): void {
+        AuditableProject::archiving(function (AuditableProject $project): void {
+            $project->update(['title' => 'Renamed']);
+        });
+
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->audits()->whereIn('event', ['updated', 'archived'])->exists())->toBeFalse();
+
+        $project->archive();
+
+        $updatedAudit = $project->audits()->where('event', 'updated')->sole();
+
+        expect($updatedAudit->new_values)->toHaveKey('title')
+            ->not->toHaveKey('archived_at')
+            ->and($project->audits()->where('event', 'archived')->count())->toBe(1);
+    });
+
+    it('does not record an audit when archiving is cancelled', function (): void {
+        $isCancelling = true;
+
+        AuditableProject::archiving(function () use (&$isCancelling): ?bool {
+            return $isCancelling ? false : null;
+        });
+
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->audits()->where('event', 'archived')->exists())->toBeFalse();
+
+        expect($project->archive())->toBeFalse()
+            ->and($project->audits()->where('event', 'archived')->exists())->toBeFalse();
+
+        $isCancelling = false;
+
+        expect($project->archive())->toBeTrue();
+
+        $audit = $project->audits()->where('event', 'archived')->sole();
+
+        expect($audit->old_values)->toBe(['archived_at' => null]);
+    });
+
+    it('leaves the model clean after recording the audit', function (): void {
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->audits()->where('event', 'updated')->exists())->toBeFalse();
+
+        $project->archive();
+
+        expect($project->isDirty())->toBeFalse();
+
+        $project->update(['title' => 'X']);
+
+        $audit = $project->audits()->where('event', 'updated')->sole();
+
+        expect($audit->new_values)->toHaveKey('title')
+            ->not->toHaveKey('archived_at')
+            ->and($audit->old_values)->not->toHaveKey('archived_at');
+    });
+
+    it('does not record an audit when archiving or unarchiving quietly', function (): void {
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->audits()->whereIn('event', ['archived', 'unarchived'])->exists())->toBeFalse();
+
+        $project->archiveQuietly();
+        $project->unarchiveQuietly();
+
+        expect($project->audits()->whereIn('event', ['archived', 'unarchived'])->exists())->toBeFalse();
+    });
+
+    it('does not record an audit when auditing is disabled in the console', function (): void {
+        config()->set('audit.console', false);
+
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->audits()->whereIn('event', ['archived', 'unarchived'])->exists())->toBeFalse();
+
+        $project->archive();
+        $project->unarchive();
+
+        expect($project->audits()->whereIn('event', ['archived', 'unarchived'])->exists())->toBeFalse();
+    });
+
+    it('does not record archive audits for a model whose `$auditEvents` omits them', function (): void {
+        $project = AuditableProjectWithoutArchiveAudits::create(['title' => 'Project']);
+
+        expect($project->audits()->where('event', 'created')->exists())->toBeTrue()
+            ->and($project->audits()->whereIn('event', ['archived', 'unarchived'])->exists())->toBeFalse();
+
+        $project->archive();
+        $project->unarchive();
+
+        expect($project->audits()->whereIn('event', ['archived', 'unarchived'])->exists())->toBeFalse();
+    });
+
+    it('does not record an audit for a model that is not auditable', function (): void {
+        $project = Project::factory()->create();
+
+        $auditCount = Audit::count();
+
+        expect($project->archive())->toBeTrue()
+            ->and($project->unarchive())->toBeTrue()
+            ->and(Audit::count())->toBe($auditCount);
+    });
+
+    it('does not record an audit when bulk archiving or unarchiving with the query builder', function (): void {
+        $project = AuditableProject::create(['title' => 'Project']);
+
+        expect($project->audits()->whereIn('event', ['archived', 'unarchived'])->exists())->toBeFalse();
+
+        AuditableProject::query()->archive();
+
+        expect($project->fresh()->isArchived())->toBeTrue();
+
+        AuditableProject::query()->unarchive();
+
+        expect($project->fresh()->isArchived())->toBeFalse()
+            ->and($project->audits()->whereIn('event', ['archived', 'unarchived'])->exists())->toBeFalse();
+    });
 });
