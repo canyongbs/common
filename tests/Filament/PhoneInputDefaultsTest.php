@@ -1,3 +1,5 @@
+<?php
+
 /*
 <COPYRIGHT>
 
@@ -31,4 +33,31 @@
 
 </COPYRIGHT>
 */
-var t=()=>{document.querySelectorAll('.iti__country-list[role="listbox"]:not([tabindex])').forEach(e=>e.setAttribute("tabindex","0"))};new MutationObserver(t).observe(document.documentElement,{childList:!0,subtree:!0});t();
+
+use Filament\Schemas\Schema;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
+use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
+
+it('applies the shared defaults to phone inputs', function (): void {
+    $phoneInput = PhoneInput::make('phone');
+
+    expect($phoneInput->getDefaultCountry())->toBe('US')
+        ->and($phoneInput->getInitialCountry())->toBe('US')
+        ->and($phoneInput->isStrictMode())->toBeTrue()
+        ->and($phoneInput->canPerformIpLookup())->toBeFalse();
+});
+
+it('allows an app to override the shared phone input defaults', function (): void {
+    $phoneInput = PhoneInput::make('phone')
+        ->initialCountry('CA')
+        ->enableIpLookup();
+
+    expect($phoneInput->getInitialCountry())->toBe('CA')
+        ->and($phoneInput->canPerformIpLookup())->toBeTrue();
+});
+
+it('formats phone entries in the international format by default', function (): void {
+    $phoneEntry = PhoneEntry::make('phone')->container(Schema::make())->defaultCountry('US');
+
+    expect(strip_tags((string) $phoneEntry->formatState('(415) 555-2671')))->toContain('+1 415-555-2671');
+});
