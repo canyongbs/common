@@ -1,0 +1,1 @@
+var t=()=>{document.querySelectorAll('.iti__country-list[role="listbox"]:not([tabindex])').forEach(e=>e.setAttribute("tabindex","0"))};new MutationObserver(t).observe(document.body,{childList:!0,subtree:!0});t();

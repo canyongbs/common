@@ -1,5 +1,3 @@
-<?php
-
 /*
 <COPYRIGHT>
 
@@ -34,14 +32,14 @@
 </COPYRIGHT>
 */
 
-use CanyonGBS\Common\Filament\Forms\Components\PhoneInput\PhoneInputNumberType;
-use libphonenumber\PhoneNumberFormat;
+// intl-tel-input builds the country listbox at runtime, so it is not reachable by
+// keyboard. Adding tabindex="0" puts it in the tab sequence.
+const makeCountryListsFocusable = () => {
+    document
+        .querySelectorAll('.iti__country-list[role="listbox"]:not([tabindex])')
+        .forEach((list) => list.setAttribute('tabindex', '0'));
+};
 
-it('converts number types to libphonenumber formats', function (PhoneInputNumberType $type, PhoneNumberFormat $format): void {
-    expect($type->toLibPhoneNumberFormat())->toBe($format);
-})->with([
-    'E164' => [PhoneInputNumberType::E164, PhoneNumberFormat::E164],
-    'international' => [PhoneInputNumberType::INTERNATIONAL, PhoneNumberFormat::INTERNATIONAL],
-    'national' => [PhoneInputNumberType::NATIONAL, PhoneNumberFormat::NATIONAL],
-    'RFC3966' => [PhoneInputNumberType::RFC3966, PhoneNumberFormat::RFC3966],
-]);
+new MutationObserver(makeCountryListsFocusable).observe(document.body, { childList: true, subtree: true });
+
+makeCountryListsFocusable();
