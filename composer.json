@@ -15,8 +15,8 @@
         "spatie/laravel-health": "^1.40",
         "tapp/filament-timezone-field": "^3.0",
         "tpetry/laravel-postgresql-enhanced": "^3.5.1",
-        "propaganistas/laravel-phone": "^6.0",
-        "spatie/laravel-package-tools": "^1.92"
+        "spatie/laravel-package-tools": "^1.92",
+        "ysfkaya/filament-phone-input": "^4.2"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1",
