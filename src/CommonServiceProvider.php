@@ -50,8 +50,6 @@ use CanyonGBS\Common\Console\Commands\Publish;
 use CanyonGBS\Common\Database\Migrations\PermissionMigrationCreator;
 use CanyonGBS\Common\Support\Auditing\RegisterArchiveAuditEvents;
 use CanyonGBS\Common\Support\PermissionResolver;
-use Filament\Support\Assets\AlpineComponent;
-use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
@@ -140,9 +138,7 @@ class CommonServiceProvider extends PackageServiceProvider
                 ->loadedOnRequest(),
             Js::make('rich-content-plugins/video-embed', __DIR__ . '/../resources/js/dist/filament/rich-content-plugins/video-embed.js')
                 ->loadedOnRequest(),
-            Css::make('phone-input', __DIR__ . '/../resources/js/dist/filament/phone-input.css')
-                ->loadedOnRequest(),
-            AlpineComponent::make('phone-input', __DIR__ . '/../resources/js/dist/filament/phone-input.js'),
+            Js::make('phone-input-a11y', __DIR__ . '/../resources/js/dist/filament/phone-input-a11y.js'),
         ], 'common');
 
         FilamentColor::register([

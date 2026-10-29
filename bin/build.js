@@ -59,10 +59,7 @@ await Promise.all([
     }),
     compile({
         ...options,
-        entryPoints: ['./resources/js/filament/phone-input.js'],
+        entryPoints: ['./resources/js/filament/phone-input-a11y.js'],
         outdir: './resources/js/dist/filament',
-        loader: {
-            '.webp': 'dataurl',
-        },
     }),
 ]);
