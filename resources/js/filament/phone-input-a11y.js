@@ -40,6 +40,8 @@ const makeCountryListsFocusable = () => {
         .forEach((list) => list.setAttribute('tabindex', '0'));
 };
 
-new MutationObserver(makeCountryListsFocusable).observe(document.body, { childList: true, subtree: true });
+// Observe the root element, not the body: SPA mode (wire:navigate) replaces document.body,
+// which would leave an observer on the body detached after the first navigation.
+new MutationObserver(makeCountryListsFocusable).observe(document.documentElement, { childList: true, subtree: true });
 
 makeCountryListsFocusable();
