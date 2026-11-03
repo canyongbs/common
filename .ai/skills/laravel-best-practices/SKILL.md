@@ -22,7 +22,7 @@ Check sibling files, related controllers, models, or tests for established patte
 ### 1. Models → `rules/models.md`
 
 - Relationship methods with correct types and return-type hints (`HasMany<Related, $this>`)
-- UUID keys via `HasUuids`; `SoftDeletes` on domain models (not pivots / meta tables); custom pivots extend `Pivot`
+- New models extend `Model` (never an app `BaseModel`) and use `HasUuids` (UUIDv7), never `HasVersion4Uuids`; legacy v4 models stay on v4; `SoftDeletes` on domain models (not pivots / meta tables); custom pivots extend `Pivot`
 - Attribute casts in the `casts()` method; cast date columns to Carbon
 - Define `$fillable` on every model to guard mass assignment
 - Write individual records with explicit `->attribute =` + `->save()`, never `create()` / `update()` / `fill()` (bulk query-builder updates are fine)
