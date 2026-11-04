@@ -53,13 +53,38 @@ $post->comments()->saveMany([$first, $second]);
 
 ## Use UUID Keys, Soft Deletes & Pivots
 
-- **UUID primary keys** — every model uses `HasUuids` (the migration declares a `uuid('id')` primary key; see `migrations.md`).
+- **UUID primary keys** — every new model uses `Illuminate\Database\Eloquent\Concerns\HasUuids`, which generates time-ordered UUIDv7 keys (the migration declares a `uuid('id')` primary key; see `migrations.md`). Never use `HasVersion4Uuids` on a new model, and never alias it (`use HasVersion4Uuids as HasUuids;`).
+- **Extend the framework base class** — new models extend `Illuminate\Database\Eloquent\Model` directly, or the right framework base such as `Pivot` or `Authenticatable`. Never extend an app-level base model such as `App\Models\BaseModel`; it is legacy and generates UUIDv4 keys.
+- **Keep legacy UUIDv4 models on v4** — existing models that use `HasVersion4Uuids` (listed in the app's `legacy-v4-uuid-models.php` allowlist where it exists) must keep it. Never switch them to `HasUuids`: mixing UUID versions in one table breaks ID ordering. Never add new models to the allowlist.
+- **These UUID and base-class rules override Consistency First** — follow them for every new model even when sibling models extend `BaseModel` or use `HasVersion4Uuids`; those siblings are legacy, not a pattern to copy.
 - **Soft deletes on domain models** — domain models use `SoftDeletes`; "meta" tables such as pivots and join tables do **not**. On a soft-deleting table the unique index is scoped to `whereNull('deleted_at')`, and unique validation must match it (see `migrations.md`).
 - **Custom pivot models** extend `Pivot` and use `HasUuids` — a UUID key, no soft deletes.
 
+Incorrect:
+
+```php
+use App\Models\BaseModel;
+use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids as HasUuids;
+
+class Organization extends BaseModel // legacy UUIDv4 base model
+{
+    use HasUuids; // aliased UUIDv4 — new models must use the real HasUuids (UUIDv7)
+}
+```
+
+Correct:
+
 ```php
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Organization extends Model
+{
+    use HasUuids;
+    use SoftDeletes;
+}
 
 class OrganizationUser extends Pivot
 {

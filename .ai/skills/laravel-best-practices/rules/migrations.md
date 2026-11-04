@@ -26,7 +26,7 @@ use Tpetry\PostgresqlEnhanced\Schema\Blueprint;
 use Tpetry\PostgresqlEnhanced\Support\Facades\Schema;
 ```
 
-- **UUID primary keys** on every table — never auto-increment. Pair with `use HasUuids` on the model (see `models.md`). For foreign keys and polymorphic columns, use the UUID helpers (`foreignUuid()`, `uuidMorphs()` / `nullableUuidMorphs()`) — never `foreignId()`/`morphs()`/`nullableMorphs()` (which are integer-based) or hand-rolled `*_id` + `*_type` columns.
+- **UUID primary keys** on every table — never auto-increment. Pair with `use HasUuids` (UUIDv7) on new models, never `HasVersion4Uuids` (see `models.md`). For foreign keys and polymorphic columns, use the UUID helpers (`foreignUuid()`, `uuidMorphs()` / `nullableUuidMorphs()`) — never `foreignId()`/`morphs()`/`nullableMorphs()` (which are integer-based) or hand-rolled `*_id` + `*_type` columns.
 
     ```php
     $table->uuid('id')->primary();
