@@ -17,6 +17,8 @@ Before applying any rule, check what the application already does. Laravel offer
 
 Check sibling files, related controllers, models, or tests for established patterns. If one exists, follow it — don't introduce a second way. These rules are defaults for when no pattern exists yet, not overrides.
 
+**Exception — new model base class and UUID version:** a new model always extends `Model` (or the right framework base) and uses `HasUuids` (UUIDv7), even when sibling models extend a legacy `BaseModel` or use `HasVersion4Uuids`. Those siblings are legacy UUIDv4 models that must stay as they are; they are not a pattern to copy (see `rules/models.md`).
+
 ## Quick Reference
 
 ### 1. Models → `rules/models.md`
@@ -143,5 +145,5 @@ Check sibling files, related controllers, models, or tests for established patte
 Always read the relevant `rules/*.md` files referenced above before making changes, and use them as the source of truth for the specific topic.
 
 1. Identify the file type and select relevant sections (e.g., model → §1, §9; query → §2, §3; migration → §4; HTTP endpoint → §5, §9; job → §6)
-2. Check sibling files for existing patterns — follow those first per Consistency First
+2. Check sibling files for existing patterns — follow those first per Consistency First, except for the new-model base class and UUID version, which always follow `rules/models.md`
 3. Verify API syntax with `search-docs` for the installed Laravel version

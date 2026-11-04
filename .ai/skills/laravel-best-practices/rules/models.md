@@ -56,6 +56,7 @@ $post->comments()->saveMany([$first, $second]);
 - **UUID primary keys** — every new model uses `Illuminate\Database\Eloquent\Concerns\HasUuids`, which generates time-ordered UUIDv7 keys (the migration declares a `uuid('id')` primary key; see `migrations.md`). Never use `HasVersion4Uuids` on a new model, and never alias it (`use HasVersion4Uuids as HasUuids;`).
 - **Extend the framework base class** — new models extend `Illuminate\Database\Eloquent\Model` directly, or the right framework base such as `Pivot` or `Authenticatable`. Never extend an app-level base model such as `App\Models\BaseModel`; it is legacy and generates UUIDv4 keys.
 - **Keep legacy UUIDv4 models on v4** — existing models that use `HasVersion4Uuids` (listed in the app's `legacy-v4-uuid-models.php` allowlist where it exists) must keep it. Never switch them to `HasUuids`: mixing UUID versions in one table breaks ID ordering. Never add new models to the allowlist.
+- **These UUID and base-class rules override Consistency First** — follow them for every new model even when sibling models extend `BaseModel` or use `HasVersion4Uuids`; those siblings are legacy, not a pattern to copy.
 - **Soft deletes on domain models** — domain models use `SoftDeletes`; "meta" tables such as pivots and join tables do **not**. On a soft-deleting table the unique index is scoped to `whereNull('deleted_at')`, and unique validation must match it (see `migrations.md`).
 - **Custom pivot models** extend `Pivot` and use `HasUuids` — a UUID key, no soft deletes.
 
