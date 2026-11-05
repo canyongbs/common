@@ -46,7 +46,8 @@ class MakeCleanupTask extends Command
 {
     use InteractsWithCleanupTasks;
 
-    protected $signature = 'make:cleanup {name? : The name for the cleanup task}';
+    protected $signature = 'make:cleanup {name? : The name for the cleanup task}
+        {--ready : Mark the cleanup task as ready to be actioned once this change is released}';
 
     protected $description = 'Create a new cleanup task file';
 
@@ -63,7 +64,7 @@ class MakeCleanupTask extends Command
             return self::FAILURE;
         }
 
-        $path = $this->createCleanupTask($name);
+        $path = $this->createCleanupTask($name, $this->resolveCleanupTaskReadiness());
 
         $this->components->info(sprintf('Cleanup task [%s] created successfully.', $path));
 

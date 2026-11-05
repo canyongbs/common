@@ -40,6 +40,7 @@ use CanyonGBS\Common\Console\Enums\CleanupTaskAction;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
@@ -53,7 +54,7 @@ trait InteractsWithCleanupTasks
     /**
      * Check if a cleanup task with the given name would conflict with an existing file.
      *
-     * @param array{action: CleanupTaskAction, name?: string, file?: string}|null $input
+     * @param array{action: CleanupTaskAction, name?: string, file?: string, ready?: bool}|null $input
      */
     protected function cleanupTaskWouldConflict(?array $input): bool
     {
@@ -89,7 +90,7 @@ trait InteractsWithCleanupTasks
             ->all();
     }
 
-    protected function createCleanupTask(string $name): string
+    protected function createCleanupTask(string $name, bool $ready = false): string
     {
         $filesystem = $this->laravel->make(Filesystem::class);
         $directory = $this->cleanupTasksDirectory();
@@ -112,15 +113,58 @@ trait InteractsWithCleanupTasks
             $stub,
         );
 
-        $filesystem->put($path, $content);
+        $filesystem->put($path, $this->withCleanupTaskReadiness($content, $ready));
 
         return $path;
     }
 
     /**
+     * Ask whether the cleanup task can be actioned once this change is released, unless `--ready` was passed.
+     */
+    protected function resolveCleanupTaskReadiness(): bool
+    {
+        if ($this->option('ready')) {
+            return true;
+        }
+
+        return confirm(
+            label: 'Can this cleanup task be actioned once this change is released?',
+            default: false,
+            hint: 'Choose "No" if a later pull request (for example, a later slice in a stack) still relies on what it removes.',
+        );
+    }
+
+    /**
+     * Set the `ready` frontmatter value, adding the key when the stub does not include it.
+     */
+    protected function withCleanupTaskReadiness(string $content, bool $ready): string
+    {
+        $value = $ready ? 'true' : 'false';
+
+        if (! preg_match('/\A---\n(.*?)\n---/s', $content, $matches)) {
+            return $content;
+        }
+
+        $frontmatter = $matches[1];
+
+        $updatedFrontmatter = preg_match('/^ready:.*$/m', $frontmatter)
+            ? preg_replace('/^ready:.*$/m', "ready: {$value}", $frontmatter)
+            : "{$frontmatter}\nready: {$value}";
+
+        return "---\n{$updatedFrontmatter}\n---" . substr($content, strlen($matches[0]));
+    }
+
+    protected function markCleanupTaskReady(string $filePath): void
+    {
+        $filesystem = $this->laravel->make(Filesystem::class);
+
+        $filesystem->put($filePath, $this->withCleanupTaskReadiness($filesystem->get($filePath), true));
+    }
+
+    /**
      * Gather cleanup task input from the user without creating or modifying any files.
      *
-     * @return array{action: CleanupTaskAction, name?: string, file?: string}|null
+     * @return array{action: CleanupTaskAction, name?: string, file?: string, ready?: bool}|null
      */
     protected function gatherCleanupTaskInput(string $suggestedName): ?array
     {
@@ -151,7 +195,7 @@ trait InteractsWithCleanupTasks
                 required: true,
             );
 
-            return ['action' => CleanupTaskAction::Create, 'name' => $name];
+            return ['action' => CleanupTaskAction::Create, 'name' => $name, 'ready' => $this->resolveCleanupTaskReadiness()];
         }
 
         $selected = select(
@@ -159,20 +203,21 @@ trait InteractsWithCleanupTasks
             options: $existing,
         );
 
-        return ['action' => CleanupTaskAction::AddToExisting, 'file' => $selected];
+        // Adding to an existing task keeps its current readiness unless `--ready` is passed explicitly.
+        return ['action' => CleanupTaskAction::AddToExisting, 'file' => $selected, 'ready' => (bool) $this->option('ready')];
     }
 
     /**
      * Execute the cleanup task action (create or select existing) and append an entry.
      *
-     * @param array{action: CleanupTaskAction, name?: string, file?: string} $input
+     * @param array{action: CleanupTaskAction, name?: string, file?: string, ready?: bool} $input
      *
      * @return array{path: string, created: bool}
      */
     protected function executeCleanupTaskAction(array $input, string $section, string $entry): array
     {
         if ($input['action'] === CleanupTaskAction::Create) {
-            $path = $this->createCleanupTask($input['name']);
+            $path = $this->createCleanupTask($input['name'], $input['ready'] ?? false);
             $this->appendToCleanupSection($path, $section, $entry);
 
             return ['path' => $path, 'created' => true];
@@ -180,6 +225,10 @@ trait InteractsWithCleanupTasks
 
         $path = $this->cleanupTasksDirectory() . '/' . $input['file'];
         $this->appendToCleanupSection($path, $section, $entry);
+
+        if ($input['ready'] ?? false) {
+            $this->markCleanupTaskReady($path);
+        }
 
         return ['path' => $path, 'created' => false];
     }

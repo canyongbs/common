@@ -51,6 +51,7 @@ afterEach(function (): void {
 
 it('creates a cleanup task file with the given name argument', function (): void {
     $this->artisan('make:cleanup', ['name' => 'refactor_auth'])
+        ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
         ->assertSuccessful();
 
     $expectedFile = $this->cleanupDir . '/2026_05_01_refactor_auth.md';
@@ -66,6 +67,7 @@ it('creates a cleanup task file with the given name argument', function (): void
 it('prompts for name when no argument is provided', function (): void {
     $this->artisan('make:cleanup')
         ->expectsQuestion('What should the cleanup task be named?', 'my_task')
+        ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
         ->assertSuccessful();
 
     $expectedFile = $this->cleanupDir . '/2026_05_01_my_task.md';
@@ -77,6 +79,7 @@ it('creates the cleanup-tasks directory when it does not exist', function (): vo
     expect(is_dir($this->cleanupDir))->toBeFalse();
 
     $this->artisan('make:cleanup', ['name' => 'test'])
+        ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
         ->assertSuccessful();
 
     expect(is_dir($this->cleanupDir))->toBeTrue();
@@ -84,12 +87,14 @@ it('creates the cleanup-tasks directory when it does not exist', function (): vo
 
 it('outputs success message with file path', function (): void {
     $this->artisan('make:cleanup', ['name' => 'test_task'])
+        ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
         ->assertSuccessful()
         ->expectsOutputToContain('created successfully');
 });
 
 it('returns exit code 0', function (): void {
     $this->artisan('make:cleanup', ['name' => 'test'])
+        ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
         ->assertExitCode(0);
 });
 
@@ -104,4 +109,27 @@ it('fails when a cleanup task with the same name already exists for today', func
 
     // Original file should be unchanged
     expect(file_get_contents($existingFile))->toBe($originalContent);
+});
+
+it('marks the cleanup task as not ready by default', function (): void {
+    $this->artisan('make:cleanup', ['name' => 'not_ready_yet'])
+        ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
+        ->assertSuccessful();
+
+    expect(file_get_contents($this->cleanupDir . '/2026_05_01_not_ready_yet.md'))->toContain('ready: false');
+});
+
+it('marks the cleanup task as ready when confirmed', function (): void {
+    $this->artisan('make:cleanup', ['name' => 'ready_now'])
+        ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'yes')
+        ->assertSuccessful();
+
+    expect(file_get_contents($this->cleanupDir . '/2026_05_01_ready_now.md'))->toContain('ready: true');
+});
+
+it('marks the cleanup task as ready without prompting when --ready is passed', function (): void {
+    $this->artisan('make:cleanup', ['name' => 'ready_flag', '--ready' => true])
+        ->assertSuccessful();
+
+    expect(file_get_contents($this->cleanupDir . '/2026_05_01_ready_flag.md'))->toContain('ready: true');
 });
