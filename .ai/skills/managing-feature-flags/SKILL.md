@@ -11,6 +11,8 @@ metadata:
 
 Feature Flags gate code that must not run — or must run differently — until a deployment's migrations have completed. They exist for **zero-downtime deploys**: code ships and is reachable before migrations run (per tenant), so any code depending on a schema or data change must be guarded. See the `zero-downtime` guideline for the deployment context.
 
+Flags also act as **release toggles** when a feature is delivered over several pull requests: the flag is created in the first one, stays **inactive** while later ones build behind it, and is activated by a migration in the final (keystone) pull request. The mechanics below are the same; only the timing of the activation changes. See the `hiding-unfinished-work` skill.
+
 These are **class-based Laravel Pennant flags**: one class per flag under `App\Features`. A tenant-scoped flag extends `App\Support\AbstractFeatureFlag`; a landlord/central-scoped flag extends `App\Support\LandlordAbstractFeatureFlag` (which resolves against the `landlord` Pennant store). The base class provides the static `active()`, `activate()`, `deactivate()`, and `purge()` helpers. A flag is temporary by design — once its deploy succeeds, a later release removes it, tracked by a cleanup task.
 
 Run every command through the `pls` guideline (these apps run inside the `app` container).
@@ -117,6 +119,8 @@ See the `writing-data-migrations` skill for migration rules (idempotency, requir
 
 The test suite runs your migrations (`RefreshDatabase`), so the activation migration **already activates the flag** — it is active in every test by default. **Do not call `SomeFeature::activate()` in a test, `beforeEach()`, or a helper** to "turn on" a flag; it is redundant and hides a broken activation migration (if the migration fails to activate, the test must fail).
 
+**Exception — a flag that is not activated yet.** While a feature is being built over several pull requests, its flag has no activation migration until the final pull request. Until then, tests of the active path must call `SomeFeature::activate()`; the pull request that adds the activation migration removes those calls. See the `hiding-unfinished-work` skill.
+
 To exercise the **inactive** (pre-migration) branch, call `SomeFeature::deactivate()` for that case only:
 
 ```php
@@ -132,8 +136,9 @@ it('uses the old behaviour when the flag is inactive', function () {
 After the deploy has succeeded everywhere, a later release removes the flag:
 
 - Delete every reference to the flag class, **keeping the active-path code and deleting the inactive path**.
-- Delete the activation migration and the flag class.
-- Resolve its cleanup task entry (see `managing-cleanup-tasks`).
+- Remove the activation from its migration: if the migration also changes schema or data, **edit it** to delete only the `activate()` / `deactivate()` calls (and a `DB::transaction` wrapper that existed only for them), keeping the schema change; if the migration does nothing but activate the flag, **delete it**.
+- Delete the flag class.
+- Resolve its cleanup task entry (see `managing-cleanup-tasks`). Only clean up a flag whose cleanup task is ready.
 
 The flag is purged from the database automatically once the class is gone.
 
