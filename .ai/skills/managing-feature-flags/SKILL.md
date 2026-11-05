@@ -1,6 +1,6 @@
 ---
 name: managing-feature-flags
-description: 'Use when creating, activating, gating code behind, or removing a class-based Feature Flag in a Canyon GBS app — Laravel Pennant flags under `App\Features` extending `App\Support\AbstractFeatureFlag`, generated with `make:ff`. Trigger whenever you introduce a schema or data change that code depends on and must be guarded for zero-downtime deploys, add or edit an `active()` / `resolve()` check, activate a flag inside a migration, or clean up a flag after a deployment. Covers the make:ff command and its cleanup-task prompt, the resolve() default, activation-in-migration patterns, the active/inactive code split, and documenting non-obvious flag removals with inline cleanup comments. Do not use for: the mechanics of cleanup task files themselves (use `managing-cleanup-tasks`), writing the migrations that carry the change (use `writing-data-migrations`), subscription/license feature ADDON gating (app-specific), or Pennant scoped/config-driven flags.'
+description: 'Use when creating, activating, gating code behind, or removing a class-based Feature Flag in a Canyon GBS app — Laravel Pennant flags under `App\Features` extending `App\Support\AbstractFeatureFlag`, generated with `make:ff`. Trigger whenever you introduce a schema or data change that code depends on and must be guarded for zero-downtime deploys, add or edit an `active()` / `resolve()` check, activate a flag inside a migration, toggle a flag by hand (`ff:activate`, `ff:deactivate`, `ff:list`), or clean up a flag after a deployment. Covers make:ff and its cleanup-task prompt, the resolve() default, activation-in-migration patterns, the active/inactive code split, and documenting non-obvious flag removals with inline cleanup comments. Do not use for: the mechanics of cleanup task files themselves (use `managing-cleanup-tasks`), writing the migrations that carry the change (use `writing-data-migrations`), subscription/license feature ADDON gating (app-specific), or Pennant scoped/config-driven flags.'
 user-invocable: false
 license: Elastic-2.0
 metadata:
@@ -126,6 +126,21 @@ it('uses the old behaviour when the flag is inactive', function () {
     // assert the inactive-path behaviour
 });
 ```
+
+## Switching a flag on or off by hand
+
+Use these commands to try work behind a flag locally, for example to review a pull request with its flag on, or to keep building a feature that is not activated yet. Do not use them in place of an activation migration: the migration is what turns a flag on in every environment.
+
+```bash
+php artisan ff:list                       # every flag in app/Features and whether it is active
+php artisan ff:activate SomeFeature       # also accepts `Some` or `App\Features\SomeFeature`, and several flags at once
+php artisan ff:deactivate SomeFeature
+```
+
+- **Tenant flags in multi-tenant apps** are changed for **every tenant** by default, just like Spatie's tenant-aware commands. Pass `--tenant=<id>` (repeatable, matched against `multitenancy.tenant_artisan_search_fields`) to narrow it. When a tenant is already current, for example under `tenants:artisan`, only that tenant is changed.
+- **Landlord flags** (`LandlordAbstractFeatureFlag`) are changed once, in the landlord store. `--tenant` is rejected for them.
+- **Single-database apps** change the flag directly; `--tenant` is rejected.
+- In **production** the commands ask for confirmation, like `migrate`. Pass `--force` to skip it.
 
 ## Cleaning up a Feature Flag
 
