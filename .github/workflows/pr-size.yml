@@ -1,0 +1,279 @@
+name: PR Size
+
+# Reusable workflow posting the readable-lines estimate on a pull request.
+# See docs/references/pr-checks.md for what is counted and how to call it.
+
+on: # zizmor: ignore[concurrency-limits] callers set concurrency for their own events.
+    workflow_call:
+
+permissions: {}
+
+jobs:
+    readable-lines:
+        name: Readable lines
+        runs-on: ubuntu-24.04
+
+        # Skip merge queue runs, forks and Dependabot (their tokens cannot comment), and edits that did not change the base branch.
+        if: >-
+            github.event_name == 'pull_request'
+            && github.event.pull_request.head.repo.full_name == github.repository
+            && github.event.pull_request.user.login != 'dependabot[bot]'
+            && contains(fromJSON('["opened", "reopened", "synchronize", "edited"]'), github.event.action)
+            && (github.event.action != 'edited' || github.event.changes.base != null)
+
+        permissions:
+            contents: read # fetch the pull request's commits and the ignore list
+            pull-requests: write # create or update the size comment
+
+        timeout-minutes: 10
+
+        steps:
+            - name: Estimate readable lines and update the comment
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REPO: ${{ github.repository }}
+                  SERVER_URL: ${{ github.server_url }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+              run: |
+                  set -euo pipefail
+
+                  python3 - <<'PY'
+                  import base64, fnmatch, json, os, re, subprocess, sys, tempfile
+
+                  REPO = os.environ['REPO']
+                  PR_NUMBER = os.environ['PR_NUMBER']
+                  BASE_SHA = os.environ['BASE_SHA']
+                  HEAD_SHA = os.environ['HEAD_SHA']
+                  DRY_RUN = os.environ.get('DRY_RUN') == '1'
+                  MARKER = '<!-- pr-size-estimate -->'
+                  DOCS = 'https://github.com/canyongbs/common/blob/main/docs'
+
+                  # Files a reviewer does not read. Repositories add their own in .github/pr-size-ignore.txt.
+                  DEFAULT_IGNORE = [
+                      'composer.lock', '*package-lock.json', 'yarn.lock', 'pnpm-lock.yaml',
+                      'phpstan-baseline.php', 'phpstan-baseline.neon',
+                      'tests/.pest/snapshots/*', '*.snap',
+                      '_ide_helper*.php', '.phpstorm.meta.php',
+                      '*.min.js', '*.min.css', '*.map',
+                      '*.png', '*.jpg', '*.jpeg', '*.gif', '*.webp', '*.ico', '*.svg', '*.pdf',
+                  ]
+
+                  COMMENT_OPENERS = {'/*', '<!--', '{{--'}
+                  COMMENT_CLOSERS = {'*/', '-->', '--}}'}
+
+
+                  def gh(*args, stdin=None):
+                      return subprocess.run(['gh', 'api', *args], check=True, capture_output=True, text=True, input=stdin).stdout
+
+
+                  def git(*args, text=True):
+                      return subprocess.run(['git', *args], check=True, capture_output=True, text=text).stdout
+
+
+                  def ignore_patterns():
+                      try:
+                          content = gh(f'repos/{REPO}/contents/.github/pr-size-ignore.txt?ref={BASE_SHA}', '--jq', '.content')
+                      except subprocess.CalledProcessError:
+                          return DEFAULT_IGNORE
+                      lines = base64.b64decode(content).decode().splitlines()
+                      return DEFAULT_IGNORE + [line.strip() for line in lines if line.strip() and not line.strip().startswith('#')]
+
+
+                  def is_ignored(path, patterns):
+                      return any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
+
+
+                  def copyright_range(blob):
+                      """1-based inclusive line range of the copyright header block, including its comment delimiters."""
+                      if blob is None:
+                          return None
+                      lines = blob.splitlines()
+                      start = next((i for i, line in enumerate(lines) if '<COPYRIGHT>' in line), None)
+                      end = next((i for i, line in enumerate(lines) if '</COPYRIGHT>' in line), None)
+                      if start is None or end is None or end < start:
+                          return None
+                      if start > 0 and lines[start - 1].strip() in COMMENT_OPENERS:
+                          start -= 1
+                      if end + 1 < len(lines) and lines[end + 1].strip() in COMMENT_CLOSERS:
+                          end += 1
+                      return (start + 1, end + 1)
+
+
+                  def read_blobs(shas):
+                      """Read many blobs through one `git cat-file --batch` process; undecodable (binary) blobs map to None."""
+                      wanted = sorted({sha for sha in shas if set(sha) != {'0'}})
+                      output = subprocess.run(['git', 'cat-file', '--batch'], check=True, capture_output=True,
+                                              input=''.join(f'{sha}\n' for sha in wanted).encode()).stdout
+                      blobs, offset = {}, 0
+                      for sha in wanted:
+                          header_end = output.index(b'\n', offset)
+                          header = output[offset:header_end].split()
+                          offset = header_end + 1
+                          if len(header) < 3 or header[1] != b'blob':
+                              continue
+                          size = int(header[2])
+                          try:
+                              blobs[sha] = output[offset:offset + size].decode()
+                          except UnicodeDecodeError:
+                              blobs[sha] = None
+                          offset += size + 1
+                      return blobs
+
+
+                  def count_outside(diff, old_range, new_range):
+                      """Count changed lines in a -U0 diff that fall outside the copyright ranges."""
+                      counted = excluded = 0
+                      for match in re.finditer(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', diff, re.M):
+                          old_start, old_len = int(match[1]), int(match[2] or 1)
+                          new_start, new_len = int(match[3]), int(match[4] or 1)
+                          for side_start, side_len, side_range in ((old_start, old_len, old_range), (new_start, new_len, new_range)):
+                              for line in range(side_start, side_start + side_len):
+                                  if side_range and side_range[0] <= line <= side_range[1]:
+                                      excluded += 1
+                                  else:
+                                      counted += 1
+                      return counted, excluded
+
+
+                  merge_base = json.loads(gh(f'repos/{REPO}/compare/{BASE_SHA}...{HEAD_SHA}'))['merge_base_commit']['sha']
+
+                  workdir = tempfile.mkdtemp()
+                  os.chdir(workdir)
+                  token = base64.b64encode(f"x-access-token:{os.environ['GH_TOKEN']}".encode()).decode()
+                  os.environ.update({
+                      'GIT_CONFIG_COUNT': '1',
+                      'GIT_CONFIG_KEY_0': 'http.https://github.com/.extraheader',
+                      'GIT_CONFIG_VALUE_0': f'AUTHORIZATION: basic {token}',
+                  })
+                  git('init', '-q')
+                  git('remote', 'add', 'origin', f"{os.environ.get('SERVER_URL', 'https://github.com')}/{REPO}.git")
+                  # Commits and trees only; git fetches the changed files' contents in one batch when diffing.
+                  git('fetch', '-q', '--no-tags', '--depth=1', '--filter=blob:none', 'origin', merge_base, HEAD_SHA)
+
+                  patterns = ignore_patterns()
+
+                  numstat = git('diff', '-M', '--numstat', '-z', merge_base, HEAD_SHA).split('\0')
+                  raw = git('diff', '-M', '--raw', '--no-abbrev', '-z', merge_base, HEAD_SHA).split('\0')
+
+                  entries = {}
+                  i = 0
+                  while i < len(raw) - 1:
+                      meta = raw[i].lstrip(':').split()
+                      status = meta[4][0]
+                      old_sha, new_sha = meta[2], meta[3]
+                      if status in 'RC':
+                          old_path, new_path = raw[i + 1], raw[i + 2]
+                          i += 3
+                      else:
+                          old_path = new_path = raw[i + 1]
+                          i += 2
+                      entries[new_path] = {'status': status, 'old_path': old_path, 'old_sha': old_sha, 'new_sha': new_sha}
+
+                  i = 0
+                  while i < len(numstat) - 1:
+                      added, deleted, path = numstat[i].split('\t', 2)
+                      if path == '':
+                          path = numstat[i + 2]
+                          i += 3
+                      else:
+                          i += 1
+                      binary = added == '-'
+                      entries[path].update(added=0 if binary else int(added), deleted=0 if binary else int(deleted), binary=binary)
+
+                  totals = dict(raw_lines=0, raw_files=0, lines=0, files=0, ignored_files=0, renames=0, copyright_lines=0, deleted_files=0)
+
+                  blobs = read_blobs(sha for entry in entries.values() if entry['status'] != 'D' for sha in (entry['old_sha'], entry['new_sha']))
+
+                  for path, entry in entries.items():
+                      added, deleted = entry.get('added', 0), entry.get('deleted', 0)
+                      totals['raw_lines'] += added + deleted
+                      totals['raw_files'] += 1
+
+                      if is_ignored(path, patterns) or (entry['status'] == 'D' and is_ignored(entry['old_path'], patterns)):
+                          totals['ignored_files'] += 1
+                          continue
+                      if entry['status'] == 'R' and added == 0 and deleted == 0:
+                          totals['renames'] += 1
+                          continue
+                      if entry.get('binary'):
+                          totals['ignored_files'] += 1
+                          continue
+                      if entry['status'] == 'D':
+                          totals['deleted_files'] += 1
+                          totals['lines'] += 1
+                          totals['files'] += 1
+                          continue
+
+                      totals['files'] += 1
+                      old_range = copyright_range(blobs.get(entry['old_sha']))
+                      new_range = copyright_range(blobs.get(entry['new_sha']))
+
+                      if old_range is None and new_range is None:
+                          totals['lines'] += added + deleted
+                          continue
+
+                      paths = [entry['old_path'], path] if entry['old_path'] != path else [path]
+                      diff = git('diff', '-M', '-U0', '--no-color', '--no-ext-diff', merge_base, HEAD_SHA, '--', *paths)
+                      counted, excluded = count_outside(diff, old_range, new_range)
+                      totals['lines'] += counted
+                      totals['copyright_lines'] += excluded
+
+                  lines = totals['lines']
+                  if lines <= 500:
+                      swatch, verdict, alert = '🟢', 'Target', None
+                  elif lines <= 1000:
+                      swatch, verdict, alert = '🟡', 'Sometimes acceptable', None
+                  elif lines <= 1500:
+                      swatch, verdict = '🟠', 'Large'
+                      alert = ('WARNING', 'This pull request is large. Say in the description why it is not split into smaller slices.')
+                  else:
+                      swatch, verdict = '🔴', 'Too large'
+                      alert = ('CAUTION', 'This pull request is too large to review well. Explain why in the description, and seriously consider splitting it into a stack.')
+
+                  excluded_parts = []
+                  if totals['ignored_files']:
+                      excluded_parts.append(f"{totals['ignored_files']:,} ignored file{'s' if totals['ignored_files'] != 1 else ''} (lockfiles, generated, binary and similar)")
+                  if totals['renames']:
+                      excluded_parts.append(f"{totals['renames']:,} pure rename{'s' if totals['renames'] != 1 else ''}")
+                  if totals['copyright_lines']:
+                      excluded_parts.append(f"{totals['copyright_lines']:,} copyright header line{'s' if totals['copyright_lines'] != 1 else ''}")
+
+                  body = [MARKER, f"### {swatch} {lines:,} readable lines · {verdict}", '']
+                  if alert:
+                      body += [f'> [!{alert[0]}]', f'> {alert[1]}', '']
+                  body += [
+                      '| | Readable | Raw diff |',
+                      '| --- | ---: | ---: |',
+                      f"| Lines changed | {lines:,} | {totals['raw_lines']:,} |",
+                      f"| Files | {totals['files']:,} | {totals['raw_files']:,} |",
+                      '',
+                  ]
+                  if excluded_parts:
+                      body += ['Not counted: ' + '; '.join(excluded_parts) + '.', '']
+                  if totals['deleted_files']:
+                      body += [f"Each deleted file counts as one line ({totals['deleted_files']:,} here).", '']
+                  body += [
+                      '<sub>Budget: up to 500 is the target · 500–1,000 sometimes acceptable · 1,000–1,500 large, say why it is not split · over 1,500 too large. '
+                      f'[How this is counted]({DOCS}/references/pr-checks.md#readable-lines-comment) · [Why]({DOCS}/explanations/reviewable-slices.md#our-size-budget-and-why)</sub>'
+                  ]
+                  comment = '\n'.join(body) + '\n'
+
+                  if DRY_RUN:
+                      print(json.dumps(totals))
+                      print(comment)
+                      sys.exit(0)
+
+                  existing = [
+                      line for line in gh('--paginate', f'repos/{REPO}/issues/{PR_NUMBER}/comments',
+                                          '--jq', f'.[] | select(.user.type == "Bot" and (.body | startswith("{MARKER}"))) | .id').split()
+                  ]
+                  payload = json.dumps({'body': comment})
+                  if existing:
+                      gh('-X', 'PATCH', f'repos/{REPO}/issues/comments/{existing[0]}', '--input', '-', stdin=payload)
+                  else:
+                      gh('-X', 'POST', f'repos/{REPO}/issues/{PR_NUMBER}/comments', '--input', '-', stdin=payload)
+
+                  print(json.dumps(totals))
+                  PY
