@@ -1,0 +1,152 @@
+name: PR Policy
+
+# Reusable workflow enforcing the Reviewable Slices pull request rules.
+# See docs/references/pr-checks.md for what each job checks and how to call it.
+
+on: # zizmor: ignore[concurrency-limits] callers set concurrency for their own events.
+    workflow_call:
+        inputs:
+            hold-label:
+                description: Name of the label that blocks merging while present.
+                type: string
+                default: hold
+
+permissions: {}
+
+jobs:
+    stack-policy:
+        name: Stack policy
+        runs-on: ubuntu-24.04
+
+        permissions:
+            contents: read # compare commits to see whether a merged pull request is in this branch
+            pull-requests: read # read this pull request's stack and pull requests merged into its branch
+
+        timeout-minutes: 5
+
+        steps:
+            - name: Check the base branch and stack
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REPO: ${{ github.repository }}
+                  EVENT_NAME: ${{ github.event_name }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+              run: |
+                  set -euo pipefail
+
+                  docs='https://github.com/canyongbs/common/blob/main/docs/references/pr-checks.md#stack-policy'
+
+                  if [ "$EVENT_NAME" = 'merge_group' ]; then
+                      echo 'Merge queue: the policy was enforced on each pull request before it was queued.'
+                      exit 0
+                  fi
+
+                  if [ -z "$PR_NUMBER" ]; then
+                      echo 'Not a pull request event; nothing to check.'
+                      exit 0
+                  fi
+
+                  is_trunk() {
+                      [ "$1" = "$DEFAULT_BRANCH" ] || [[ "$1" == release/* ]]
+                  }
+
+                  fail() {
+                      echo "::error title=$1::$2"
+                      printf '\n%s\n\nSee %s\n' "$3" "$docs"
+                      exit 1
+                  }
+
+                  pr="$(gh api "repos/$REPO/pulls/$PR_NUMBER")"
+                  base="$(jq -r '.base.ref' <<< "$pr")"
+                  head="$(jq -r '.head.ref' <<< "$pr")"
+                  head_sha="$(jq -r '.head.sha' <<< "$pr")"
+                  head_repo="$(jq -r '.head.repo.full_name // ""' <<< "$pr")"
+                  stack_number="$(jq -r '.stack.number // empty' <<< "$pr")"
+                  stack_base="$(jq -r '.stack.base.ref // empty' <<< "$pr")"
+
+                  if ! is_trunk "$base"; then
+                      if [ -z "$stack_number" ]; then
+                          fail 'Not a stacked pull request' \
+                              "This pull request targets '$base', which is neither '$DEFAULT_BRANCH' nor a release/* branch, and it is not part of a GitHub stack." \
+                              'A pull request that builds on another unmerged branch must be a GitHub stacked pull request. Link the pull requests into a stack with the "Create stack" banner on GitHub, or run `gh stack init <bottom-branch> <this-branch>` and `gh stack submit --auto`. Then re-run this check.'
+                      fi
+
+                      if ! is_trunk "$stack_base"; then
+                          fail "Stack is not based on $DEFAULT_BRANCH or release/*" \
+                              "This pull request is in stack #$stack_number, whose bottom pull request targets '$stack_base'." \
+                              "The bottom pull request of a stack must target '$DEFAULT_BRANCH' or a release/* branch. Retarget it, then re-run this check."
+                      fi
+
+                      echo "Part of stack #$stack_number, which lands on '$stack_base'. OK."
+                      exit 0
+                  fi
+
+                  echo "Targets '$base'."
+
+                  if [[ "$head" == release/* ]] || [ "$head_repo" != "$REPO" ]; then
+                      echo 'Release branch merge-back or fork; there are no stacked branches to check. OK.'
+                      exit 0
+                  fi
+
+                  # A pull request merged into this branch outside a stack was never held to the rules of
+                  # '$base', so block it from reaching '$base' this way.
+                  encoded_head="$(jq -rn --arg head "$head" '$head | @uri')"
+                  outside=()
+
+                  while read -r number merge_sha; do
+                      [ -n "$number" ] || continue
+
+                      if [ "$(gh api "repos/$REPO/pulls/$number" --jq '.stack != null')" = 'true' ]; then
+                          continue
+                      fi
+
+                      status="$(gh api "repos/$REPO/compare/$merge_sha...$head_sha" --jq '.status' 2> /dev/null || echo 'unknown')"
+
+                      case "$status" in
+                          identical | ahead) outside+=("#$number") ;;
+                      esac
+                  done < <(gh api --paginate "repos/$REPO/pulls?state=closed&base=$encoded_head&per_page=100" \
+                      --jq '.[] | select(.merged_at != null) | "\(.number) \(.merge_commit_sha)"')
+
+                  if [ "${#outside[@]}" -gt 0 ]; then
+                      fail 'Contains pull requests merged outside a stack' \
+                          "Branch '$head' contains ${outside[*]}, merged into it as plain pull requests rather than as a GitHub stack." \
+                          "Changes must reach '$base' through pull requests that each passed its rules. Recreate the work as a GitHub stack (or one pull request), then close this one."
+                  fi
+
+                  echo 'No pull requests were merged into this branch outside a stack. OK.'
+
+    hold-label:
+        name: No hold label
+        runs-on: ubuntu-24.04
+
+        permissions:
+            pull-requests: read # read this pull request's current labels
+
+        timeout-minutes: 5
+
+        steps:
+            - name: Fail while the hold label is present
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REPO: ${{ github.repository }}
+                  EVENT_NAME: ${{ github.event_name }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  HOLD_LABEL: ${{ inputs.hold-label }}
+              run: |
+                  set -euo pipefail
+
+                  if [ "$EVENT_NAME" = 'merge_group' ] || [ -z "$PR_NUMBER" ]; then
+                      echo 'Not a pull request event; nothing to check.'
+                      exit 0
+                  fi
+
+                  # Read the labels now rather than from the event, so a re-run reflects the current state.
+                  if gh api "repos/$REPO/issues/$PR_NUMBER/labels" --jq '.[].name' | grep -Fxq "$HOLD_LABEL"; then
+                      echo "::error title=On hold::This pull request has the '$HOLD_LABEL' label, so it (and any pull request stacked above it) cannot merge. Remove the label when it is ready to land."
+                      echo 'See https://github.com/canyongbs/common/blob/main/docs/references/pr-checks.md#no-hold-label'
+                      exit 1
+                  fi
+
+                  echo "No '$HOLD_LABEL' label. OK."
