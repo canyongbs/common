@@ -1,0 +1,5 @@
+# Files a reviewer does not read, in addition to the built-in list.
+# See docs/references/pr-checks.md#readable-lines-comment
+
+# Compiled JavaScript published with the package
+resources/js/dist/*
