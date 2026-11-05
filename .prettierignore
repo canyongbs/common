@@ -13,3 +13,6 @@ tests/**/Fixtures/
 # Blade guidelines are Markdown compiled by Boost; the Blade parser reflows prose and breaks their structure.
 .ai/guidelines/
 .ai/local/guidelines/
+
+# Third-party skills are kept byte-for-byte as published upstream.
+.ai/skills/gh-stack/
