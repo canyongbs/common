@@ -237,3 +237,56 @@ describe('appendToCleanupSection', function (): void {
         expect(file_get_contents($path))->toBe($originalContent);
     });
 });
+
+describe('withCleanupTaskReadiness', function (): void {
+    it('defaults new cleanup tasks to not ready', function (): void {
+        $command = $this->app->make(MakeCleanupTask::class);
+        $command->setLaravel($this->app);
+
+        $path = (new ReflectionMethod($command, 'createCleanupTask'))->invoke($command, 'test_task');
+
+        expect(file_get_contents($path))->toContain("created: 2026-05-01\nready: false\n---");
+    });
+
+    it('marks new cleanup tasks as ready when requested', function (): void {
+        $command = $this->app->make(MakeCleanupTask::class);
+        $command->setLaravel($this->app);
+
+        $path = (new ReflectionMethod($command, 'createCleanupTask'))->invoke($command, 'test_task', true);
+
+        expect(file_get_contents($path))->toContain("ready: true\n---")
+            ->and(file_get_contents($path))->not->toContain('ready: false');
+    });
+
+    it('adds the ready key when a custom stub does not include it', function (): void {
+        File::makeDirectory($this->testDir . '/stubs', 0755, true);
+        file_put_contents($this->testDir . '/stubs/cleanup-task.stub', "---\ntitle: {{ title }}\ncreated: {{ date }}\n---\n\n## Feature Flags\n");
+
+        $command = $this->app->make(MakeCleanupTask::class);
+        $command->setLaravel($this->app);
+
+        $path = (new ReflectionMethod($command, 'createCleanupTask'))->invoke($command, 'test_task', true);
+
+        expect(file_get_contents($path))->toBe("---\ntitle: Test Task\ncreated: 2026-05-01\nready: true\n---\n\n## Feature Flags\n");
+    });
+
+    it('leaves content without frontmatter unchanged', function (): void {
+        $command = $this->app->make(MakeCleanupTask::class);
+        $command->setLaravel($this->app);
+
+        $result = (new ReflectionMethod($command, 'withCleanupTaskReadiness'))->invoke($command, "## Feature Flags\n", true);
+
+        expect($result)->toBe("## Feature Flags\n");
+    });
+
+    it('only replaces the ready key inside the frontmatter', function (): void {
+        $command = $this->app->make(MakeCleanupTask::class);
+        $command->setLaravel($this->app);
+
+        $content = "---\ntitle: Example\nready: false\n---\n\nready: false is mentioned in the body\n";
+
+        $result = (new ReflectionMethod($command, 'withCleanupTaskReadiness'))->invoke($command, $content, true);
+
+        expect($result)->toBe("---\ntitle: Example\nready: true\n---\n\nready: false is mentioned in the body\n");
+    });
+});
