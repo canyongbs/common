@@ -1,11 +1,12 @@
 # Pull Request Checks
 
-The checks that support [Reviewable Slices](../explanations/reviewable-slices.md). They are reusable GitHub Actions workflows in this repository, called by a small workflow in each application repository so that the rules and thresholds live in one place.
+The checks and the pull request comment that support [Reviewable Slices](../explanations/reviewable-slices.md). They are reusable GitHub Actions workflows in this repository, called by a small workflow in each application repository so that the rules and thresholds live in one place.
 
-| Check                           | Blocks merging?    | Purpose                                                                                                |
-| ------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------ |
-| [Stack policy](#stack-policy)   | Yes, once required | A pull request targets `main`, `release/*`, or the slice below it in a GitHub stack, and nothing else. |
-| [No hold label](#no-hold-label) | Yes, once required | A pull request with the `hold` label cannot merge, and neither can any slice stacked above it.         |
+| Check                                             | Blocks merging?    | Purpose                                                                                                |
+| ------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------ |
+| [Stack policy](#stack-policy)                     | Yes, once required | A pull request targets `main`, `release/*`, or the slice below it in a GitHub stack, and nothing else. |
+| [No hold label](#no-hold-label)                   | Yes, once required | A pull request with the `hold` label cannot merge, and neither can any slice stacked above it.         |
+| [Readable lines comment](#readable-lines-comment) | Never              | One comment, updated on every push, estimating the lines a reviewer must read against the size budget. |
 
 ## Stack policy
 
@@ -34,6 +35,37 @@ Rule 2 is what actually blocks. A plain pull request into a feature branch can a
 
 **Merge queue.** The check passes immediately for merge queue runs.
 
+## Readable lines comment
+
+**What it does.** Posts one comment on each pull request, and updates it in place on every push, estimating how many lines a reviewer actually has to read. It starts with a coloured marker for the [size budget](../explanations/reviewable-slices.md#our-size-budget-and-why):
+
+| Marker | Readable lines | Meaning                                                                                    |
+| ------ | -------------- | ------------------------------------------------------------------------------------------ |
+| 🟢     | Up to 500      | Target.                                                                                    |
+| 🟡     | 501 to 1,000   | Sometimes acceptable.                                                                      |
+| 🟠     | 1,001 to 1,500 | Large: a warning box asks the author to say in the description why it is not split.        |
+| 🔴     | Over 1,500     | Too large: a red caution box asks for an explanation and serious consideration of a stack. |
+
+It never blocks merging.
+
+**How it counts.** It diffs the pull request with `git` the same way GitHub's "Files changed" tab does (from where the branch left its base to its latest commit), so a stacked pull request is counted on its own slice only. Then:
+
+- **Additions and deletions both count**, file by file.
+- **Ignored files do not count.** Built in: `composer.lock`, `*package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `phpstan-baseline.php` and `.neon`, Pest snapshots (`tests/.pest/snapshots/*`, `*.snap`), IDE helper files, minified and source-map files, images and PDFs. Binary files never count.
+- **Copyright headers do not count.** Lines inside the `<COPYRIGHT>` … `</COPYRIGHT>` block our copyright tooling adds, with its comment delimiters, are skipped, so new files and the yearly copyright update are not inflated.
+- **A pure rename counts as zero**; a rename with edits counts only the edits.
+- **A deleted file counts as one line.**
+
+**Repository-specific ignores** go in `.github/pr-size-ignore.txt`: one pattern per line, `#` for comments. Patterns are matched against the full path with Python's `fnmatch`, where `*` also matches `/`. The file is read from the pull request's **base** commit, so a pull request cannot change how it is itself counted.
+
+```text
+# Bulk data a reviewer verifies with a tool, not by reading
+resources/text/common-passwords.txt
+public/vendor/*
+```
+
+The comment is skipped for merge queue runs, Dependabot, and pull requests from forks, whose tokens cannot comment.
+
 ## Enabling the checks in a repository
 
 1. Add this workflow as `.github/workflows/pr-checks.yml`, pinning `common` to a commit SHA (Renovate or Dependabot keep the pin current):
@@ -49,8 +81,9 @@ Rule 2 is what actually blocks. A plain pull request into a feature branch can a
 
     permissions: {}
 
+    # Only runs for the same kind of event cancel each other, so adding a label does not cancel a push's size comment.
     concurrency:
-        group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+        group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.action }}
         cancel-in-progress: true
 
     jobs:
@@ -60,10 +93,18 @@ Rule 2 is what actually blocks. A plain pull request into a feature branch can a
             permissions:
                 contents: read # compare commits
                 pull-requests: read # read stacks and labels
+
+        size:
+            name: PR Size
+            uses: canyongbs/common/.github/workflows/pr-size.yml@<commit-sha> # <tag>
+            permissions:
+                contents: read # fetch the pull request's commits
+                pull-requests: write # create or update the size comment
     ```
 
-2. Create the `hold` label (Settings → Labels, or `gh label create hold --description "Do not merge yet; lands together later" --color B60205`).
-3. Open pull requests and confirm the checks behave as described above before making them required.
-4. Make **`PR Policy / Stack policy`** and **`PR Policy / No hold label`** required status checks for `main` (in classic branch protection or the `main` ruleset) and in the `release/*` ruleset. GitHub evaluates every pull request in a stack against the rules of the stack's base branch, so requiring them there covers every slice of every stack.
+2. Add `.github/pr-size-ignore.txt` if the repository has bulk or generated files beyond the built-in list.
+3. Create the `hold` label (Settings → Labels, or `gh label create hold --description "Do not merge yet; lands together later" --color B60205`).
+4. Open pull requests and confirm the checks behave as described above before making them required.
+5. Make **`PR Policy / Stack policy`** and **`PR Policy / No hold label`** required status checks for `main` (in classic branch protection or the `main` ruleset) and in the `release/*` ruleset. GitHub evaluates every pull request in a stack against the rules of the stack's base branch, so requiring them there covers every slice of every stack.
 
 Every repository with a merge queue must keep `merge_group` in the workflow's triggers, or required checks will never report for queued pull requests and the queue will stall.
