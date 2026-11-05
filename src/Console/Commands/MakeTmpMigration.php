@@ -54,7 +54,8 @@ class MakeTmpMigration extends MigrateMakeCommand
         {--path= : The location where the migration file should be created}
         {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}
         {--fullpath : Output the full path of the migration (Deprecated)}
-        {--no-cleanup : Skip cleanup task creation}';
+        {--no-cleanup : Skip cleanup task creation}
+        {--ready : Mark the cleanup task as ready to be actioned once this change is released}';
 
     protected $description = 'Create a new temporary migration file with optional cleanup task';
 

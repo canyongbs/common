@@ -101,6 +101,7 @@ describe('cleanup integration', function (): void {
         $this->artisan('make:ff', ['name' => 'NewDashboard'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'NewDashboardFeature')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertSuccessful();
 
         expect(file_exists($this->featuresDir . '/NewDashboardFeature.php'))->toBeTrue();
@@ -148,6 +149,7 @@ describe('cleanup integration', function (): void {
         $this->artisan('make:ff', ['name' => 'OutputTest'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'OutputTestFeature')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->expectsOutputToContain('created successfully')
             ->assertSuccessful();
     });
@@ -167,6 +169,54 @@ describe('cleanup integration', function (): void {
     });
 });
 
+describe('cleanup task readiness', function (): void {
+    it('records the readiness answer on a new cleanup task', function (): void {
+        $this->artisan('make:ff', ['name' => 'ReadyFlag'])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'ReadyFlagFeature')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'yes')
+            ->assertSuccessful();
+
+        expect(file_get_contents(glob($this->cleanupDir . '/*.md')[0]))->toContain('ready: true');
+    });
+
+    it('marks a new cleanup task as ready without prompting when --ready is passed', function (): void {
+        $this->artisan('make:ff', ['name' => 'ReadyOption', '--ready' => true])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'ReadyOptionFeature')
+            ->assertSuccessful();
+
+        expect(file_get_contents(glob($this->cleanupDir . '/*.md')[0]))->toContain('ready: true');
+    });
+
+    it('keeps the readiness of an existing cleanup task', function (): void {
+        File::makeDirectory($this->cleanupDir, 0755, true);
+        $existingFile = $this->cleanupDir . '/2026_04_30_existing_task.md';
+        file_put_contents($existingFile, "---\ntitle: Existing Task\ncreated: 2026-04-30\nready: false\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n");
+
+        $this->artisan('make:ff', ['name' => 'LaterSlice'])
+            ->expectsChoice('Cleanup task', 'Add to existing cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
+            ->expectsChoice('Select a cleanup task', '2026_04_30_existing_task.md', ['2026_04_30_existing_task.md'])
+            ->assertSuccessful();
+
+        expect(file_get_contents($existingFile))->toContain('ready: false')
+            ->and(file_get_contents($existingFile))->toContain('App\Features\LaterSliceFeature');
+    });
+
+    it('marks an existing cleanup task as ready when --ready is passed', function (): void {
+        File::makeDirectory($this->cleanupDir, 0755, true);
+        $existingFile = $this->cleanupDir . '/2026_04_30_existing_task.md';
+        file_put_contents($existingFile, "---\ntitle: Existing Task\ncreated: 2026-04-30\nready: false\n---\n\n## Feature Flags\n\n## Temporary Migrations\n\n## Additional Cleanup\n");
+
+        $this->artisan('make:ff', ['name' => 'FinalSlice', '--ready' => true])
+            ->expectsChoice('Cleanup task', 'Add to existing cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
+            ->expectsChoice('Select a cleanup task', '2026_04_30_existing_task.md', ['2026_04_30_existing_task.md'])
+            ->assertSuccessful();
+
+        expect(file_get_contents($existingFile))->toContain('ready: true');
+    });
+});
+
 describe('failure handling', function (): void {
     it('does not create cleanup task when feature flag already exists', function (): void {
         // Create the file first so the second attempt fails
@@ -177,6 +227,7 @@ describe('failure handling', function (): void {
         $this->artisan('make:ff', ['name' => 'Existing'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'ExistingFeature')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertFailed();
 
         $files = is_dir($this->cleanupDir) ? glob($this->cleanupDir . '/*.md') : [];
@@ -229,6 +280,7 @@ describe('cleanup task conflict', function (): void {
         $this->artisan('make:ff', ['name' => 'SomeFlag'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'duplicate_name')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertFailed();
 
         // Feature flag should NOT have been created
@@ -244,6 +296,7 @@ describe('cleanup task conflict', function (): void {
         $this->artisan('make:ff', ['name' => 'AnotherFlag'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'my_task')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertFailed();
 
         // Original file should be unchanged
@@ -254,6 +307,7 @@ describe('cleanup task conflict', function (): void {
         $this->artisan('make:ff', ['name' => 'UniqueFlag'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'UniqueFlag')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertSuccessful();
 
         expect(file_exists($this->featuresDir . '/UniqueFlagFeature.php'))->toBeTrue();

@@ -119,6 +119,7 @@ describe('cleanup integration', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'backfill_users'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'backfill_users')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertSuccessful();
 
         $migrationFiles = glob($this->migrationsDir . '/*_tmp_backfill_users.php');
@@ -168,6 +169,7 @@ describe('cleanup integration', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'backfill_roles'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'backfill_roles')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertSuccessful();
 
         $cleanupFiles = glob($this->cleanupDir . '/*backfill_roles*.md');
@@ -179,6 +181,7 @@ describe('cleanup integration', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'output_test'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'output_test')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->expectsOutputToContain('created successfully')
             ->assertSuccessful();
     });
@@ -198,6 +201,27 @@ describe('cleanup integration', function (): void {
     });
 });
 
+describe('cleanup task readiness', function (): void {
+    it('records the readiness answer on a new cleanup task', function (): void {
+        $this->artisan('make:tmp-migration', ['name' => 'backfill_ready'])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'backfill_ready')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'yes')
+            ->assertSuccessful();
+
+        expect(file_get_contents(glob($this->cleanupDir . '/*.md')[0]))->toContain('ready: true');
+    });
+
+    it('marks a new cleanup task as ready without prompting when --ready is passed', function (): void {
+        $this->artisan('make:tmp-migration', ['name' => 'backfill_option', '--ready' => true])
+            ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
+            ->expectsQuestion('Cleanup task name', 'backfill_option')
+            ->assertSuccessful();
+
+        expect(file_get_contents(glob($this->cleanupDir . '/*.md')[0]))->toContain('ready: true');
+    });
+});
+
 describe('migration creation failure', function (): void {
     beforeEach(function (): void {
         $mock = Mockery::mock(MigrationCreator::class);
@@ -212,6 +236,7 @@ describe('migration creation failure', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'duplicate_test'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'duplicate_test')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertFailed();
 
         // No cleanup task should have been created
@@ -258,6 +283,7 @@ describe('cleanup task conflict', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'some_migration'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'duplicate_name')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertFailed();
 
         // Migration should NOT have been created
@@ -275,6 +301,7 @@ describe('cleanup task conflict', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'another_migration'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'my_task')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertFailed();
 
         // Original file should be unchanged
@@ -285,6 +312,7 @@ describe('cleanup task conflict', function (): void {
         $this->artisan('make:tmp-migration', ['name' => 'unique_migration'])
             ->expectsChoice('Cleanup task', 'Create new cleanup task', ['Create new cleanup task', 'Skip'])
             ->expectsQuestion('Cleanup task name', 'unique_migration')
+            ->expectsConfirmation('Can this cleanup task be actioned once this change is released?', 'no')
             ->assertSuccessful();
 
         $migrationFiles = glob($this->migrationsDir . '/*_tmp_unique_migration.php');

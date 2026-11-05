@@ -107,6 +107,7 @@ class MakeFeatureFlag extends FeatureMakeCommand
     {
         return array_merge(parent::getOptions(), [
             ['no-cleanup', null, InputOption::VALUE_NONE, 'Skip cleanup task creation'],
+            ['ready', null, InputOption::VALUE_NONE, 'Mark the cleanup task as ready to be actioned once this change is released'],
         ]);
     }
 }
