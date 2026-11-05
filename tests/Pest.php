@@ -80,3 +80,23 @@ dataset('skills', function (): array {
 
     return $skills;
 });
+
+/**
+ * Skills Canyon GBS authors itself. Third-party skills copied in verbatim carry an
+ * `UPSTREAM.md` recording their source and licence, and keep their own frontmatter.
+ */
+dataset('common-authored skills', function (): array {
+    $skills = [];
+
+    foreach (glob(dirname(__DIR__) . '/.ai/skills/*', GLOB_ONLYDIR) ?: [] as $directory) {
+        if (file_exists($directory . '/UPSTREAM.md')) {
+            continue;
+        }
+
+        $name = basename($directory);
+
+        $skills[$name] = [$name, $directory . '/SKILL.md'];
+    }
+
+    return $skills;
+});
