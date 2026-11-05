@@ -4,24 +4,24 @@
 
 ### Technical Description
 
-> Replace this block. Describe your changes in detail. This should include technical/architectural decisions and reasoning, if applicable.
+> Replace this block. Describe only what this pull request changes, even when it is one slice of a larger stack: what the product does after it merges, what a reviewer should pay attention to, and how you tested it. Reference the ticket's acceptance criteria where it has them.
 >
-> Please ensure that at least one correct change type label is added to the PR. For example, if you are adding a new feature, please add the `Change Type | New Feature` label.
+> If this is the bottom pull request of a stack, include the stack plan. If the size comment marks this pull request as large, say why it is not split. See [Reviewable Slices](https://github.com/canyongbs/common/blob/main/docs/explanations/reviewable-slices.md).
 
 ### Any deployment steps required?
 
 > A deployment step could be a command that needs to be executed or an ENV key that needs to be added, for example.
 >
-> If yes, please replace this block with a description of the deployment steps required and apply the `Deployment Steps` label to the PR.
+> If yes, please replace this block with a description of the deployment steps required.
 > If no, please replace this block with "No".
 
-### Are any Feature Flags and/or Data Migrations that can eventually be removed Added?
+### Cleanup Tasks
 
-> Specifically Feature Flags to gate and control logic/flow changes to protect against database schema changes. And Data Migrations to provide some type of data fix that can be removed after they are run
+> If this PR adds Feature Flags, temporary data migrations, or other work that requires post-deployment cleanup, ensure a [cleanup task file](https://github.com/canyongbs/common/blob/main/.ai/skills/managing-cleanup-tasks/SKILL.md) has been created or updated, and list it here. The `make:ff` and `make:tmp-migration` commands will prompt you to create one automatically; you can also create one directly with `make:cleanup`.
 >
-> If yes to Feature Flags, please list the name of the added Feature Flag/s and apply the `Feature Flag Added` label to the PR.
-> If yes to Data Migrations, please list the full relative file path of the added Data Migration/s.
-> If no, please replace this block with "No".
+> For each cleanup task, say whether it is marked `ready: true` (nothing still depends on what it removes) or `ready: false` (a later pull request still does).
+>
+> If not applicable, replace this block with "N/A".
 
 ---
 
