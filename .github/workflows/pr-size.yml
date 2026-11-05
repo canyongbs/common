@@ -90,8 +90,8 @@ jobs:
                       if blob is None:
                           return None
                       lines = blob.splitlines()
-                      start = next((i for i, line in enumerate(lines) if '<COPYRIGHT>' in line), None)
-                      end = next((i for i, line in enumerate(lines) if '</COPYRIGHT>' in line), None)
+                      start = next((i for i, line in enumerate(lines) if line.strip() == '<COPYRIGHT>'), None)
+                      end = next((i for i, line in enumerate(lines) if line.strip() == '</COPYRIGHT>'), None)
                       if start is None or end is None or end < start:
                           return None
                       if start > 0 and lines[start - 1].strip() in COMMENT_OPENERS:
