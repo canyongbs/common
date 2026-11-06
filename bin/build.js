@@ -39,7 +39,7 @@ async function compile(options) {
     await context.dispose();
 }
 
-compile({
+const options = {
     define: { 'process.env.NODE_ENV': `'production'` },
     bundle: true,
     mainFields: ['module', 'main'],
@@ -49,6 +49,20 @@ compile({
     treeShaking: true,
     target: ['es2020'],
     minify: true,
-    entryPoints: ['./resources/js/filament/rich-content-plugins/video-embed.js'],
-    outdir: './resources/js/dist/filament/rich-content-plugins',
-});
+};
+
+await Promise.all([
+    compile({
+        ...options,
+        entryPoints: ['./resources/js/filament/rich-content-plugins/video-embed.js'],
+        outdir: './resources/js/dist/filament/rich-content-plugins',
+    }),
+    compile({
+        ...options,
+        entryPoints: ['./resources/js/filament/phone-input.js'],
+        outdir: './resources/js/dist/filament',
+        loader: {
+            '.webp': 'dataurl',
+        },
+    }),
+]);
