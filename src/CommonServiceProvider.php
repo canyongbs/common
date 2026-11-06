@@ -50,6 +50,8 @@ use CanyonGBS\Common\Console\Commands\Publish;
 use CanyonGBS\Common\Database\Migrations\PermissionMigrationCreator;
 use CanyonGBS\Common\Support\Auditing\RegisterArchiveAuditEvents;
 use CanyonGBS\Common\Support\PermissionResolver;
+use Filament\Support\Assets\AlpineComponent;
+use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
@@ -64,9 +66,6 @@ use NotificationChannels\WebPush\WebPushChannel;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Tapp\FilamentTimezoneField\Forms\Components\TimezoneSelect;
-use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
-use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
-use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 
 class CommonServiceProvider extends PackageServiceProvider
 {
@@ -141,6 +140,9 @@ class CommonServiceProvider extends PackageServiceProvider
                 ->loadedOnRequest(),
             Js::make('rich-content-plugins/video-embed', __DIR__ . '/../resources/js/dist/filament/rich-content-plugins/video-embed.js')
                 ->loadedOnRequest(),
+            Css::make('phone-input', __DIR__ . '/../resources/js/dist/filament/phone-input.css')
+                ->loadedOnRequest(),
+            AlpineComponent::make('phone-input', __DIR__ . '/../resources/js/dist/filament/phone-input.js'),
         ], 'common');
 
         FilamentColor::register([
@@ -165,20 +167,6 @@ class CommonServiceProvider extends PackageServiceProvider
 
         TimezoneSelect::configureUsing(function (TimezoneSelect $component): void {
             $component->searchable();
-        });
-
-        PhoneInput::configureUsing(function (PhoneInput $phoneInput): void {
-            $phoneInput->defaultCountry('US')
-                ->initialCountry('US')
-                ->strictMode()
-                ->validateFor(
-                    lenient: true,
-                )
-                ->disableLookup();
-        });
-
-        PhoneEntry::configureUsing(function (PhoneEntry $phoneEntry): void {
-            $phoneEntry->displayFormat(PhoneInputNumberType::INTERNATIONAL);
         });
     }
 

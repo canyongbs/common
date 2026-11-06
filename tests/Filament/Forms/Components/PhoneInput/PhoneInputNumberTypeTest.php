@@ -34,30 +34,14 @@
 </COPYRIGHT>
 */
 
-use Filament\Schemas\Schema;
-use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
-use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
+use CanyonGBS\Common\Filament\Forms\Components\PhoneInput\PhoneInputNumberType;
+use libphonenumber\PhoneNumberFormat;
 
-it('applies the shared defaults to phone inputs', function (): void {
-    $phoneInput = PhoneInput::make('phone');
-
-    expect($phoneInput->getDefaultCountry())->toBe('US')
-        ->and($phoneInput->getInitialCountry())->toBe('US')
-        ->and($phoneInput->isStrictMode())->toBeTrue()
-        ->and($phoneInput->canPerformIpLookup())->toBeFalse();
-});
-
-it('allows an app to override the shared phone input defaults', function (): void {
-    $phoneInput = PhoneInput::make('phone')
-        ->initialCountry('CA')
-        ->enableIpLookup();
-
-    expect($phoneInput->getInitialCountry())->toBe('CA')
-        ->and($phoneInput->canPerformIpLookup())->toBeTrue();
-});
-
-it('formats phone entries in the international format by default', function (): void {
-    $phoneEntry = PhoneEntry::make('phone')->container(Schema::make())->defaultCountry('US');
-
-    expect(strip_tags((string) $phoneEntry->formatState('(415) 555-2671')))->toContain('+1 415-555-2671');
-});
+it('converts number types to libphonenumber formats', function (PhoneInputNumberType $type, PhoneNumberFormat $format): void {
+    expect($type->toLibPhoneNumberFormat())->toBe($format);
+})->with([
+    'E164' => [PhoneInputNumberType::E164, PhoneNumberFormat::E164],
+    'international' => [PhoneInputNumberType::INTERNATIONAL, PhoneNumberFormat::INTERNATIONAL],
+    'national' => [PhoneInputNumberType::NATIONAL, PhoneNumberFormat::NATIONAL],
+    'RFC3966' => [PhoneInputNumberType::RFC3966, PhoneNumberFormat::RFC3966],
+]);
