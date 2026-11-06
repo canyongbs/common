@@ -51,6 +51,9 @@ use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
 use CanyonGBS\Common\Console\Commands\Publish;
 use CanyonGBS\Common\Database\Migrations\PermissionMigrationCreator;
+use CanyonGBS\Common\Filament\Forms\Components\PhoneInput\PhoneInput;
+use CanyonGBS\Common\Filament\Forms\Components\PhoneInput\PhoneInputNumberType;
+use CanyonGBS\Common\Filament\Infolists\Components\PhoneInput\PhoneEntry;
 use CanyonGBS\Common\Support\Auditing\RegisterArchiveAuditEvents;
 use CanyonGBS\Common\Support\PermissionResolver;
 use CanyonGBS\Common\Support\Tenancy\NullTenantRunner;
@@ -183,6 +186,18 @@ class CommonServiceProvider extends PackageServiceProvider
 
         TimezoneSelect::configureUsing(function (TimezoneSelect $component): void {
             $component->searchable();
+        });
+
+        PhoneInput::configureUsing(function (PhoneInput $phoneInput): void {
+            $phoneInput->defaultCountry('US')
+                ->initialCountry('US')
+                ->strictMode()
+                ->validateFor(lenient: true)
+                ->disableLookup();
+        });
+
+        PhoneEntry::configureUsing(function (PhoneEntry $phoneEntry): void {
+            $phoneEntry->displayFormat(PhoneInputNumberType::INTERNATIONAL);
         });
     }
 

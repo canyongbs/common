@@ -36,6 +36,7 @@
 
 use CanyonGBS\Common\Filament\Forms\Components\PhoneInput\PhoneInput;
 use CanyonGBS\Common\Filament\Forms\Components\PhoneInput\PhoneInputNumberType;
+use Propaganistas\LaravelPhone\Rules\Phone as PhoneRule;
 
 it('evaluates configured phone input options', function (): void {
     $phoneInput = PhoneInput::make('phone_number')
@@ -60,7 +61,7 @@ it('evaluates configured phone input options', function (): void {
 });
 
 it('can disable IP country lookup', function (): void {
-    $phoneInput = PhoneInput::make('phone_number');
+    $phoneInput = PhoneInput::make('phone_number')->enableIpLookup();
 
     expect($phoneInput->canPerformIpLookup())->toBeTrue();
 
@@ -68,4 +69,31 @@ it('can disable IP country lookup', function (): void {
 
     expect($phoneInput->canPerformIpLookup())->toBeFalse()
         ->and($phoneInput->handleLookup())->toBeNull();
+});
+
+describe('shared defaults', function (): void {
+    it('applies the shared defaults', function (): void {
+        $phoneInput = PhoneInput::make('phone_number');
+
+        $rules = $phoneInput->getValidationRules();
+
+        expect($phoneInput->getDefaultCountry())->toBe('US')
+            ->and($phoneInput->getInitialCountry())->toBe('US')
+            ->and($phoneInput->isStrictMode())->toBeTrue()
+            ->and($phoneInput->canPerformIpLookup())->toBeFalse()
+            ->and(collect($rules)->contains(fn (mixed $rule): bool => $rule instanceof PhoneRule))->toBeTrue();
+    });
+
+    it('allows an app to override the defaults', function (): void {
+        $phoneInput = PhoneInput::make('phone_number')
+            ->defaultCountry('CA')
+            ->initialCountry('auto')
+            ->strictMode(false)
+            ->enableIpLookup();
+
+        expect($phoneInput->getDefaultCountry())->toBe('CA')
+            ->and($phoneInput->getInitialCountry())->toBe('auto')
+            ->and($phoneInput->isStrictMode())->toBeFalse()
+            ->and($phoneInput->canPerformIpLookup())->toBeTrue();
+    });
 });
