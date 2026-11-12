@@ -25,7 +25,8 @@ metadata:
 **Behind a feature flag:** gate **every** way in, in the same slice that adds it. Typical gate points:
 
 - Filament resources and pages: `canAccess()` and `shouldRegisterNavigation()`.
-- Actions, form fields, columns and widgets: `->visible(fn (): bool => SomeFeature::active())`.
+- Actions, form fields and columns: `->visible(fn (): bool => SomeFeature::active())`.
+- Widgets: return `SomeFeature::active()` from the widget's static `canView(): bool` (widget configurations have no `visible()`).
 - Routes and controllers: middleware or an early `abort_unless(SomeFeature::active(), 404)`.
 - Policies, observers, listeners and scheduled work: an early return.
 - Jobs: check before dispatching, and return early in `handle()` if the flag can change while the job is queued.
