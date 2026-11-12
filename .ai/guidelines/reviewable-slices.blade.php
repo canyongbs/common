@@ -10,7 +10,7 @@ A pull request should be small enough for a reviewer to understand fully in one 
 - **Size budget, in readable lines** (lockfiles, generated files, snapshots, images, pure renames and copyright headers excluded): up to 500 is the target; 500–1,000 is sometimes acceptable; 1,000–1,500 is large and needs a stated reason; over 1,500 is too large and needs an explanation and serious thought about splitting.
 - **Slice by concept, not by layer.** Each slice is one complete behaviour with its tests, and includes a real use of every new class or method it adds. Never mix a refactor with a behaviour change.
 - **Every pull request passes all CI on its own.** A pull request that builds on another unmerged branch must be a **GitHub stacked pull request** whose bottom targets `main` or `release/*`; never target someone's feature branch with a plain pull request.
-- **Nothing unfinished may reach a customer.** Leave it unwired, or gate it behind an inactive feature flag.
+- **Nothing unfinished or breaking may reach a customer until it is ready to be activated.** Leave new work unwired or gate it behind an inactive feature flag, and keep behaviour customers already use working until its replacement is switched on. This is about the code; pull request descriptions do not need to explain it.
 - **Open pull requests as drafts.** The author marks them ready for review once CI is green, which triggers reviewer assignment.
 - **Describe only this slice:** what the product does after it merges, what a reviewer should pay attention to, and how it was tested. The bottom pull request of a stack also carries the stack plan.
 

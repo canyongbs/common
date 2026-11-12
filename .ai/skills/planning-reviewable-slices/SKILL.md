@@ -49,7 +49,7 @@ Every slice must pass all five:
 1. **One idea.** The title needs no "and". If it does, it is two slices.
 2. **Self-explanatory.** A reviewer with no context understands what it does and why from the description and the diff. Nothing essential lives only in the author's head or a later pull request.
 3. **Complete for its idea.** It includes its own tests, and a **real use** of every new model, service, job or method it adds. Never add code with "this will be used in a later pull request".
-4. **Safe to land.** After it merges, the application still works for users and developers. Migrations are tolerated by the code already deployed (see the `zero-downtime` guideline), and nothing unfinished is reachable by a customer: it is unwired, or gated behind an inactive feature flag (see `hiding-unfinished-work`).
+4. **Safe to land.** After it merges, the application still works for users and developers. Migrations are tolerated by the code already deployed (see the `zero-downtime` guideline), nothing unfinished is reachable by a customer (it is unwired, or gated behind an inactive feature flag), and nothing customers already use changes until its replacement is switched on (see `hiding-unfinished-work`).
 5. **Sized for one sitting.** Within the budget in section 2.
 
 ## 4. Slice by concept, not by layer
@@ -97,12 +97,12 @@ Ticket: KEY-123 (acceptance criteria referenced in each slice where they apply)
 Landing mode: land as approved
 Keystone: slice 4 activates `MeetingEmailsFeature`
 
-| #   | Slice                        | Kind       | After it merges, the product…                       | Keeps unfinished work from customers by |
-| --- | ---------------------------- | ---------- | --------------------------------------------------- | --------------------------------------- |
-| 1   | Meeting email foundation     | foundation | does nothing new; the flag exists and is inactive   | nothing reachable                       |
-| 2   | Pre-meeting reminder email   | concept    | can send reminders, but no customer can reach them  | `MeetingEmailsFeature` (inactive)       |
-| 3   | Post-meeting follow-up email | concept    | can send follow-ups, but no customer can reach them | `MeetingEmailsFeature` (inactive)       |
-| 4   | Turn on meeting emails       | keystone   | sends meeting emails to customers                   | — (activates the flag)                  |
+| #   | Slice                        | Kind       | After it merges, the product…                       |
+| --- | ---------------------------- | ---------- | --------------------------------------------------- |
+| 1   | Meeting email foundation     | foundation | does nothing new; the flag exists and is inactive   |
+| 2   | Pre-meeting reminder email   | concept    | can send reminders, but no customer can reach them  |
+| 3   | Post-meeting follow-up email | concept    | can send follow-ups, but no customer can reach them |
+| 4   | Turn on meeting emails       | keystone   | sends meeting emails to customers                   |
 ```
 
 - **Where it goes:** in the **bottom** pull request's description, where every reviewer and the stack map start. Optionally copy it to the Jira ticket as well.
