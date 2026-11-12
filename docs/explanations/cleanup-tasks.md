@@ -22,12 +22,34 @@ A cleanup task file can track three types of work:
 2. **Temporary Migrations** — File paths of `tmp_`-prefixed migrations that should be deleted after they've run across all environments
 3. **Additional Cleanup** — Freeform instructions for post-deployment work that has no home in code. This section is deliberately small: it must not restate obvious Feature Flag removals or list file paths and line numbers (see the comment pattern below)
 
+## Ready or Not Yet
+
+Every cleanup task records in its frontmatter whether it is **ready** to be actioned:
+
+```markdown
+---
+title: Some Feature Cleanup
+created: 2026-04-30
+ready: false
+---
+```
+
+A Feature Flag or temporary migration often outlives the pull request that introduces it. When a feature is delivered as a series of smaller pull requests, the flag is added in an early one, later ones keep gating new work behind it, and only the last one activates it. If the cleanup task were actioned after the first of those pull requests was released, the flag would be removed while work still depends on it.
+
+The `ready` value prevents that:
+
+- **`ready: false`** (the default for new tasks) — something still depends on what this task removes. Leave it alone, even if it has been released.
+- **`ready: true`** — the pull request that makes the cleanup safe has been merged. Once that release is deployed everywhere, the task can be actioned.
+
+The author flips the value to `true` in the pull request that makes the cleanup possible. For a change delivered in a single pull request, that is the same pull request that adds the task, so answer "Yes" when the generator asks. For a feature delivered over several pull requests, it is usually the final one, which activates the flag. A cleanup task without a `ready` value (one written before this field existed) is treated as ready.
+
 ## Lifecycle
 
-1. **Created** — During development, when a developer adds a Feature Flag, temporary migration, or identifies other cleanup work
+1. **Created** — During development, when a developer adds a Feature Flag, temporary migration, or identifies other cleanup work. New tasks start as not ready unless the author says otherwise.
 2. **Committed** — The cleanup task file is committed with the PR that introduces the work
-3. **Actioned** — After deployment succeeds, the cleanup tasks are reviewed and executed (typically the next sprint)
-4. **Deleted** — Once all items in the cleanup task have been addressed, the file is deleted from the repository
+3. **Marked ready** — The PR that makes the cleanup safe sets `ready: true` (often the same PR that created the task)
+4. **Actioned** — After a release containing the ready task is deployed, the cleanup task is reviewed and executed (typically the next sprint). Tasks that are not ready are skipped until they are.
+5. **Deleted** — Once all items in the cleanup task have been addressed, the file is deleted from the repository
 
 ## The `TODO: Cleanup Task` Comment Pattern
 
