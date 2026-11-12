@@ -18,7 +18,7 @@ Review each slice on its own merits. Nobody reviews the whole stack: the author 
     1. **One idea:** the title needs no "and".
     2. **Self-explanatory:** the description and diff are enough; nothing depends on a later pull request to make sense.
     3. **Complete for its idea:** it has its own tests, and every new model, service, job or method is actually used in this slice.
-    4. **Safe to land:** the application still works after it merges, migrations are tolerated by deployed code, and **nothing unfinished is reachable by a customer**. Check every new page, action, route, API field, notification and job trigger: it is unwired, or gated behind the feature's inactive flag **in this slice**, with tests for the flag on and off. Use the checklist in `hiding-unfinished-work`.
+    4. **Safe to land:** the application still works after it merges, migrations are tolerated by deployed code, **nothing unfinished is reachable by a customer**, and **nothing customers already use changes before its replacement is switched on**. Check the code, not the description: every new page, action, route, API field, notification and job trigger is unwired, or gated behind the feature's inactive flag **in this slice**, with tests for the flag on and off. Use the checklist in `hiding-unfinished-work`.
     5. **Sized for one sitting:** check the readable-lines comment on the pull request against the budget.
 4. **Approve when the slice is right on its own.** Do not withhold approval because a slice above it does not exist yet; that is the stack working as intended.
 
@@ -28,7 +28,7 @@ Review each slice on its own merits. Nobody reviews the whole stack: the author 
 - New models, services, jobs or methods with no caller in the slice, or "will be used in a later pull request".
 - A refactor or mechanical change mixed with a behaviour change.
 - A slice over 1,000 readable lines without a stated reason, or over 1,500 without serious justification. You may decline to review for size alone and ask for a split.
-- Anything unfinished that a customer could reach.
+- Anything unfinished that a customer could reach, or a breaking change customers would see before it is switched on.
 - A flag activated anywhere other than the keystone slice while the stack is still open.
 
 ## Re-review after a rebase
@@ -42,7 +42,7 @@ When asked to look over a plan before coding starts (Kevin Ullyott or Dan Harrin
 - Are these the right concepts, and is each slice one of them?
 - Is the foundation slice really shared, and is it used by the slice directly above it?
 - Does the feature need a keystone, and is it last?
-- Does every slice leave the application working, with nothing unfinished reachable?
+- Does every slice leave the application working, with nothing unfinished or breaking reachable?
 - Is the landing mode right, and is a hold justified?
 
 A comment is enough.
