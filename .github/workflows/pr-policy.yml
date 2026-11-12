@@ -94,20 +94,28 @@ jobs:
                   encoded_head="$(jq -rn --arg head "$head" '$head | @uri')"
                   outside=()
 
+                  # Fetch everything before iterating, so an API error fails the check instead of passing it.
+                  merged="$(gh api --paginate "repos/$REPO/pulls?state=closed&base=$encoded_head&per_page=100" \
+                      --jq '.[] | select(.merged_at != null) | "\(.number) \(.merge_commit_sha)"')" \
+                      || fail 'Could not list merged pull requests' "Listing pull requests merged into '$head' failed." 'Re-run this check.'
+
                   while read -r number merge_sha; do
                       [ -n "$number" ] || continue
 
-                      if [ "$(gh api "repos/$REPO/pulls/$number" --jq '.stack != null')" = 'true' ]; then
+                      stacked="$(gh api "repos/$REPO/pulls/$number" --jq '.stack != null')" \
+                          || fail 'Could not read a merged pull request' "Reading #$number failed." 'Re-run this check.'
+
+                      if [ "$stacked" = 'true' ]; then
                           continue
                       fi
 
-                      status="$(gh api "repos/$REPO/compare/$merge_sha...$head_sha" --jq '.status' 2> /dev/null || echo 'unknown')"
+                      status="$(gh api "repos/$REPO/compare/$merge_sha...$head_sha" --jq '.status')" \
+                          || fail 'Could not compare commits' "Checking whether #$number is in '$head' failed." 'Re-run this check.'
 
                       case "$status" in
                           identical | ahead) outside+=("#$number") ;;
                       esac
-                  done < <(gh api --paginate "repos/$REPO/pulls?state=closed&base=$encoded_head&per_page=100" \
-                      --jq '.[] | select(.merged_at != null) | "\(.number) \(.merge_commit_sha)"')
+                  done <<< "$merged"
 
                   if [ "${#outside[@]}" -gt 0 ]; then
                       fail 'Contains pull requests merged outside a stack' \
@@ -143,7 +151,10 @@ jobs:
                   fi
 
                   # Read the labels now rather than from the event, so a re-run reflects the current state.
-                  if gh api "repos/$REPO/issues/$PR_NUMBER/labels" --jq '.[].name' | grep -Fxq "$HOLD_LABEL"; then
+                  # Fetch them before searching, so an API error fails the check instead of passing it.
+                  labels="$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/labels?per_page=100" --jq '.[].name')"
+
+                  if grep -Fxq "$HOLD_LABEL" <<< "$labels"; then
                       echo "::error title=On hold::This pull request has the '$HOLD_LABEL' label, so it (and any pull request stacked above it) cannot merge. Remove the label when it is ready to land."
                       echo 'See https://github.com/canyongbs/common/blob/main/docs/references/pr-checks.md#no-hold-label'
                       exit 1
