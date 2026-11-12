@@ -36,10 +36,10 @@ metadata:
 
 ## 2. Flags that span a stack
 
-- **Introduce the flag in the first slice that gates anything on it**, with `make:ff`. Later slices reuse it. Add a second flag only when parts of the feature must switch on independently, two concepts share no customer-facing surface, or an earlier gate must be retired while a later one stays; each extra flag is another activation and another cleanup.
+- **Introduce each flag in the first slice that gates anything on it**, with `make:ff`. Later slices reuse it. A feature may use as many flags as it needs, for example when parts must switch on independently, or an earlier gate is retired while a later one stays.
 - **Every slice gates its own edges.** A reviewer must be able to confirm from the slice alone that nothing it adds is reachable while the flag is inactive. "The flag check is in the next slice" fails review.
 - **Do not activate the flag while the stack is open.** The migration that adds the feature's schema does **not** activate its release flag; the keystone's migration does, in the slice that finishes the feature. This is the one exception to "activate the flag in the migration that makes the change". Code that depends on the new schema is safe, because it is behind the same inactive flag. If a slice changes schema that **already-live** code relies on, that change still needs its own zero-downtime flag, activated in its own migration, as usual.
-- **File the cleanup task with the flag**, in the slice that introduces it, with `ready: false`. Add to it in later slices if they create more cleanup. The keystone marks it `ready: true` (see `managing-cleanup-tasks`).
+- **File the cleanup task with the first flag**, in the slice that introduces it, with `ready: false`. Keep **one cleanup task for the feature**: add later flags, temporary migrations and other cleanup to the same task rather than starting new ones. The keystone marks it `ready: true` (see `managing-cleanup-tasks`).
 - **Interspersed cleanup is fine.** A slice in the middle of a stack may retire an earlier gate. It should contain only the removal and what the removal requires.
 
 ## 3. Test both states
@@ -58,16 +58,16 @@ The keystone is the change that makes the feature available to customers. It is 
 
 **Put it in the slice that finishes the feature**, usually the last concept slice, rather than in a pull request of its own. A pull request that only flips a switch costs a review and delays the feature. Give the keystone its own last slice only when activation must wait for something outside the stack (a product or customer go-ahead, another ticket's work), or when the wiring or activation is complex enough to deserve its own review (see `planning-reviewable-slices`).
 
-In the slice that carries the keystone, also mark the cleanup task `ready: true` and remove the tests' manual `activate()` calls. Before it is approved, the feature must have been run end to end from the customer's entry point with the flag on. A stack with nothing customer-facing, or fully gated by a flag that is already active, needs no keystone; say so in the plan.
+In the slice that carries the keystone, also mark the cleanup task `ready: true` and remove the tests' manual `activate()` calls. Before it is approved, the feature must have been run end to end from the customer's entry point with the flag on. A stack with nothing customer-facing needs no keystone, and neither does work that sits behind another feature's flag, which that feature's own stack will activate; say so in the plan.
 
 ## 5. Checklist for each slice
 
 Authors run this before marking a pull request ready; reviewers run it before approving.
 
-- [ ] Every way in that this slice adds (page, action, route, API field, notification, job trigger) is unwired or gated on the feature's flag, **in this slice**.
-- [ ] The flag is still inactive after this slice deploys; no migration here activates it unless this is the keystone.
-- [ ] If this slice introduces the flag, it includes a cleanup task with `ready: false`.
-- [ ] If this slice adds more cleanup to an existing flag, the cleanup task is updated.
+- [ ] Every **unfinished** way in that this slice adds (page, action, route, API field, notification, job trigger) is unwired or gated on the feature's release flag, **in this slice**. A finished part may be reachable.
+- [ ] The feature's release flag is still inactive after this slice deploys; no migration here activates it unless this slice carries the keystone.
+- [ ] If this slice introduces a flag, the feature's cleanup task (`ready: false`) exists and lists it.
+- [ ] If this slice adds more cleanup, the feature's cleanup task is updated.
 - [ ] Tests cover the gated surface with the flag inactive (unreachable) and active (works).
 - [ ] Nothing customers already use changes without an abstraction or expand step that keeps the old path working.
 - [ ] If this slice carries the keystone: it finishes the feature (or the plan gives the reason for a keystone-only slice), the cleanup task is now `ready: true`, manual `activate()` calls are gone from tests, and the feature has been run end to end with the flag on.

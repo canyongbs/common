@@ -14,7 +14,7 @@ Until now a flag has had one job: **protecting zero-downtime deploys**. Our code
 
 Slicing gives flags a second job: acting as a **release toggle**. A feature can now land over several pull requests behind a flag that stays **inactive** while the work is unfinished, then be switched on by a migration in the final slice. Mechanically nothing is new: the flag is still created with `make:ff`, still activated by a migration, and still removed by a cleanup pull request afterwards. What is new is that the activation may arrive several pull requests, and possibly several releases, after the flag was created. Two small additions support this:
 
-- A cleanup task records whether it is **ready** to be actioned (see [Cleanup Tasks](./cleanup-tasks.md)), so a flag that later slices still depend on is not removed early.
+- A cleanup task records whether it is **ready** to be actioned (see [Cleanup Tasks](./cleanup-tasks.md)), so a flag that later slices still depend on is not removed early. A feature may use more than one flag; its flags usually share one cleanup task, marked ready when the feature is finished.
 - `ff:activate`, `ff:deactivate` and `ff:list` switch flags on and off by hand, so developers and reviewers can try unfinished work locally.
 
 Our flags are stored per database. In Advising App and Aiding App (and Concourse once it launches) each tenant has its own database, so a flag's state is per tenant, and an activation migration activates it for every tenant as the migrations run. We do not switch features on for only some tenants.
@@ -38,7 +38,7 @@ The **keystone** is whatever makes the feature available to customers. It takes 
 
 The keystone normally goes in the slice that finishes the feature, usually the last concept slice, so the review that completes the feature also switches it on. That slice is where the whole feature is run end to end before customers get it. We avoid pull requests that only flip a switch: they cost a review and make a finished feature wait for it. A keystone gets its own last slice only when activation has to wait for something outside the stack, such as a product go-ahead or another ticket's work, or when the wiring or activation is complex enough to deserve its own review.
 
-A stack of background work with no customer-facing change needs no keystone, and neither does a change fully gated by a flag that is already active.
+A stack of background work with no customer-facing change needs no keystone, and neither does work that sits behind another feature's flag, which that feature's own stack will activate.
 
 ## Holding is a separate decision
 
