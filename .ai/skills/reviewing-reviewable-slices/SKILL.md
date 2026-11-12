@@ -17,7 +17,7 @@ Review each slice on its own merits. Nobody reviews the whole stack: the author 
 3. **Apply the five tests** from `planning-reviewable-slices`:
     1. **One idea:** the title needs no "and".
     2. **Self-explanatory:** the description and diff are enough; nothing depends on a later pull request to make sense.
-    3. **Complete for its idea:** it has its own tests, and every new model, service, job or method is actually used in this slice.
+    3. **Complete for its idea:** it has its own tests, and every new model, service, job or method is actually used in this slice. The exception is a foundation slice, or the lower part of a concept split because it was over budget: its new code may be used only by the slice directly above it, and its own tests must prove what it does.
     4. **Safe to land:** the application still works after it merges, migrations are tolerated by deployed code, **nothing unfinished is reachable by a customer**, and **nothing customers already use changes before its replacement is switched on**. Check the code, not the description: every new page, action, route, API field, notification and job trigger is unwired, or gated behind the feature's inactive flag **in this slice**, with tests for the flag on and off. Use the checklist in `hiding-unfinished-work`.
     5. **Sized for one sitting:** check the readable-lines comment on the pull request against the budget.
 4. **Approve when the slice is right on its own.** Do not withhold approval because a slice above it does not exist yet; that is the stack working as intended.
@@ -25,7 +25,7 @@ Review each slice on its own merits. Nobody reviews the whole stack: the author 
 ## Push back on
 
 - A description that says what code the slice contains ("adds the models") rather than what the product does after it merges.
-- New models, services, jobs or methods with no caller in the slice, or "will be used in a later pull request".
+- New models, services, jobs or methods with no caller in the slice (outside the foundation and split-concept exception), or "will be used in a later pull request".
 - A refactor or mechanical change mixed with a behaviour change.
 - A slice over 1,000 readable lines without a stated reason, or over 1,500 without serious justification. You may decline to review for size alone and ask for a split.
 - Anything unfinished that a customer could reach, or a breaking change customers would see before it is switched on.
