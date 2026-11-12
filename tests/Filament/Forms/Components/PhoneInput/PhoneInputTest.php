@@ -36,7 +36,23 @@
 
 use CanyonGBS\Common\Filament\Forms\Components\PhoneInput\PhoneInput;
 use CanyonGBS\Common\Filament\Forms\Components\PhoneInput\PhoneInputNumberType;
+use Filament\Facades\Filament;
+use libphonenumber\PhoneNumberType;
+use Livewire\Livewire;
 use Propaganistas\LaravelPhone\Rules\Phone as PhoneRule;
+use Workbench\App\Filament\Resources\PhoneContacts\Pages\CreatePhoneContact;
+use Workbench\App\Filament\Resources\PhoneContacts\Pages\EditPhoneContact;
+use Workbench\App\Filament\Resources\PhoneContacts\PhoneContactResource;
+use Workbench\App\Models\PhoneContact;
+use Workbench\App\Models\User;
+
+beforeEach(function (): void {
+    PhoneContactResource::reset();
+
+    Filament::setCurrentPanel('testing');
+
+    $this->actingAs(User::create(['name' => 'Ada', 'email' => 'ada@example.com']));
+});
 
 it('evaluates configured phone input options', function (): void {
     $phoneInput = PhoneInput::make('phone_number')
@@ -95,5 +111,111 @@ describe('shared defaults', function (): void {
             ->and($phoneInput->getInitialCountry())->toBe('auto')
             ->and($phoneInput->isStrictMode())->toBeFalse()
             ->and($phoneInput->canPerformIpLookup())->toBeTrue();
+    });
+});
+
+describe('in a form', function (): void {
+    it('hydrates the phone number given a specific number and country', function (): void {
+        $contact = PhoneContact::create([
+            'name' => 'test',
+            'phone' => '(555) 123-4567',
+            'phone_country' => 'US',
+        ]);
+
+        PhoneContactResource::$configurePhoneInput = fn (PhoneInput $input): PhoneInput => $input->countryStatePath('phone_country');
+
+        Livewire::test(EditPhoneContact::class, ['record' => $contact->getRouteKey()])
+            ->assertSuccessful()
+            ->assertSet('data.phone', '+15551234567');
+    });
+
+    it('hydrates the phone number given a specific number and the default country', function (): void {
+        $contact = PhoneContact::create([
+            'name' => 'test',
+            'phone' => '212-975-4846',
+        ]);
+
+        PhoneContactResource::$configurePhoneInput = fn (PhoneInput $input): PhoneInput => $input->defaultCountry('US');
+
+        Livewire::test(EditPhoneContact::class, ['record' => $contact->getRouteKey()])
+            ->assertSuccessful()
+            ->assertSet('data.phone', '+12129754846');
+    });
+
+    it('saves the phone number in the configured input number format', function (PhoneInputNumberType $type, string $expected): void {
+        PhoneContactResource::$configurePhoneInput = fn (PhoneInput $input): PhoneInput => $input->inputNumberFormat($type);
+
+        Livewire::test(CreatePhoneContact::class)
+            ->fillForm([
+                'name' => fake()->name(),
+                'phone' => '+905301111111',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        expect(PhoneContact::sole()->phone)->toBe($expected);
+    })->with([
+        'E164' => [PhoneInputNumberType::E164, '+905301111111'],
+        'international' => [PhoneInputNumberType::INTERNATIONAL, '+90 530 111 11 11'],
+        'national' => [PhoneInputNumberType::NATIONAL, '0530 111 11 11'],
+        'RFC3966' => [PhoneInputNumberType::RFC3966, 'tel:+90-530-111-11-11'],
+    ]);
+
+    it('validates the number for the configured country', function (string $country, string $phone, bool $passes, int | PhoneNumberType | null $type, bool $lenient): void {
+        PhoneContactResource::$configurePhoneInput = fn (PhoneInput $input): PhoneInput => $input->validateFor($country, $type, $lenient);
+
+        $component = Livewire::test(CreatePhoneContact::class)
+            ->fillForm([
+                'name' => fake()->name(),
+                'phone' => $phone,
+            ])
+            ->call('create');
+
+        if ($passes) {
+            $component->assertHasNoFormErrors();
+        } else {
+            $component->assertHasFormErrors(['phone']);
+        }
+    })->with([
+        'international number' => ['INTERNATIONAL', '+905301111111', true, null, false],
+        'number from another country' => ['TR', '+18143511527', false, null, false],
+        'national number when lenient' => ['TR', '5301111111', true, null, true],
+        'number of the expected type' => ['TR', '+902125111111', true, PhoneNumberType::FIXED_LINE, false],
+    ]);
+
+    it('saves the country state alongside the number', function (): void {
+        PhoneContactResource::$configurePhoneInput = fn (PhoneInput $input): PhoneInput => $input->countryStatePath('phone_country');
+
+        Livewire::test(CreatePhoneContact::class)
+            ->fillForm([
+                'name' => fake()->name(),
+                'phone' => '+905301111111',
+                'phone_country' => 'TR',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        expect(PhoneContact::sole())
+            ->phone->toBe('0530 111 11 11')
+            ->phone_country->toBe('TR');
+    });
+
+    it('respects an explicit input number format when using a country state path', function (): void {
+        PhoneContactResource::$configurePhoneInput = fn (PhoneInput $input): PhoneInput => $input
+            ->countryStatePath('phone_country')
+            ->inputNumberFormat(PhoneInputNumberType::E164);
+
+        Livewire::test(CreatePhoneContact::class)
+            ->fillForm([
+                'name' => fake()->name(),
+                'phone' => '+905301111111',
+                'phone_country' => 'TR',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        expect(PhoneContact::sole())
+            ->phone->toBe('+905301111111')
+            ->phone_country->toBe('TR');
     });
 });

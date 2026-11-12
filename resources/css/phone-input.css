@@ -50,9 +50,26 @@
     width: 100%;
     border: 0;
     background-color: transparent;
+    padding-block: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
     color: var(--color-gray-950);
+}
+
+.iti__search-input::placeholder {
+    color: var(--color-gray-400);
+}
+
+@media (min-width: 40rem) {
+    .iti__search-input {
+        font-size: 0.875rem;
+    }
 }
 
 .dark .iti__search-input {
     color: white;
+}
+
+.dark .iti__search-input::placeholder {
+    color: var(--color-gray-500);
 }

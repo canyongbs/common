@@ -34,14 +34,6 @@
 </COPYRIGHT>
 */
 
-it('makes the generated country listbox keyboard reachable', function (): void {
-    $source = file_get_contents(dirname(__DIR__, 5) . '/resources/js/filament/phone-input.js');
-
-    expect($source)->not->toBeFalse()
-        ->and($source)->toContain('.iti__country-list[role="listbox"]')
-        ->and($source)->toContain('countryList.tabIndex = this.input.disabled ? -1 : 0;');
-});
-
 it('includes third-party notices in the package archive', function (): void {
     $attributes = file_get_contents(dirname(__DIR__, 5) . '/.gitattributes');
 

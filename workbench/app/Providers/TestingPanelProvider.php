@@ -45,6 +45,8 @@ use Workbench\App\Filament\Resources\Articles\ArticleResource;
 use Workbench\App\Filament\Resources\Attachments\AttachmentResource;
 use Workbench\App\Filament\Resources\Images\ImageResource;
 use Workbench\App\Filament\Resources\PermissionsMatrixRoles\PermissionsMatrixRoleResource;
+use Workbench\App\Filament\Resources\PhoneContactNotes\PhoneContactNoteResource;
+use Workbench\App\Filament\Resources\PhoneContacts\PhoneContactResource;
 use Workbench\App\Filament\Resources\Projects\ProjectResource;
 use Workbench\App\Filament\Resources\Tags\TagResource;
 use Workbench\App\Filament\Resources\Tasks\TaskResource;
@@ -84,6 +86,8 @@ class TestingPanelProvider extends PanelProvider
                 AttachmentResource::class,
                 ImageResource::class,
                 PermissionsMatrixRoleResource::class,
+                PhoneContactNoteResource::class,
+                PhoneContactResource::class,
                 ProjectResource::class,
                 TagResource::class,
                 TaskResource::class,
