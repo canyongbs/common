@@ -75,7 +75,7 @@ Choose the landing mode in the plan.
 
 **Land as approved (the default).** Merge each slice as soon as it is approved and green. Merging is bottom-up: merging a slice merges every unmerged slice below it, usually through the merge queue as one group. Use the merge button on the pull request or `gh stack merge <number> --yes`. **Never use `gh pr merge` on a stacked pull request**; it cannot merge a stack.
 
-**Hold and land together.** Use it only for timing: when product is still deciding, or when a set of slices should be signed off as a whole before any of it lands. State the reason in the plan. A hold is never a safety mechanism. A large stack, or a slice ejected from the merge queue, can land in parts, so every slice must be safe on `main` by itself.
+**Hold and land together.** Use it only for timing: when product is still deciding, or when a set of slices should be signed off as a whole before any of it lands. State the reason in the plan. A hold is never a safety mechanism. If a slice is ejected from the merge queue, the slices below it can still land without it, so every slice must be safe on `main` by itself.
 
 ```bash
 gh pr edit <bottom-pr-number> --add-label hold      # nothing in the stack can merge
