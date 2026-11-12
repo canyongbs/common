@@ -73,9 +73,9 @@ gh stack top
 
 Choose the landing mode in the plan.
 
-**Land as approved (the default).** Merge each slice as soon as it is approved and green. Merging is bottom-up: merging a slice merges every unmerged slice below it, through the merge queue as one group. Use the merge button on the pull request or `gh stack merge <number> --yes`. **Never use `gh pr merge` on a stacked pull request**; it cannot merge a stack.
+**Land as approved (the default).** Merge each slice as soon as it is approved and green. Merging is bottom-up: merging a slice merges every unmerged slice below it, usually through the merge queue as one group. Use the merge button on the pull request or `gh stack merge <number> --yes`. **Never use `gh pr merge` on a stacked pull request**; it cannot merge a stack.
 
-**Hold and land together.** Use it when an intermediate state would be unsafe on `main` even though customers cannot reach it, or when product is still deciding; state the reason in the plan.
+**Hold and land together.** Use it only for timing: when product is still deciding, or when a set of slices should be signed off as a whole before any of it lands. State the reason in the plan. A hold is never a safety mechanism. A large stack, or a slice ejected from the merge queue, can land in parts, so every slice must be safe on `main` by itself.
 
 ```bash
 gh pr edit <bottom-pr-number> --add-label hold      # nothing in the stack can merge
@@ -90,7 +90,7 @@ gh pr edit <bottom-pr-number> --remove-label hold   # release it
 ## If the ticket is cancelled part-way
 
 - With **hold**, close the stack's pull requests.
-- With **land as approved**, merged slices are unreachable by customers, so there is no emergency. Revert each merged slice in its own pull request, in reverse order. For schema, remove the code that reads a table or column first, and drop it in a later release. Prefer a small cleanup ticket so the removal is tracked.
+- With **land as approved**, some slices have already merged. Nothing unfinished is reachable, so there is no emergency, but merged slices may already be in use: finished behaviour customers can reach, or a foundation another ticket builds on. Before reverting, check what customers can reach and what other work uses each merged slice. Keep those, and revert only the unused, unreachable parts, each in its own pull request, newest first. For schema, remove the code that reads a table or column first, and drop it in a later release. Prefer a small cleanup ticket so the removal is tracked.
 - If product may revive the feature, merged slices can stay dormant behind the inactive flag, provided someone owns the decision to remove them later. Say so on the ticket.
 
 ## Do / Don't
