@@ -91,22 +91,29 @@ abstract class ChangeFeatureFlagState extends Command
             );
         }
 
-        foreach ($tenantFlags as $flag) {
-            if ($tenants === []) {
+        if ($tenants === []) {
+            foreach ($tenantFlags as $flag) {
                 $this->components->task(
                     "{$this->verb()} {$this->featureFlagLabel($flag)}",
                     fn (): mixed => $this->withinFeatureFlagContext(null, fn (): mixed => call_user_func([$flag, $this->method()])),
                 );
-
-                continue;
             }
 
-            foreach ($tenants as $tenant) {
-                $this->components->task(
-                    "{$this->verb()} {$this->featureFlagLabel($flag)} for tenant {$this->tenantRunner()->describe($tenant)}",
-                    fn (): mixed => $this->withinFeatureFlagContext($tenant, fn (): mixed => call_user_func([$flag, $this->method()])),
-                );
-            }
+            return self::SUCCESS;
+        }
+
+        // Switch into each tenant once and change every flag there, rather than once per flag.
+        $labels = implode(', ', array_map(fn (string $flag): string => $this->featureFlagLabel($flag), $tenantFlags));
+
+        foreach ($tenants as $tenant) {
+            $this->components->task(
+                "{$this->verb()} {$labels} for tenant {$this->tenantRunner()->describe($tenant)}",
+                fn (): mixed => $this->withinFeatureFlagContext($tenant, function () use ($tenantFlags): void {
+                    foreach ($tenantFlags as $flag) {
+                        call_user_func([$flag, $this->method()]);
+                    }
+                }),
+            );
         }
 
         return self::SUCCESS;

@@ -52,6 +52,11 @@ class FakeTenant extends Model
 
     protected $guarded = [];
 
+    /**
+     * How many times any tenant has been switched into, so tests can assert each tenant is entered once.
+     */
+    public static int $executions = 0;
+
     public static function current(): ?self
     {
         return app()->has('currentTenant') ? app('currentTenant') : null;
@@ -59,6 +64,8 @@ class FakeTenant extends Model
 
     public function execute(callable $callable): mixed
     {
+        static::$executions++;
+
         $previous = static::current();
 
         $this->makeCurrent();

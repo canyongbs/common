@@ -50,6 +50,10 @@ class ListFeatureFlags extends Command
 
     public function handle(): int
     {
+        if (! $this->tenantOptionIsSupported()) {
+            return self::FAILURE;
+        }
+
         $flags = $this->discoverFeatureFlags();
 
         if ($flags === []) {
@@ -58,13 +62,15 @@ class ListFeatureFlags extends Command
             return self::SUCCESS;
         }
 
-        $hasTenantFlags = array_filter($flags, fn (string $flag): bool => ! $this->isLandlordFeatureFlag($flag)) !== [];
+        $tenantFlags = array_values(array_filter($flags, fn (string $flag): bool => ! $this->isLandlordFeatureFlag($flag)));
 
-        $tenants = $hasTenantFlags ? $this->targetTenants() : [];
+        $tenants = $tenantFlags === [] ? [] : $this->targetTenants();
 
         if ($tenants === null) {
             return self::FAILURE;
         }
+
+        $inactiveTenants = $this->inactiveTenantsByFlag($tenantFlags, $tenants);
 
         $rows = [];
 
@@ -79,18 +85,46 @@ class ListFeatureFlags extends Command
                 continue;
             }
 
-            $inactive = array_values(array_filter($tenants, fn (object $tenant): bool => ! $this->isActive($flag, $tenant)));
-
             $rows[] = [
                 $this->featureFlagLabel($flag),
                 'Tenant',
-                $this->summarizeTenantState(count($tenants), $inactive),
+                $this->summarizeTenantState(count($tenants), $inactiveTenants[$flag]),
             ];
         }
 
         $this->table(['Flag', 'Scope', 'Active'], $rows);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Switch into each tenant once and read every tenant flag there, rather than once per flag.
+     *
+     * @param array<int, class-string> $flags
+     * @param array<int, object> $tenants
+     *
+     * @return array<class-string, array<int, object>>
+     */
+    protected function inactiveTenantsByFlag(array $flags, array $tenants): array
+    {
+        $inactive = array_fill_keys($flags, []);
+
+        foreach ($tenants as $tenant) {
+            $states = $this->withinFeatureFlagContext(
+                $tenant,
+                fn (): array => array_map(fn (string $flag): bool => (bool) call_user_func([$flag, 'active']), $flags),
+            );
+
+            assert(is_array($states));
+
+            foreach ($flags as $index => $flag) {
+                if (! $states[$index]) {
+                    $inactive[$flag][] = $tenant;
+                }
+            }
+        }
+
+        return $inactive;
     }
 
     /**

@@ -40,6 +40,7 @@ use CanyonGBS\Common\Support\Tenancy\TenantRunner;
 use Closure;
 use Illuminate\Support\Str;
 use Laravel\Pennant\Feature;
+use ReflectionClass;
 use Symfony\Component\Finder\Finder;
 
 trait InteractsWithFeatureFlags
@@ -79,6 +80,11 @@ trait InteractsWithFeatureFlags
      */
     protected function isFeatureFlag(string $class): bool
     {
+        // Abstract helpers may live in the features namespace, but Pennant cannot instantiate them.
+        if ((new ReflectionClass($class))->isAbstract()) {
+            return false;
+        }
+
         return is_subclass_of($class, $this->tenantFeatureFlagBaseClass)
             || is_subclass_of($class, $this->landlordFeatureFlagBaseClass);
     }
@@ -123,6 +129,24 @@ trait InteractsWithFeatureFlags
     }
 
     /**
+     * Reject `--tenant` in applications without tenants, whatever flags are involved.
+     */
+    protected function tenantOptionIsSupported(): bool
+    {
+        $identifiers = $this->option('tenant');
+
+        assert(is_array($identifiers));
+
+        if ($identifiers !== [] && ! $this->tenantRunner()->supportsTenants()) {
+            $this->components->error('The --tenant option is only available in multi-tenant applications.');
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Resolve the tenants a tenant-scoped flag should be changed or read for, following
      * Spatie's tenant-aware commands: the current tenant when one is set, otherwise
      * every tenant, narrowed by `--tenant`.
@@ -138,13 +162,7 @@ trait InteractsWithFeatureFlags
         $runner = $this->tenantRunner();
 
         if (! $runner->supportsTenants()) {
-            if ($identifiers !== []) {
-                $this->components->error('The --tenant option is only available in multi-tenant applications.');
-
-                return null;
-            }
-
-            return [];
+            return $this->tenantOptionIsSupported() ? [] : null;
         }
 
         if ($current = $runner->current()) {

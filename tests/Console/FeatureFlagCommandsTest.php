@@ -41,6 +41,7 @@ use CanyonGBS\Common\Support\Tenancy\SpatieTenantRunner;
 use CanyonGBS\Common\Tests\Console\Fixtures\FeatureFlags\FakeTenant;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Pennant\Feature;
 
@@ -138,6 +139,7 @@ describe('in a single-database application', function () use ($storedFeatureValu
     })->with([
         'unknown class' => 'Missing',
         'class that is not a feature flag' => 'NotAFeatureFlag',
+        'abstract feature flag helper' => 'AbstractHelper',
     ]);
 
     it('rejects --tenant', function () use ($storedFeatureValue): void {
@@ -146,6 +148,20 @@ describe('in a single-database application', function () use ($storedFeatureValu
             ->assertFailed();
 
         expect($storedFeatureValue('testing', AlphaFeature::class))->toBeNull();
+    });
+
+    it('rejects --tenant when listing, even with no tenant flags to list', function (): void {
+        $emptyApp = sys_get_temp_dir() . '/' . uniqid('common-ff-empty-');
+        mkdir($emptyApp . '/app/Features', 0755, true);
+        $this->app->setBasePath($emptyApp);
+
+        try {
+            $this->artisan('ff:list', ['--tenant' => ['1']])
+                ->expectsOutputToContain('only available in multi-tenant applications')
+                ->assertFailed();
+        } finally {
+            File::deleteDirectory($emptyApp);
+        }
     });
 
     describe('in production', function () use ($storedFeatureValue): void {
@@ -201,10 +217,32 @@ describe('in a multi-tenant application', function () use ($storedFeatureValue):
         FakeTenant::query()->create(['id' => 2, 'name' => 'Two', 'database' => 'tenant_two']);
 
         $this->app->bind(SpatieTenantRunner::TENANT_CONTRACT, FakeTenant::class);
+
+        FakeTenant::$executions = 0;
     });
 
     afterEach(function (): void {
         FakeTenant::forgetCurrent();
+    });
+
+    it('switches into each tenant once when changing several flags', function () use ($storedFeatureValue): void {
+        $this->artisan('ff:activate', ['flags' => ['Alpha', 'Beta']])
+            ->expectsOutputToContain('Activating AlphaFeature, BetaFeature for tenant One (1)')
+            ->expectsOutputToContain('Activating AlphaFeature, BetaFeature for tenant Two (2)')
+            ->assertSuccessful();
+
+        expect(FakeTenant::$executions)->toBe(2);
+
+        foreach (['tenant_one', 'tenant_two'] as $connection) {
+            expect($storedFeatureValue($connection, AlphaFeature::class))->toBeTrue()
+                ->and($storedFeatureValue($connection, BetaFeature::class))->toBeTrue();
+        }
+    });
+
+    it('switches into each tenant once when listing several flags', function (): void {
+        $this->artisan('ff:list')->assertSuccessful();
+
+        expect(FakeTenant::$executions)->toBe(2);
     });
 
     it('activates a tenant flag for every tenant by default', function () use ($storedFeatureValue): void {
