@@ -48,7 +48,7 @@ A stack can _land as approved_ or _hold and land together_ (see [Reviewable Slic
 
 | Source                                                                                                                 | What it supports                                                                  |
 | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| [Laravel Pennant](https://laravel.com/docs/pennant)                                                                    | Class-based features, stores, activation and the `@feature` Blade directive.      |
+| [Laravel Pennant](https://laravel.com/docs/pennant)                                                                    | Class-based features, stores and activation.                                      |
 | [Martin Fowler: Keystone Interface](https://www.martinfowler.com/bliki/KeystoneInterface.html)                         | Land the back end first and add the entry point last.                             |
 | [Martin Fowler: Feature Toggles](https://martinfowler.com/articles/feature-toggles.html)                               | Release toggles, where to put toggle points, and why toggles must be short-lived. |
 | [Martin Fowler: Branch by Abstraction](https://martinfowler.com/bliki/BranchByAbstraction.html)                        | Changing existing behaviour incrementally without a long-lived branch.            |

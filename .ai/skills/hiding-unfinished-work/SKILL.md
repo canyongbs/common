@@ -31,7 +31,7 @@ metadata:
 - Policies, observers, listeners and scheduled work: an early return.
 - Jobs: check before dispatching, and return early in `handle()` if the flag can change while the job is queued.
 - API resources and fields: omit them while the flag is inactive.
-- Blade: `@if (SomeFeature::active())` or Pennant's `@feature` directive.
+- Blade: `@if (SomeFeature::active())`. Do not use Pennant's `@feature` directive: it reads the default store, so it misses landlord flags (see `managing-feature-flags`).
 
 **Branch by abstraction / expand-contract:** introduce an abstraction over the current behaviour (no behaviour change, its own slice), build the new implementation behind it gated by a flag, switch, then remove the old path in a later slice. For schema: add the new column or table, write to both, move readers, stop writing the old, and drop the old in a later release. Never rename or drop in the same deploy that introduces the replacement (see the `zero-downtime` guideline).
 
