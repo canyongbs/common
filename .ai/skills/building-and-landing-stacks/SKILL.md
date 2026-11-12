@@ -14,7 +14,7 @@ A **stack** is a chain of pull requests where each targets the branch of the one
 
 ## Rules that are enforced
 
-- **Every pull request passes all CI on its own.** GitHub evaluates every pull request in a stack against `main`'s required checks and reviews. Run the repository's formatting, static analysis and relevant tests on **each** slice before submitting it, not only on the top one.
+- **Every pull request passes all CI on its own.** GitHub evaluates every pull request in a stack against the required checks and reviews of the stack's base branch: `main`, or the `release/*` branch for a hotfix stack. Run the repository's formatting, static analysis and relevant tests on **each** slice before submitting it, not only on the top one.
 - **A pull request may only target `main`, `release/*`, or the slice below it in a GitHub stack**, and the stack's bottom must target `main` or `release/*`. Never open a plain pull request against someone else's branch. The required **Stack policy** check fails otherwise; see [Pull Request Checks](https://github.com/canyongbs/common/blob/main/docs/references/pr-checks.md).
 
 ## Build bottom-up
@@ -66,7 +66,7 @@ gh stack top
 ```
 
 - **Approvals survive rebases that do not change a slice's diff.** A rebase that does change a slice's diff dismisses its approval. Re-request the person who approved it before (`gh pr edit <number> --add-reviewer <login>`); they review only GitHub's "changes since your last review".
-- **Review in time order.** Get the bottom slice approved and merged before asking for serious review time on the slices above it.
+- **Review bottom-up.** Ask for review of the bottom slice first, because feedback there can change the slices above it; upper slices can be reviewed in parallel. When landing as approved, merge each lower slice as soon as it is approved. When holding, get every slice approved, then remove the label.
 - When `main` moves ahead, use **Rebase stack** on GitHub or `gh stack sync`. After a lower slice merges, GitHub rebases and retargets the rest automatically; run `gh stack sync --prune` locally.
 
 ## Landing
