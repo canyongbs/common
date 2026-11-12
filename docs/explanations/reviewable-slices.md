@@ -129,7 +129,7 @@ The API work did not need all of archiving. It needed the foundation: the archiv
 ## Who reviews what
 
 - **The author holds the whole feature in their head; reviewers do not.** Each slice is reviewed on its own merits by whoever GitHub's auto-assignment picks, and different people reviewing different slices of one ticket is normal. That is how [Google](https://google.github.io/eng-practices/review/developer/small-cls.html#splitting) and [Meta](https://newsletter.pragmaticengineer.com/p/stacked-diffs) work, and it is what makes a stack cheaper to review than a monolith rather than the same work in more tabs.
-- **A senior look at the plan is heavily recommended** for every stack: Kevin Ullyott or Dan Harrin reads the slice plan before coding starts. It is the cheapest moment to catch a wrong boundary: twenty minutes instead of an afternoon.
+- **A plan needs no sign-off.** Plans are usually settled by the author, or in sprint or tech planning. If you are unsure of the boundaries (a large or unfamiliar feature, or one other tickets depend on), a quick look from a senior member of staff or leadership can help, since planning is the cheapest moment to catch a wrong boundary. It is optional and never a gate.
 - **The slice that makes the feature available** is where the feature is run end to end, with its flag on, before customers get it.
 - **Copilot code review** is requested automatically once a pull request's checks pass, including on drafts, so authors see its comments before asking a person to review. A bot comment is never an approval; a person approves every slice.
 
