@@ -51,7 +51,7 @@ It never blocks merging.
 **How it counts.** It diffs the pull request with `git` the same way GitHub's "Files changed" tab does (from where the branch left its base to its latest commit), so a stacked pull request is counted on its own slice only. Then:
 
 - **Additions and deletions both count**, file by file.
-- **Ignored files do not count.** Built in: `composer.lock`, `*package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `phpstan-baseline.php` and `.neon`, Pest snapshots (`tests/.pest/snapshots/*`, `*.snap`), IDE helper files, minified and source-map files, images and PDFs. Binary files never count.
+- **Ignored files do not count.** Built in: `composer.lock`, `*package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `phpstan-baseline.php` and `.neon`, Pest snapshots (`tests/.pest/snapshots/*`, `*.snap`), IDE helper files, minified and source-map files, images and PDFs. Binary files and submodule pointer changes never count.
 - **Copyright headers do not count.** Lines inside the `<COPYRIGHT>` … `</COPYRIGHT>` block our copyright tooling adds, with its comment delimiters, are skipped, so new files and the yearly copyright update are not inflated.
 - **A pure rename counts as zero**; a rename with edits counts only the edits.
 - **A deleted file counts as one line.**

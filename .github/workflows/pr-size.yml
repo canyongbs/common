@@ -117,14 +117,18 @@ jobs:
                           header_end = output.index(b'\n', offset)
                           header = output[offset:header_end].split()
                           offset = header_end + 1
-                          if len(header) < 3 or header[1] != b'blob':
+                          # '<sha> missing' has no payload; every other record does, whatever its type.
+                          if len(header) < 3:
                               continue
                           size = int(header[2])
+                          payload = output[offset:offset + size]
+                          offset += size + 1
+                          if header[1] != b'blob':
+                              continue
                           try:
-                              blobs[sha] = output[offset:offset + size].decode()
+                              blobs[sha] = payload.decode()
                           except UnicodeDecodeError:
                               blobs[sha] = None
-                          offset += size + 1
                       return blobs
 
 
@@ -175,7 +179,7 @@ jobs:
                       else:
                           old_path = new_path = raw[i + 1]
                           i += 2
-                      entries[new_path] = {'status': status, 'old_path': old_path, 'old_sha': old_sha, 'new_sha': new_sha}
+                      entries[new_path] = {'status': status, 'old_path': old_path, 'old_sha': old_sha, 'new_sha': new_sha, 'submodule': '160000' in (meta[0], meta[1])}
 
                   i = 0
                   while i < len(numstat) - 1:
@@ -196,7 +200,7 @@ jobs:
                           return 'ignored'
                       if entry['status'] == 'R' and entry.get('added', 0) == 0 and entry.get('deleted', 0) == 0:
                           return 'rename'
-                      if entry.get('binary'):
+                      if entry.get('binary') or entry['submodule']:
                           return 'ignored'
                       if entry['status'] == 'D':
                           return 'deleted'
