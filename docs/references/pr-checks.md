@@ -12,7 +12,7 @@ The checks that support [Reviewable Slices](../explanations/reviewable-slices.md
 **What it checks.**
 
 1. A pull request whose base is **not** `main` or a `release/*` branch must be part of a GitHub stack, and that stack's bottom pull request must target `main` or `release/*`.
-2. A pull request whose base **is** `main` or `release/*` must not contain any pull request that was merged into its branch as a plain pull request (outside a GitHub stack). That is the old pattern of chaining pull requests into each other's branches and merging them there, which bypasses `main`'s required reviews and checks. Release branches merging back into `main` (the hotfix flow) are not checked.
+2. No pull request, whether it targets `main`, `release/*` or a slice below it in a stack, may contain a pull request that was merged into its branch as a plain pull request (outside a GitHub stack). That is the old pattern of chaining pull requests into each other's branches and merging them there, which bypasses `main`'s required reviews and checks. Release branches merging back into `main` (the hotfix flow) are not checked, and neither are pull requests from forks: the check enforces our own branching process, and a fork's pull request is still reviewed as one complete change. Merged pull requests that the target branch already contains are ignored.
 
 Rule 2 is what actually blocks. A plain pull request into a feature branch can always be merged (that branch has no protection), but the work it brings can no longer reach `main`.
 

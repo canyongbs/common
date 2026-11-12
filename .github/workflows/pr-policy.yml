@@ -78,11 +78,18 @@ jobs:
                               "The bottom pull request of a stack must target '$DEFAULT_BRANCH' or a release/* branch. Retarget it, then re-run this check."
                       fi
 
-                      echo "Part of stack #$stack_number, which lands on '$stack_base'. OK."
-                      exit 0
-                  fi
+                      echo "Part of stack #$stack_number, which lands on '$stack_base'."
 
-                  echo "Targets '$base'."
+                      # Every slice's branch is scanned below, so a plain pull request merged into an upper slice is caught too.
+                      target="$stack_base"
+                      target_sha="$(gh api "repos/$REPO/branches/$(jq -rn --arg ref "$stack_base" '$ref | @uri')" --jq '.commit.sha')" \
+                          || fail 'Could not read the stack base' "Reading '$stack_base' failed." 'Re-run this check.'
+                  else
+                      echo "Targets '$base'."
+
+                      target="$base"
+                      target_sha="$(jq -r '.base.sha' <<< "$pr")"
+                  fi
 
                   if [[ "$head" == release/* ]] || [ "$head_repo" != "$REPO" ]; then
                       echo 'Release branch merge-back or fork; there are no stacked branches to check. OK.'
@@ -90,7 +97,7 @@ jobs:
                   fi
 
                   # A pull request merged into this branch outside a stack was never held to the rules of
-                  # '$base', so block it from reaching '$base' this way.
+                  # '$target', so block it from reaching '$target' this way.
                   encoded_head="$(jq -rn --arg head "$head" '$head | @uri')"
                   outside=()
 
@@ -113,14 +120,24 @@ jobs:
                           || fail 'Could not compare commits' "Checking whether #$number is in '$head' failed." 'Re-run this check.'
 
                       case "$status" in
-                          identical | ahead) outside+=("#$number") ;;
+                          identical | ahead) ;;
+                          *) continue ;;
+                      esac
+
+                      # Skip merges '$target' already contains, such as an old pull request into a reused branch name.
+                      on_target="$(gh api "repos/$REPO/compare/$merge_sha...$target_sha" --jq '.status')" \
+                          || fail 'Could not compare commits' "Checking whether #$number is already in '$target' failed." 'Re-run this check.'
+
+                      case "$on_target" in
+                          identical | ahead) ;;
+                          *) outside+=("#$number") ;;
                       esac
                   done <<< "$merged"
 
                   if [ "${#outside[@]}" -gt 0 ]; then
                       fail 'Contains pull requests merged outside a stack' \
                           "Branch '$head' contains ${outside[*]}, merged into it as plain pull requests rather than as a GitHub stack." \
-                          "Changes must reach '$base' through pull requests that each passed its rules. Recreate the work as a GitHub stack (or one pull request), then close this one."
+                          "Changes must reach '$target' through pull requests that each passed its rules. Recreate the work as a GitHub stack (or one pull request), then close this one."
                   fi
 
                   echo 'No pull requests were merged into this branch outside a stack. OK.'
@@ -154,7 +171,7 @@ jobs:
                   # Fetch them before searching, so an API error fails the check instead of passing it.
                   labels="$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/labels?per_page=100" --jq '.[].name')"
 
-                  if grep -Fxq "$HOLD_LABEL" <<< "$labels"; then
+                  if grep -Fxq -- "$HOLD_LABEL" <<< "$labels"; then
                       echo "::error title=On hold::This pull request has the '$HOLD_LABEL' label, so it (and any pull request stacked above it) cannot merge. Remove the label when it is ready to land."
                       echo 'See https://github.com/canyongbs/common/blob/main/docs/references/pr-checks.md#no-hold-label'
                       exit 1
