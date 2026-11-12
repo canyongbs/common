@@ -238,7 +238,8 @@ jobs:
                           continue
 
                       paths = [entry['old_path'], path] if entry['old_path'] != path else [path]
-                      diff = git('diff', '-M', '-U0', '--no-color', '--no-ext-diff', merge_base, HEAD_SHA, '--', *paths)
+                      # Literal pathspecs, so a name like `src/[ab].php` cannot also match `src/a.php`.
+                      diff = git('--literal-pathspecs', 'diff', '-M', '-U0', '--no-color', '--no-ext-diff', merge_base, HEAD_SHA, '--', *paths)
                       counted, excluded = count_outside(diff, old_range, new_range)
                       totals['lines'] += counted
                       totals['copyright_lines'] += excluded
