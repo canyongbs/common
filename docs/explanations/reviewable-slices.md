@@ -46,7 +46,7 @@ There are three kinds of slice:
 
 A slice is not a commit (a slice may have several commits), not a ticket (a ticket may have many slices), and not a file type ("all the migrations" is a layer, not a slice).
 
-**Nothing unfinished reaches a customer.** A slice may include customer-facing surface, such as a Filament page or an action, as long as whatever customers can reach is finished and whatever is not finished is unreachable. That lets each slice merge as soon as it is approved. [Landing Work Customers Can't See Yet](./landing-work-customers-cant-see-yet.md) covers how.
+**Nothing unfinished or breaking reaches a customer until it is ready to be activated.** A slice may include customer-facing surface, such as a Filament page or an action, as long as whatever customers can reach is finished and whatever is not finished is unreachable. The same goes for changes to behaviour customers already use: the old behaviour keeps working until the new one is switched on. That lets each slice merge as soon as it is approved. [Landing Work Customers Can't See Yet](./landing-work-customers-cant-see-yet.md) covers how. This is a rule about the code, not the paperwork: pull request descriptions do not need to explain how a slice follows it.
 
 ## Slice by concept, not by layer
 
