@@ -136,22 +136,24 @@ trait InteractsWithCleanupTasks
 
     /**
      * Set the `ready` frontmatter value, adding the key when the stub does not include it.
+     *
+     * Accepts LF or CRLF line endings and keeps the ones the file already uses.
      */
     protected function withCleanupTaskReadiness(string $content, bool $ready): string
     {
         $value = $ready ? 'true' : 'false';
 
-        if (! preg_match('/\A---\n(.*?)\n---/s', $content, $matches)) {
+        if (! preg_match('/\A---(\r?\n)(.*?)\r?\n---/s', $content, $matches)) {
             return $content;
         }
 
-        $frontmatter = $matches[1];
+        [$block, $eol, $frontmatter] = $matches;
 
-        $updatedFrontmatter = preg_match('/^ready:.*$/m', $frontmatter)
-            ? preg_replace('/^ready:.*$/m', "ready: {$value}", $frontmatter)
-            : "{$frontmatter}\nready: {$value}";
+        $updatedFrontmatter = preg_match('/^ready:[^\r\n]*/m', $frontmatter)
+            ? preg_replace('/^ready:[^\r\n]*/m', "ready: {$value}", $frontmatter)
+            : "{$frontmatter}{$eol}ready: {$value}";
 
-        return "---\n{$updatedFrontmatter}\n---" . substr($content, strlen($matches[0]));
+        return "---{$eol}{$updatedFrontmatter}{$eol}---" . substr($content, strlen($block));
     }
 
     protected function markCleanupTaskReady(string $filePath): void

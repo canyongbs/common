@@ -215,6 +215,20 @@ describe('cleanup task readiness', function (): void {
 
         expect(file_get_contents($existingFile))->toContain('ready: true');
     });
+
+    it('marks an existing cleanup task with CRLF line endings as ready when --ready is passed', function (): void {
+        File::makeDirectory($this->cleanupDir, 0755, true);
+        $existingFile = $this->cleanupDir . '/2026_04_30_existing_task.md';
+        file_put_contents($existingFile, "---\r\ntitle: Existing Task\r\ncreated: 2026-04-30\r\nready: false\r\n---\r\n\r\n## Feature Flags\r\n\r\n## Temporary Migrations\r\n\r\n## Additional Cleanup\r\n");
+
+        $this->artisan('make:ff', ['name' => 'FinalSlice', '--ready' => true])
+            ->expectsChoice('Cleanup task', 'Add to existing cleanup task', ['Create new cleanup task', 'Add to existing cleanup task', 'Skip'])
+            ->expectsChoice('Select a cleanup task', '2026_04_30_existing_task.md', ['2026_04_30_existing_task.md'])
+            ->assertSuccessful();
+
+        expect(file_get_contents($existingFile))->toContain("ready: true\r\n---\r\n")
+            ->and(file_get_contents($existingFile))->not->toContain('ready: false');
+    });
 });
 
 describe('failure handling', function (): void {

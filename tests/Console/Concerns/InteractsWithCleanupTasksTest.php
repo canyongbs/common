@@ -289,4 +289,27 @@ describe('withCleanupTaskReadiness', function (): void {
 
         expect($result)->toBe("---\ntitle: Example\nready: true\n---\n\nready: false is mentioned in the body\n");
     });
+
+    it('updates the ready key in a file with CRLF line endings, keeping them', function (): void {
+        $command = $this->app->make(MakeCleanupTask::class);
+        $command->setLaravel($this->app);
+
+        $content = "---\r\ntitle: Example\r\nready: false\r\n---\r\n\r\n## Feature Flags\r\n";
+
+        $result = (new ReflectionMethod($command, 'withCleanupTaskReadiness'))->invoke($command, $content, true);
+
+        expect($result)->toBe("---\r\ntitle: Example\r\nready: true\r\n---\r\n\r\n## Feature Flags\r\n");
+    });
+
+    it('adds the ready key to a custom stub with CRLF line endings', function (): void {
+        File::makeDirectory($this->testDir . '/stubs', 0755, true);
+        file_put_contents($this->testDir . '/stubs/cleanup-task.stub', "---\r\ntitle: {{ title }}\r\ncreated: {{ date }}\r\n---\r\n\r\n## Feature Flags\r\n");
+
+        $command = $this->app->make(MakeCleanupTask::class);
+        $command->setLaravel($this->app);
+
+        $path = (new ReflectionMethod($command, 'createCleanupTask'))->invoke($command, 'test_task');
+
+        expect(file_get_contents($path))->toBe("---\r\ntitle: Test Task\r\ncreated: 2026-05-01\r\nready: false\r\n---\r\n\r\n## Feature Flags\r\n");
+    });
 });
