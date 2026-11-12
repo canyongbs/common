@@ -29,14 +29,16 @@ Choose per slice, not per feature; a single stack often uses all three.
 
 **Branch by abstraction, and expand and contract.** When a slice changes existing behaviour rather than adding new behaviour, neither of the above hides it: the old path is live. Introduce an abstraction over the old implementation, route callers through it, build the new implementation behind it, switch, then remove the old path in a later slice ([Fowler: Branch by Abstraction](https://martinfowler.com/bliki/BranchByAbstraction.html)). For schema the same idea is expand and contract: add the new column or table, write to both, move the readers, stop writing the old one, and drop it in a later release.
 
-## The keystone slice
+## The keystone
 
-A **keystone slice** is whatever makes the feature available to customers. It takes one of two shapes:
+The **keystone** is whatever makes the feature available to customers. It takes one of two shapes:
 
 - **Wire the entry point.** Earlier slices left the surface unwired; the keystone registers the resource, adds the navigation item, mounts the route or exposes the action. It is usually tens of lines.
 - **Activate the flag.** Earlier slices shipped their surface behind an inactive flag; the keystone is a migration that activates it, and it marks the flag's cleanup task ready.
 
-A stack of background work with no customer-facing change needs no keystone, and neither does a change fully gated by a flag that is already active. A keystone never carries new behaviour; anything more than wiring or activation belongs in a slice below it. It is always the last slice, and it is where the whole feature is run end to end before customers get it.
+The keystone normally goes in the slice that finishes the feature, usually the last concept slice, so the review that completes the feature also switches it on. That slice is where the whole feature is run end to end before customers get it. We avoid pull requests that only flip a switch: they cost a review and make a finished feature wait for it. A keystone gets its own last slice only when activation has to wait for something outside the stack, such as a product go-ahead or another ticket's work, or when the wiring or activation is complex enough to deserve its own review.
+
+A stack of background work with no customer-facing change needs no keystone, and neither does a change fully gated by a flag that is already active.
 
 ## Holding is a separate decision
 
