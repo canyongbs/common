@@ -42,7 +42,7 @@ A stack of background work with no customer-facing change needs no keystone, and
 
 ## Holding is a separate decision
 
-A stack can _land as approved_ or _hold and land together_ (see [Reviewable Slices](./reviewable-slices.md#landing-modes)). Landing as approved is the natural partner of flags and unwired slices: since nothing merged is reachable, there is usually no reason to hold. Hold only when an intermediate state would be unsafe on `main` even though customers cannot reach it (a migration that locks a busy table, say), or when product has not decided. Even in a held stack the flag stays inactive until the keystone. Holding is about **when code reaches `main`**; the flag is about **when customers reach the code**. Keep the two decisions separate.
+A stack can _land as approved_ or _hold and land together_ (see [Reviewable Slices](./reviewable-slices.md#landing-modes)). Landing as approved is the natural partner of flags and unwired slices: since nothing merged is reachable, there is usually no reason to hold. Hold only for timing, when product has not decided or a set of slices should be signed off as a whole. A hold never makes an unsafe slice safe: every slice must leave `main` working by itself, because a held stack is not guaranteed to land in one piece. Even in a held stack the flag stays inactive until the keystone. Holding is about **when code reaches `main`**; the flag is about **when customers reach the code**. Keep the two decisions separate.
 
 ## References
 
