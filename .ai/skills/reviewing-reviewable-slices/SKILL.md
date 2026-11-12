@@ -8,7 +8,7 @@ metadata:
 
 # Reviewing Reviewable Slices
 
-Review each slice on its own merits. Nobody reviews the whole stack: the author holds the whole feature in their head, the stack plan (and a senior's look at it) covers the whole-feature questions, and each slice's reviewer covers that slice. Different people reviewing different slices of one ticket is normal. The reasoning is in [Reviewable Slices](https://github.com/canyongbs/common/blob/main/docs/explanations/reviewable-slices.md).
+Review each slice on its own merits. Nobody reviews the whole stack: the author holds the whole feature in their head, the stack plan covers the whole-feature questions, and each slice's reviewer covers that slice. Different people reviewing different slices of one ticket is normal. The reasoning is in [Reviewable Slices](https://github.com/canyongbs/common/blob/main/docs/explanations/reviewable-slices.md).
 
 ## Review a slice
 
@@ -38,7 +38,7 @@ Approvals survive rebases that do not change a slice's diff. When a rebase does 
 
 ## Review a stack plan
 
-When asked to look over a plan before coding starts (Kevin Ullyott or Dan Harrin, ideally), answer:
+When someone asks you to look over a plan before coding starts (this is optional, never a required approval), answer:
 
 - Are these the right concepts, and is each slice one of them?
 - Is the foundation slice really shared, and is it used by the slice directly above it?
