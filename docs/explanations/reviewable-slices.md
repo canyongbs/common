@@ -79,7 +79,7 @@ We count **readable lines**: the lines a reviewer actually has to read. Lockfile
 
 | Readable lines | Verdict                                                                                       |
 | -------------- | --------------------------------------------------------------------------------------------- |
-| Up to 500      | 🟢 **Target.** The research's sweet spot is 300 to 500.                                       |
+| Up to 500      | 🟢 **Target.** A little above the research's 200 to 400, to allow for our boilerplate.        |
 | 500 to 1,000   | 🟡 **Sometimes acceptable.** Fine if it is still one concept; ask whether a split is clearer. |
 | 1,000 to 1,500 | 🟠 **Large.** Heavily discouraged; the description must say why it is not split.              |
 | Over 1,500     | 🔴 **Too large.** Needs an explanation and serious thought about splitting.                   |
