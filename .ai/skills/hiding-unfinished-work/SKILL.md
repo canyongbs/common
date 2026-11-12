@@ -9,7 +9,7 @@ metadata:
 
 # Hiding Unfinished Work
 
-**Nothing unfinished may reach a customer.** A slice may add customer-facing surface as long as what customers can reach is finished and what is not finished is unreachable. The reasoning is in [Landing Work Customers Can't See Yet](https://github.com/canyongbs/common/blob/main/docs/explanations/landing-work-customers-cant-see-yet.md).
+**Nothing unfinished or breaking may reach a customer until it is ready to be activated.** A slice may add customer-facing surface as long as what customers can reach is finished and what is not finished is unreachable, and behaviour customers already use keeps working until its replacement is switched on. This applies to all work, sliced or not. It is a rule about the code: pull request descriptions do not need to explain how a slice follows it. The reasoning is in [Landing Work Customers Can't See Yet](https://github.com/canyongbs/common/blob/main/docs/explanations/landing-work-customers-cant-see-yet.md).
 
 ## 1. Choose how to hide it
 
@@ -18,7 +18,7 @@ metadata:
 | Adds something new with a single entry point, or adds background work only                | **Not wired yet**                           |
 | Adds something new with several entry points, or its UI should be reviewed with its logic | **Behind a feature flag**                   |
 | Changes behaviour customers already use                                                   | **Branch by abstraction / expand-contract** |
-| Adds nothing a customer could reach                                                       | Nothing to hide; say so in the description  |
+| Adds nothing a customer could reach                                                       | Nothing to hide                             |
 
 **Not wired yet:** build the code but do not register the Filament resource or page, add the navigation item, mount the route, or add the action to its page or table. A later slice (the keystone, or the concept slice that needs it) wires it in.
 
@@ -69,7 +69,6 @@ Authors run this before marking a pull request ready; reviewers run it before ap
 - [ ] Tests cover the gated surface with the flag inactive (unreachable) and active (works).
 - [ ] Nothing customers already use changes without an abstraction or expand step that keeps the old path working.
 - [ ] If this is the keystone: it only wires or activates, the cleanup task is now `ready: true`, manual `activate()` calls are gone from tests, and the feature has been run end to end with the flag on.
-- [ ] The description says how this slice keeps unfinished work from customers.
 
 ---
 

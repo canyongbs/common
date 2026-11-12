@@ -1,8 +1,10 @@
 # Landing Work Customers Can't See Yet
 
-[Reviewable Slices](./reviewable-slices.md) lets a large feature merge into `main` one slice at a time, long before it is finished. That only works if one rule holds: **nothing unfinished reaches a customer.** This page explains the ideas we use to keep that rule. The step-by-step rules and the checklist for each slice are in the [`hiding-unfinished-work`](../../.ai/skills/hiding-unfinished-work/SKILL.md) skill.
+[Reviewable Slices](./reviewable-slices.md) lets a large feature merge into `main` one slice at a time, long before it is finished. That only works if one rule holds: **nothing unfinished or breaking reaches a customer until it is ready to be activated.** The rule applies to all of our work, sliced or not. This page explains the ideas we use to keep it. The step-by-step rules and the checklist for each slice are in the [`hiding-unfinished-work`](../../.ai/skills/hiding-unfinished-work/SKILL.md) skill.
 
-A slice may include customer-facing surface: a Filament page, an action, a form field, a widget, an API field. What it may not do is let a customer reach something that is not finished. We do not require every slice to be invisible, and we do not require a final "switch it on" slice on every stack. We require that whatever is visible works and is finished, and that whatever is not finished is unreachable. The ticket closes when the feature is available to customers, not when the first slice merges.
+A slice may include customer-facing surface: a Filament page, an action, a form field, a widget, an API field. What it may not do is let a customer reach something that is not finished, or change behaviour customers already rely on before its replacement is switched on. We do not require every slice to be invisible, and we do not require a final "switch it on" slice on every stack. We require that whatever is visible works and is finished, and that whatever is not finished is unreachable. The ticket closes when the feature is available to customers, not when the first slice merges.
+
+The rule is about the code, not the paperwork. Reviewers check it in the diff, and pull request descriptions do not need to explain how a slice follows it.
 
 ## Feature flags now do two jobs
 
