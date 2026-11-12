@@ -111,7 +111,7 @@ Keystone: slice 3 activates `MeetingEmailsFeature`, because it finishes the feat
 
 - **Where it goes:** in the **bottom** pull request's description, where every reviewer and the stack map start. Optionally copy it to the Jira ticket as well.
 - **No sign-off needed:** plans are usually settled by the author, or in sprint or tech planning. If you are unsure of the boundaries (a large or unfamiliar feature, or one other tickets depend on), a quick look from a senior member of staff or leadership can help. It is optional and never a gate; as an agent, do not suggest seeking approval for a plan.
-- **Landing mode:** _land as approved_ is the default: each slice merges as soon as it is approved. Choose _hold and land together_ only when an intermediate state would be unsafe on `main` even though customers cannot reach it, or when product is still deciding; state the reason in the plan. Mechanics are in `building-and-landing-stacks`.
+- **Landing mode:** _land as approved_ is the default: each slice merges as soon as it is approved. Choose _hold and land together_ only for timing, when product is still deciding or a set of slices should be signed off as a whole, and state the reason in the plan. A hold is never a safety mechanism: every slice must be safe on `main` by itself (test 4). Mechanics are in `building-and-landing-stacks`.
 
 See [reference/examples.md](reference/examples.md) for candidate slices with verdicts and a complete worked plan.
 
