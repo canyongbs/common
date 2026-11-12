@@ -48,7 +48,7 @@ Every slice must pass all five:
 
 1. **One idea.** The title needs no "and". If it does, it is two slices.
 2. **Self-explanatory.** A reviewer with no context understands what it does and why from the description and the diff. Nothing essential lives only in the author's head or a later pull request.
-3. **Complete for its idea.** It includes its own tests, and a **real use** of every new model, service, job or method it adds. Never add code with "this will be used in a later pull request".
+3. **Complete for its idea.** It includes its own tests, and a **real use** of every new model, service, job or method it adds. **One exception:** a foundation slice, or the lower part of a concept split because it was over budget, may add code whose only use is in the slice directly above it; its own tests must still prove what it does. Never add code that "will be used in a later pull request" for any other reason.
 4. **Safe to land.** After it merges, the application still works for users and developers. Migrations are tolerated by the code already deployed (see the `zero-downtime` guideline), nothing unfinished is reachable by a customer (it is unwired, or gated behind an inactive feature flag), and nothing customers already use changes until its replacement is switched on (see `hiding-unfinished-work`).
 5. **Sized for one sitting.** Within the budget in section 2.
 
@@ -70,7 +70,7 @@ Decision rules:
 
 1. Default to **one slice per concept column**.
 2. Ship a horizontal row on its own only when two or more concepts share it (a **foundation** slice), or when a single column is over budget (then split that column into two cells, lower layers first).
-3. Never ship a row that nothing uses yet, except a foundation slice used by the slice directly above it.
+3. Never ship a row that nothing uses yet, except a foundation slice or the lower cell of an over-budget column, used by the slice directly above it.
 4. If the feature needs a **keystone** (an entry point to wire, or a flag to activate), it is its own slice, it is last, and it contains nothing but the wiring or activation. Not every feature needs one; say so in the plan when it does not.
 5. Refactors that prepare the ground go in their own slice **below** everything else, with no behaviour change.
 
@@ -115,7 +115,7 @@ See [reference/examples.md](reference/examples.md) for candidate slices with ver
 
 - **Do** keep one pull request when the work fits the budget and is one idea.
 - **Do** stop and re-plan as soon as work in progress outgrows the budget.
-- **Do** include a use of every new class or method in the slice that adds it.
+- **Do** include a use of every new class or method in the slice that adds it (or, for a foundation slice or the lower part of an over-budget concept, in the slice directly above it).
 - **Don't** split by file type or layer just to make pull requests smaller.
 - **Don't** let a slice reveal anything unfinished to customers.
 - **Don't** mix a refactor or mechanical change with behaviour changes.
