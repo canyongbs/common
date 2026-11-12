@@ -59,6 +59,8 @@ if (SomeFeature::active()) {
 }
 ```
 
+**Always check a flag through its class, `SomeFeature::active()`**, everywhere: PHP, Filament closures, and Blade (`@if (SomeFeature::active())`). Do not use Pennant's `@feature` Blade directive or `Feature::active(SomeFeature::class)`: they read Pennant's default store, so they silently miss landlord flags, which live in the `landlord` store. This overrides the generic `pennant-development` guidance.
+
 ## Activating a Feature Flag
 
 ### Preferred — activate in the same migration
