@@ -13,6 +13,12 @@ jobs:
         name: Readable lines
         runs-on: ubuntu-24.04
 
+        # One run per pull request at a time, whatever the event, so overlapping runs cannot post duplicate comments
+        # or overwrite a newer estimate with an older one.
+        concurrency:
+            group: pr-size-${{ github.event.pull_request.number || github.ref }}
+            cancel-in-progress: true
+
         # Skip merge queue runs, forks and Dependabot (their tokens cannot comment), and edits that did not change the base branch.
         if: >-
             github.event_name == 'pull_request'
@@ -184,23 +190,36 @@ jobs:
 
                   totals = dict(raw_lines=0, raw_files=0, lines=0, files=0, ignored_files=0, renames=0, copyright_lines=0, deleted_files=0)
 
-                  blobs = read_blobs(sha for entry in entries.values() if entry['status'] != 'D' for sha in (entry['old_sha'], entry['new_sha']))
+
+                  def kind_of(path, entry):
+                      if is_ignored(path, patterns) or (entry['status'] == 'D' and is_ignored(entry['old_path'], patterns)):
+                          return 'ignored'
+                      if entry['status'] == 'R' and entry.get('added', 0) == 0 and entry.get('deleted', 0) == 0:
+                          return 'rename'
+                      if entry.get('binary'):
+                          return 'ignored'
+                      if entry['status'] == 'D':
+                          return 'deleted'
+                      return 'counted'
+
+
+                  kinds = {path: kind_of(path, entry) for path, entry in entries.items()}
+
+                  # Only counted files need their contents; ignored, binary, renamed and deleted files never do.
+                  blobs = read_blobs(sha for path, entry in entries.items() if kinds[path] == 'counted' for sha in (entry['old_sha'], entry['new_sha']))
 
                   for path, entry in entries.items():
                       added, deleted = entry.get('added', 0), entry.get('deleted', 0)
                       totals['raw_lines'] += added + deleted
                       totals['raw_files'] += 1
 
-                      if is_ignored(path, patterns) or (entry['status'] == 'D' and is_ignored(entry['old_path'], patterns)):
+                      if kinds[path] == 'ignored':
                           totals['ignored_files'] += 1
                           continue
-                      if entry['status'] == 'R' and added == 0 and deleted == 0:
+                      if kinds[path] == 'rename':
                           totals['renames'] += 1
                           continue
-                      if entry.get('binary'):
-                          totals['ignored_files'] += 1
-                          continue
-                      if entry['status'] == 'D':
+                      if kinds[path] == 'deleted':
                           totals['deleted_files'] += 1
                           totals['lines'] += 1
                           totals['files'] += 1
