@@ -137,7 +137,7 @@ class PhoneInput extends Field implements HasAffixActions
         parent::setUp();
 
         $this->ipLookup(function (): ?string {
-            return rescue(fn(): ?string => Http::get('https://ipinfo.io/json')->json('country'), app()->getLocale(), report: false);
+            return rescue(fn (): ?string => Http::get('https://ipinfo.io/json')->json('country'), app()->getLocale(), report: false);
         });
 
         $this->afterStateHydrated(function (PhoneInput $component, mixed $livewire, mixed $state): void {
@@ -264,7 +264,7 @@ class PhoneInput extends Field implements HasAffixActions
         if ($this->phoneRule) {
             $this->rules = array_values(array_filter(
                 $this->rules,
-                fn(array $existingRule): bool => $existingRule[0] !== $this->phoneRule,
+                fn (array $existingRule): bool => $existingRule[0] !== $this->phoneRule,
             ));
         }
 

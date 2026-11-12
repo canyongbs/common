@@ -39,17 +39,17 @@ use CanyonGBS\Common\Filament\Infolists\Components\PhoneInput\PhoneEntry;
 use Filament\Schemas\Schema;
 
 describe('shared defaults', function (): void {
-  it('formats numbers in the international format by default', function (): void {
-    $phoneEntry = PhoneEntry::make('phone')->container(Schema::make());
+    it('formats numbers in the international format by default', function (): void {
+        $phoneEntry = PhoneEntry::make('phone')->container(Schema::make());
 
-    expect(strip_tags((string) $phoneEntry->formatState('+14155552671')))->toContain('+1 415-555-2671');
-  });
+        expect(strip_tags((string) $phoneEntry->formatState('+14155552671')))->toContain('+1 415-555-2671');
+    });
 
-  it('allows an app to override the display format', function (): void {
-    $phoneEntry = PhoneEntry::make('phone')
-      ->container(Schema::make())
-      ->displayFormat(PhoneInputNumberType::NATIONAL);
+    it('allows an app to override the display format', function (): void {
+        $phoneEntry = PhoneEntry::make('phone')
+            ->container(Schema::make())
+            ->displayFormat(PhoneInputNumberType::NATIONAL);
 
-    expect(strip_tags((string) $phoneEntry->formatState('+14155552671')))->toContain('(415) 555-2671');
-  });
+        expect(strip_tags((string) $phoneEntry->formatState('+14155552671')))->toContain('(415) 555-2671');
+    });
 });
