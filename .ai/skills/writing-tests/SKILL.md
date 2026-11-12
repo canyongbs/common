@@ -199,6 +199,8 @@ For landlord/tenant suite placement and tricks (making a tenant current, asserti
 
 The suite runs your migrations (`RefreshDatabase`), and, most of the time, the activation migration already activates each Feature Flag — so **every flag is active in tests by default**. **Never call `SomeFeature::activate()`** in a test, `beforeEach()`, or helper to enable a flag: it is redundant and masks a broken activation migration (which must make the test fail). Only call `SomeFeature::deactivate()`, and only in the specific case that exercises the inactive (pre-migration) branch. See the `managing-feature-flags` skill.
 
+**The one exception:** a flag for a feature still being delivered over several pull requests has no activation migration until the final (keystone) pull request. Until then, tests of the active path call `SomeFeature::activate()`, and the keystone pull request removes those calls. See the `hiding-unfinished-work` skill.
+
 ## Filament Resource Testing
 
 Instantiate the page/relation-manager component with `Livewire::test()` and drive it with Filament's testing helpers.
@@ -359,7 +361,7 @@ Run tests with `php artisan test --compact`; narrow with `--filter=` or a path w
 - `assertStatus(200)` instead of `assertSuccessful()`; forgetting `Notification::fake()` / `Http::fake()` before asserting they were (not) sent.
 - Forgetting the `authorization` `describe()` block on Filament resource pages.
 - Asserting a column or field merely exists (a static `assertTableColumnExists()` list) instead of testing behaviour — reserve existence/visibility assertions for conditional columns via `assertTableColumnVisible()` / `assertTableColumnHidden()`.
-- Calling `SomeFeature::activate()` in a test — flags are already active because migrations run; only `deactivate()` (for the inactive-branch case) belongs in a test.
+- Calling `SomeFeature::activate()` in a test — flags are already active because migrations run; only `deactivate()` (for the inactive-branch case) belongs in a test. The exception is a flag whose activation migration has not been written yet (see Feature Flags above).
 
 ---
 
