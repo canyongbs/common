@@ -67,7 +67,7 @@ Authors run this before marking a pull request ready; reviewers run it before ap
 
 - [ ] Every **unfinished** way in that this slice adds (page, action, route, API field, notification, job trigger) is unwired or gated on the feature's release flag, **in this slice**. A finished part may be reachable.
 - [ ] The feature's release flag is still inactive after this slice deploys; no migration here activates it unless this slice carries the keystone.
-- [ ] If this slice introduces a flag, the feature's cleanup task (`ready: false`) exists and lists it.
+- [ ] If this slice introduces a flag, the feature's cleanup task exists and lists it, with `ready: false`, unless this slice also carries the keystone (then `ready: true`, as for a change delivered in a single pull request).
 - [ ] If this slice adds more cleanup, the feature's cleanup task is updated.
 - [ ] Tests cover the gated surface with the flag inactive (unreachable) and active (works).
 - [ ] Nothing customers already use changes without an abstraction or expand step that keeps the old path working.
