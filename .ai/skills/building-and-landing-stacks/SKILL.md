@@ -48,9 +48,8 @@ gh stack submit --auto             # push every branch and open DRAFT pull reque
     1. What the product does after this slice merges.
     2. What a reviewer should pay attention to.
     3. How it was tested.
-    4. How unfinished work is kept from customers (unwired, behind which flag, or nothing customer-facing). See `hiding-unfinished-work`.
-    5. The ticket's acceptance criteria this slice covers, where the ticket has any.
-    6. If it is over 1,000 readable lines, why it is not split.
+    4. The ticket's acceptance criteria this slice covers, where the ticket has any.
+    5. If it is over 1,000 readable lines, why it is not split.
 - **Bottom pull request only:** also include the stack plan from `planning-reviewable-slices`.
 - **Cleanup tasks:** list any cleanup task the slice adds or changes, and whether it is marked `ready` (see `managing-cleanup-tasks`).
 
