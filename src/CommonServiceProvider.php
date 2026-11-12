@@ -42,7 +42,10 @@ use CanyonGBS\Common\BrowserNotifications\Http\Controllers\ServiceWorkerControll
 use CanyonGBS\Common\BrowserNotifications\Http\Controllers\StorePushSubscriptionController;
 use CanyonGBS\Common\BrowserNotifications\Listeners\SendBrowserNotificationForDatabaseNotification;
 use CanyonGBS\Common\BrowserNotifications\Support\BrowserNotificationReportHandler;
+use CanyonGBS\Common\Console\Commands\ActivateFeatureFlag;
 use CanyonGBS\Common\Console\Commands\CreatePermissionMigration;
+use CanyonGBS\Common\Console\Commands\DeactivateFeatureFlag;
+use CanyonGBS\Common\Console\Commands\ListFeatureFlags;
 use CanyonGBS\Common\Console\Commands\MakeCleanupTask;
 use CanyonGBS\Common\Console\Commands\MakeFeatureFlag;
 use CanyonGBS\Common\Console\Commands\MakeTmpMigration;
@@ -50,6 +53,9 @@ use CanyonGBS\Common\Console\Commands\Publish;
 use CanyonGBS\Common\Database\Migrations\PermissionMigrationCreator;
 use CanyonGBS\Common\Support\Auditing\RegisterArchiveAuditEvents;
 use CanyonGBS\Common\Support\PermissionResolver;
+use CanyonGBS\Common\Support\Tenancy\NullTenantRunner;
+use CanyonGBS\Common\Support\Tenancy\SpatieTenantRunner;
+use CanyonGBS\Common\Support\Tenancy\TenantRunner;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
@@ -78,6 +84,9 @@ class CommonServiceProvider extends PackageServiceProvider
                 'create_role_permissions_table',
             ])
             ->hasCommands([
+                ActivateFeatureFlag::class,
+                DeactivateFeatureFlag::class,
+                ListFeatureFlags::class,
                 MakeCleanupTask::class,
                 MakeFeatureFlag::class,
                 Publish::class,
@@ -93,6 +102,13 @@ class CommonServiceProvider extends PackageServiceProvider
         $this->app->singleton(PermissionIndex::class);
 
         $this->app->scoped(PermissionResolver::class);
+
+        // Resolved lazily: Spatie's tenant binding may be registered after this provider.
+        $this->app->bind(TenantRunner::class, function (Application $app): TenantRunner {
+            return SpatieTenantRunner::isAvailable($app)
+                ? new SpatieTenantRunner($app, $app['config'])
+                : new NullTenantRunner();
+        });
 
         $this->app->singleton(MakeTmpMigration::class, function (Application $app): MakeTmpMigration {
             return new MakeTmpMigration($app['migration.creator'], $app[Composer::class]);
