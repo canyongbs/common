@@ -29,7 +29,7 @@ Review each slice on its own merits. Nobody reviews the whole stack: the author 
 - A refactor or mechanical change mixed with a behaviour change.
 - A slice over 1,000 readable lines without a stated reason, or over 1,500 without serious justification. You may decline to review for size alone and ask for a split.
 - Anything unfinished that a customer could reach, or a breaking change customers would see before it is switched on.
-- A flag activated anywhere other than the slice that finishes the feature while the stack is still open.
+- The feature's release flag (one hiding unfinished work) activated before the slice that finishes the feature. Zero-downtime flags that a lower slice activates in the migration that makes its schema change are fine, as long as nothing unfinished becomes reachable.
 - A pull request that only activates a flag or wires an entry point, when that change could have gone in the slice that finishes the feature. It is justified only when activation must wait for something outside the stack, or the wiring or activation is complex enough to deserve its own review.
 
 ## Re-review after a rebase
