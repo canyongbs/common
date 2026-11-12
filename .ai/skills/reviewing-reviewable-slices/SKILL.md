@@ -1,6 +1,6 @@
 ---
 name: reviewing-reviewable-slices
-description: 'Use when reviewing a pull request that is a slice of a larger feature or part of a GitHub stack, when asked to check whether a pull request or planned slice is reviewable, when reviewing a stack plan, or when reviewing the keystone slice that makes a feature available to customers. Covers the reviewer protocol (read the stack map top-down, review your slice bottom-up), the five review-readiness tests, what to push back on (size, missing uses of new code, refactors mixed with behaviour, unfinished work reachable by customers), re-reviewing after a rebase, and reviewing the keystone. Can also be run on your own pull request before marking it ready. Do not use for: planning slices (use `planning-reviewable-slices`), building or merging a stack (use `building-and-landing-stacks`), or general code-quality review that has nothing to do with size or slicing.'
+description: 'Use when reviewing a pull request that is a slice of a larger feature or part of a GitHub stack, when asked to check whether a pull request or planned slice is reviewable, when reviewing a stack plan, or when reviewing the slice that makes a feature available to customers (the keystone). Covers the reviewer protocol (read the stack map top-down, review your slice bottom-up), the five review-readiness tests, what to push back on (size, missing uses of new code, refactors mixed with behaviour, unfinished work reachable by customers), re-reviewing after a rebase, and reviewing the keystone. Can also be run on your own pull request before marking it ready. Do not use for: planning slices (use `planning-reviewable-slices`), building or merging a stack (use `building-and-landing-stacks`), or general code-quality review that has nothing to do with size or slicing.'
 license: Elastic-2.0
 metadata:
     author: canyongbs
@@ -29,7 +29,8 @@ Review each slice on its own merits. Nobody reviews the whole stack: the author 
 - A refactor or mechanical change mixed with a behaviour change.
 - A slice over 1,000 readable lines without a stated reason, or over 1,500 without serious justification. You may decline to review for size alone and ask for a split.
 - Anything unfinished that a customer could reach, or a breaking change customers would see before it is switched on.
-- A flag activated anywhere other than the keystone slice while the stack is still open.
+- A flag activated anywhere other than the slice that finishes the feature while the stack is still open.
+- A pull request that only activates a flag or wires an entry point, when that change could have gone in the slice that finishes the feature. It is justified only when activation must wait for something outside the stack, or the wiring or activation is complex enough to deserve its own review.
 
 ## Re-review after a rebase
 
@@ -41,17 +42,17 @@ When asked to look over a plan before coding starts (Kevin Ullyott or Dan Harrin
 
 - Are these the right concepts, and is each slice one of them?
 - Is the foundation slice really shared, and is it used by the slice directly above it?
-- Does the feature need a keystone, and is it last?
+- Does the feature need a keystone, and is it in the slice that finishes the feature (or, if it is on its own, is the reason given)?
 - Does every slice leave the application working, with nothing unfinished or breaking reachable?
 - Is the landing mode right, and is a hold justified?
 
 A comment is enough.
 
-## Review the keystone slice
+## Review the slice that makes the feature available
 
-The keystone wires an entry point or activates a flag, and nothing more. Check:
+The keystone (wiring the entry point or activating the flag) normally comes with the slice that finishes the feature. Review that slice's own concept as usual, then also check:
 
-- It makes available only what the slices below have already approved.
+- The keystone makes available only what this slice and the slices below have built and approved.
 - The feature has been run end to end from the customer's entry point with the flag on. Run it yourself; do not just read it.
 - The enable path (setting, permission, tenant) behaves correctly.
 - The feature's cleanup task is now marked `ready: true`, and tests that activated the flag by hand rely on the activation migration instead.
