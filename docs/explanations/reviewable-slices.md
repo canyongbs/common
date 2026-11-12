@@ -101,7 +101,7 @@ Two rules have no exceptions:
 
 Some useful properties of GitHub stacks:
 
-- **Merging is bottom-up and atomic.** Merging a slice merges every unmerged slice below it, in one operation, through the merge queue as a single group. A slice cannot be merged out of order.
+- **Merging is bottom-up.** Merging a slice merges every unmerged slice below it, in one operation, and a slice cannot be merged out of order. Through a merge queue a stack usually lands as one group, but a very large stack, or a slice ejected from the queue, can land in parts. Never rely on slices landing together for safety: every slice must leave `main` working on its own.
 - **Approvals survive rebases that do not change a slice's diff.** We keep "dismiss stale approvals" on. When `main` moves or a lower slice merges, GitHub [rebases the stack and keeps approvals](https://docs.github.com/en/pull-requests/reference/stacked-pull-requests#rebasing) on every slice whose diff is unchanged. Only a rebase that actually changes a slice's diff, typically after review feedback on a lower slice, dismisses that slice's approval.
 - **CI runs for every slice** as if it targeted `main`, so a stack of five slices runs CI five times. That is the cost of every slice passing on its own.
 
@@ -110,7 +110,7 @@ Some useful properties of GitHub stacks:
 Each stack picks one of two ways to land.
 
 - **Land as approved (the default).** Every slice merges as soon as it is approved and green. Lower slices are unreachable by customers until the keystone, if there is one, makes the feature available. This is [how Meta, Google and Shopify run stacks](https://gearflow.com/blog/making-a-version-of-stacked-diffs-work-for-a-github-org): the stack exists only during review, and `main` integrates continuously.
-- **Hold and land together.** For when an intermediate state would be unsafe on `main` even though customers cannot reach it, or when product is still deciding. Put the `hold` label on the bottom slice. A required check fails while the label is present, and since merging any slice merges everything below it, nothing in the stack can merge. Reviews and CI carry on as normal. The hold has no time limit and comes off only when someone removes the label.
+- **Hold and land together.** For timing, never for safety: when product is still deciding, or when a set of slices should be signed off as a whole before any of it lands. Every slice must still be safe on `main` by itself, because a held stack is not guaranteed to land in one piece. Put the `hold` label on the bottom slice. A required check fails while the label is present, and since merging any slice merges everything below it, nothing in the stack can merge. Reviews and CI carry on as normal. The hold has no time limit and comes off only when someone removes the label.
 
 We use a label rather than draft status for holds because "draft" already means something else in our flow: _not ready for review yet_. A draft is not auto-assigned a reviewer; a held pull request should be. The label says exactly one thing, is visible in the pull request list, and is enforced by the same workflow as the stack rule.
 
