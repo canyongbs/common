@@ -20,7 +20,7 @@ Code review is how two people arrive at a shared understanding of a change. The 
 **What the evidence says.**
 
 - The most-cited study of code review, [SmartBear's analysis of reviews at Cisco](https://tekin.co.uk/2020/05/proof-your-thousand-line-pull-requests-create-more-bugs), found that the rate at which reviewers find defects falls off once a review grows past roughly **200 to 400 lines**, and again after about **60 to 90 minutes** of continuous reviewing. The dataset was small and the exact thresholds have been [fairly criticised](https://blog.wesleyac.com/posts/bogus-code-review-data), but the direction is not in dispute.
-- [Google's data](https://research.google/pubs/modern-code-review-a-case-study-at-google/) agrees: across 9 million reviewed changes, the median change was about 24 lines and roughly 90% touched fewer than 10 files.
+- [Google's data](https://research.google/pubs/modern-code-review-a-case-study-at-google/) agrees: across 9 million reviewed changes, the median change was about 24 lines.
 - [Microsoft Research](https://microsoft.com/en-us/research/?p=164195) found that **understanding** the change is the central act of reviewing. Catching bugs, suggesting alternatives and spreading knowledge all depend on the reviewer first building an accurate model of what changed and why. A 9,000-line pull request cannot be modelled, only skimmed. It gets approved because it looks plausible, and the team gains none of the knowledge transfer that is review's main outcome.
 
 **Why it matters more now.** AI assistance has made producing lines cheap while leaving the cost of understanding them unchanged. [DORA's 2025 research](https://newsletter.getdx.com/p/doras-2025-research-on-the-impact) lists working in small batches as one of the capabilities that decide whether AI helps or hurts a team, and found code review becoming the bottleneck where batches grew. GitHub [shipped native stacked pull requests](https://github.blog/changelog/2026-10-06-stacked-pull-requests-generally-available/) in 2026 for the same reason.
@@ -38,11 +38,12 @@ The signals that a ticket needs slicing, and how to plan it, are in [`planning-r
 
 A reviewable slice is one self-contained change that a reviewer can fully understand in a single sitting, using only the pull request, its description, the existing codebase, the slices already reviewed below it and, usually, the ticket. That is [Google's definition of "small"](https://google.github.io/eng-practices/review/developer/small-cls.html#what-is-small): it is about concepts, not line counts. We use line counts as a proxy because concepts are hard to measure.
 
-There are three kinds of slice:
+There are two kinds of slice:
 
 - A **concept slice** is one complete behaviour carried through all its layers: its data, logic, job, notification, policy, user interface and tests. Almost every slice is one of these.
 - A **foundation slice** is shared groundwork (a migration, a base model, a factory, a flag class) that two or more concept slices depend on, shipped first and used immediately by the slice above it.
-- A **keystone slice** is the slice that makes the feature available to customers, by wiring up its entry point or activating its feature flag. It is always last, and not every feature needs one.
+
+The change that makes a feature available to customers, by wiring up its entry point or activating its feature flag, is its **keystone**. It normally goes in the slice that finishes the feature, usually the last concept slice, so the review that completes the feature also switches it on. A pull request that does nothing but flip a switch wastes a review and makes the feature wait for it. A keystone gets a slice of its own only when it has to wait for something outside the stack, or is complex enough to deserve its own review (see [`planning-reviewable-slices`](../../.ai/skills/planning-reviewable-slices/SKILL.md)). Not every feature needs a keystone.
 
 A slice is not a commit (a slice may have several commits), not a ticket (a ticket may have many slices), and not a file type ("all the migrations" is a layer, not a slice).
 
@@ -62,15 +63,15 @@ Split a feature into complete, encapsulated concepts, not technical layers. [Goo
 
 **When layers make sense.** Horizontal slices are the exception, for two cases: shared foundation that several concepts depend on, and a single concept that is still too big after slicing. Google's grid is how we decide. Put the layers down the side and the concepts across the top; every cell is a candidate slice. Slicing by concept merges a whole column into one slice when it fits the budget. Slicing horizontally ships a row on its own.
 
-| Layer                                     | Shared                                                | Pre-meeting reminder | Post-meeting follow-up |
-| ----------------------------------------- | ----------------------------------------------------- | -------------------- | ---------------------- |
-| Keystone (makes it customer-available)    | Migration that activates the feature's flag (slice 4) |                      |                        |
-| Filament UI, gated behind the flag        |                                                       | in slice 2           | in slice 3             |
-| Job, mailable, audit record               |                                                       | in slice 2           | in slice 3             |
-| Scheduling and business rules             |                                                       | in slice 2           | in slice 3             |
-| Shared foundation: migration, model, flag | slice 1                                               |                      |                        |
+| Layer                                     | Shared  | Pre-meeting reminder | Post-meeting follow-up |
+| ----------------------------------------- | ------- | -------------------- | ---------------------- |
+| Keystone (makes it customer-available)    |         |                      | in slice 3             |
+| Filament UI, gated behind the flag        |         | in slice 2           | in slice 3             |
+| Job, mailable, audit record               |         | in slice 2           | in slice 3             |
+| Scheduling and business rules             |         | in slice 2           | in slice 3             |
+| Shared foundation: migration, model, flag | slice 1 |                      |                        |
 
-Four slices: foundation, reminder, follow-up, keystone. If the reminder column alone came out over budget, it would split into two cells (rules first, then job, mail and UI), and nothing else would change. The decision rules and more examples are in [`planning-reviewable-slices`](../../.ai/skills/planning-reviewable-slices/SKILL.md).
+Three slices: foundation, reminder, and follow-up. The follow-up slice finishes the feature, so it also activates the flag. If the reminder column alone came out over budget, it would split into two cells (rules first, then job, mail and UI), and nothing else would change. The decision rules and more examples are in [`planning-reviewable-slices`](../../.ai/skills/planning-reviewable-slices/SKILL.md).
 
 ## Our size budget, and why
 
@@ -85,7 +86,7 @@ We count **readable lines**: the lines a reviewer actually has to read. Lockfile
 
 The target follows the research rather than stretching it: SmartBear's defect-detection curve flattens between 200 and 400 lines, and we give a little room on top because our slices carry whole concepts through a boilerplate-heavy stack. Above 1,000 lines the cost of a split is almost always lower than the cost of a review nobody can finish with full attention.
 
-Two more things affect size. **Files:** Google's data shows about 90% of changes touch fewer than 10 files; a 200-line change across 40 files is harder to review than 300 lines in 4, because each file is a context switch. **Time:** a slice is the right size when a reviewer can finish it, with full attention, in one sitting. There is no minimum: [no change is too small](https://google.github.io/eng-practices/review/developer/small-cls.html), and a stack of many tiny slices is fine.
+Time affects size too: a slice is the right size when a reviewer can finish it, with full attention, in one sitting. There is no minimum: [no change is too small](https://google.github.io/eng-practices/review/developer/small-cls.html), and a stack of many tiny slices is fine. We deliberately do not set a limit on the number of files: one concept carried through our layers naturally touches many files, and a file limit would push authors towards slicing by layer.
 
 Large is acceptable when the change is mechanical: deleting whole files, or a change generated by a tool you trust completely (a framework upgrade, a codemod), where the reviewer only confirms the intent. Keep those separate from hand-written changes.
 
@@ -108,7 +109,7 @@ Some useful properties of GitHub stacks:
 
 Each stack picks one of two ways to land.
 
-- **Land as approved (the default).** Every slice merges as soon as it is approved and green. Lower slices are unreachable by customers until the keystone slice, if there is one, makes the feature available. This is [how Meta, Google and Shopify run stacks](https://gearflow.com/blog/making-a-version-of-stacked-diffs-work-for-a-github-org): the stack exists only during review, and `main` integrates continuously.
+- **Land as approved (the default).** Every slice merges as soon as it is approved and green. Lower slices are unreachable by customers until the keystone, if there is one, makes the feature available. This is [how Meta, Google and Shopify run stacks](https://gearflow.com/blog/making-a-version-of-stacked-diffs-work-for-a-github-org): the stack exists only during review, and `main` integrates continuously.
 - **Hold and land together.** For when an intermediate state would be unsafe on `main` even though customers cannot reach it, or when product is still deciding. Put the `hold` label on the bottom slice. A required check fails while the label is present, and since merging any slice merges everything below it, nothing in the stack can merge. Reviews and CI carry on as normal. The hold has no time limit and comes off only when someone removes the label.
 
 We use a label rather than draft status for holds because "draft" already means something else in our flow: _not ready for review yet_. A draft is not auto-assigned a reviewer; a held pull request should be. The label says exactly one thing, is visible in the pull request list, and is enforced by the same workflow as the stack rule.
@@ -129,7 +130,7 @@ The API work did not need all of archiving. It needed the foundation: the archiv
 
 - **The author holds the whole feature in their head; reviewers do not.** Each slice is reviewed on its own merits by whoever GitHub's auto-assignment picks, and different people reviewing different slices of one ticket is normal. That is how [Google](https://google.github.io/eng-practices/review/developer/small-cls.html#splitting) and [Meta](https://newsletter.pragmaticengineer.com/p/stacked-diffs) work, and it is what makes a stack cheaper to review than a monolith rather than the same work in more tabs.
 - **A senior look at the plan is heavily recommended** for every stack: Kevin Ullyott or Dan Harrin reads the slice plan before coding starts. It is the cheapest moment to catch a wrong boundary: twenty minutes instead of an afternoon.
-- **The keystone slice** is small by construction, and is where the feature is run end to end before customers get it.
+- **The slice that makes the feature available** is where the feature is run end to end, with its flag on, before customers get it.
 - **Copilot code review** is requested automatically once a pull request's checks pass, including on drafts, so authors see its comments before asking a person to review. A bot comment is never an approval; a person approves every slice.
 
 ## Breaking work down before coding
@@ -141,7 +142,7 @@ The API work did not need all of archiving. It needed the foundation: the archiv
 | Source                                                                                                                                                                                                                                                                                                                                                                         | What it supports                                                                                       |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
 | [Google Engineering Practices: Small CLs](https://google.github.io/eng-practices/review/developer/small-cls.html) (CC-BY 3.0)                                                                                                                                                                                                                                                  | What "small" means, including a use of every new API, splitting vertically and horizontally, the grid. |
-| [Sadowski et al., Modern Code Review: A Case Study at Google](https://research.google/pubs/modern-code-review-a-case-study-at-google/)                                                                                                                                                                                                                                         | Median change of about 24 lines; about 90% under 10 files.                                             |
+| [Sadowski et al., Modern Code Review: A Case Study at Google](https://research.google/pubs/modern-code-review-a-case-study-at-google/)                                                                                                                                                                                                                                         | Median change of about 24 lines.                                                                       |
 | [Bacchelli and Bird, Expectations, Outcomes, and Challenges of Modern Code Review](https://microsoft.com/en-us/research/?p=164195)                                                                                                                                                                                                                                             | Understanding is the core act of review; knowledge transfer is its main outcome.                       |
 | [Tekin Suleyman: Proof your thousand-line pull requests create more bugs](https://tekin.co.uk/2020/05/proof-your-thousand-line-pull-requests-create-more-bugs) and [Wesley Aptekar-Cassels: A bogus study on code review](https://blog.wesleyac.com/posts/bogus-code-review-data)                                                                                              | The SmartBear figures behind 200 to 400 lines and 60 to 90 minutes, and why they are a heuristic.      |
 | [DORA 2025, via DX](https://newsletter.getdx.com/p/doras-2025-research-on-the-impact) and [DORA: Trunk-based development](https://dora.dev/capabilities/trunk-based-development/)                                                                                                                                                                                              | Small batches as a core capability; review as the bottleneck under AI.                                 |
