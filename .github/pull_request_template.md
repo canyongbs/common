@@ -4,9 +4,9 @@
 
 ### Technical Description
 
-> Replace this block. Describe only what this pull request changes, even when it is one slice of a larger stack: what the product does after it merges, what a reviewer should pay attention to, and how you tested it. Reference the ticket's acceptance criteria where it has them.
+> Replace this block. Describe only what this pull request changes, even when it is one slice of a larger stack, so a reviewer can understand it without reading the rest of the stack: what the product does after it merges, what a reviewer should pay attention to, and how you tested it. Reference the ticket's acceptance criteria where it has them.
 >
-> If this is the bottom pull request of a stack, include the stack plan. If the size comment marks this pull request as large, say why it is not split. See [Reviewable Slices](https://github.com/canyongbs/common/blob/main/docs/explanations/reviewable-slices.md).
+> If the size comment marks this pull request as large, say why it is not split. See [Reviewable Slices](https://github.com/canyongbs/common/blob/main/docs/explanations/reviewable-slices.md).
 
 ### Any deployment steps required?
 
