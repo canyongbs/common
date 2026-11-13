@@ -12,7 +12,7 @@ A pull request should be small enough for a reviewer to understand fully in one 
 - **Every pull request passes all CI on its own.** A pull request that builds on another unmerged branch must be a **GitHub stacked pull request** whose bottom targets `main` or `release/*`; never target someone's feature branch with a plain pull request.
 - **Nothing unfinished or breaking may reach a customer until it is ready to be activated.** Leave new work unwired or gate it behind an inactive feature flag, and keep behaviour customers already use working until its replacement is switched on. This is about the code; pull request descriptions do not need to explain it.
 - **Open pull requests as drafts.** The author marks them ready for review once CI is green, which triggers reviewer assignment.
-- **Describe only this slice:** what the product does after it merges, what a reviewer should pay attention to, and how it was tested. The bottom pull request of a stack also carries the stack plan.
+- **Describe only this slice:** what the product does after it merges, what a reviewer should pay attention to, and how it was tested. Each pull request must be reviewable on its own, without reading the rest of the stack.
 
 @if ($assist->hasSkillsEnabled())
 Follow `planning-reviewable-slices` to decide and plan slices, `building-and-landing-stacks` to build and open a stack, `hiding-unfinished-work` to keep unfinished work from customers, and `reviewing-reviewable-slices` when reviewing. The reasoning is in [Reviewable Slices](https://github.com/canyongbs/common/blob/main/docs/explanations/reviewable-slices.md).

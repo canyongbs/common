@@ -47,7 +47,7 @@ Count **readable lines**: additions plus deletions in files a reviewer must read
 Every slice must pass all five:
 
 1. **One idea.** The title needs no "and". If it does, it is two slices.
-2. **Self-explanatory.** A reviewer with no context understands what it does and why from the description and the diff. Nothing essential lives only in the author's head or a later pull request.
+2. **Self-explanatory.** A reviewer with no context understands what it does and why from the description, the diff, the code it builds on and the ticket, without reading the other slices. Nothing essential lives only in the author's head or another pull request.
 3. **Complete for its idea.** It includes its own tests, and a **real use** of every new model, service, job or method it adds. **One exception:** a foundation slice, or the lower part of a concept split because it was over budget, may add code whose only use is in the slice directly above it; its own tests must still prove what it does. Never add code that "will be used in a later pull request" for any other reason.
 4. **Safe to land.** After it merges, the application still works for users and developers. Migrations are tolerated by the code already deployed (see the `zero-downtime` guideline), nothing unfinished is reachable by a customer (it is unwired, or gated behind an inactive feature flag), and nothing customers already use changes until its replacement is switched on (see `hiding-unfinished-work`).
 5. **Sized for one sitting.** Within the budget in section 2.
@@ -75,7 +75,7 @@ Decision rules:
     - activation must wait for something outside the stack, such as a product or customer go-ahead, or another ticket's work landing first; or
     - the wiring or activation is complex enough to deserve its own review, such as a data migration with real logic or wiring across many entry points.
 
-    Say which applies in the plan. Not every feature needs a keystone; say so in the plan when it does not.
+    Say which applies in that slice's description. Not every feature needs a keystone.
 
 5. Refactors that prepare the ground go in their own slice **below** everything else, with no behaviour change.
 
@@ -93,7 +93,7 @@ Bottom to top:
 
 ## 6. Write the plan
 
-Write one line per slice saying what the product does after it merges, then check each against section 3 and section 2. Use this format:
+Write one line per slice saying what the product does after it merges, then check each against section 3 and section 2. The plan is the author's tool for building the stack; it does not go in any pull request description, because each slice must be reviewable on its own. A simple format:
 
 ```markdown
 ### Stack plan
@@ -109,9 +109,9 @@ Keystone: slice 3 activates `MeetingEmailsFeature`, because it finishes the feat
 | 3   | Post-meeting follow-up email | concept + keystone | sends reminders and follow-ups to customers        |
 ```
 
-- **Where it goes:** in the **bottom** pull request's description, where every reviewer and the stack map start. Optionally copy it to the Jira ticket as well.
+- **Where it goes:** keep it for yourself, or put it on the Jira ticket if it is worth sharing (for example, when asking someone to look at it, or when other tickets depend on it).
 - **No sign-off needed:** plans are usually settled by the author, or in sprint or tech planning. If you are unsure of the boundaries (a large or unfamiliar feature, or one other tickets depend on), a quick look from a senior member of staff or leadership can help. It is optional and never a gate; as an agent, do not suggest seeking approval for a plan.
-- **Landing mode:** _land as approved_ is the default: each slice merges as soon as it is approved. Choose _hold and land together_ only for timing, when product is still deciding or a set of slices should be signed off as a whole, and state the reason in the plan. A hold is never a safety mechanism: every slice must be safe on `main` by itself (test 4). Mechanics are in `building-and-landing-stacks`.
+- **Landing mode:** _land as approved_ is the default: each slice merges as soon as it is approved. Choose _hold and land together_ only for timing, when product is still deciding or a set of slices should be signed off as a whole, and state the reason in the description of the pull request that carries the `hold` label. A hold is never a safety mechanism: every slice must be safe on `main` by itself (test 4). Mechanics are in `building-and-landing-stacks`.
 
 See [reference/examples.md](reference/examples.md) for candidate slices with verdicts and a complete worked plan.
 
