@@ -36,7 +36,7 @@ The signals that a ticket needs slicing, and how to plan it, are in [`planning-r
 
 ## What a reviewable slice is
 
-A reviewable slice is one self-contained change that a reviewer can fully understand in a single sitting, using only the pull request, its description, the existing codebase, the slices already reviewed below it and, usually, the ticket. That is [Google's definition of "small"](https://google.github.io/eng-practices/review/developer/small-cls.html#what-is-small): it is about concepts, not line counts. We use line counts as a proxy because concepts are hard to measure.
+A reviewable slice is one self-contained change that a reviewer can fully understand in a single sitting, using only the pull request, its description, the code it builds on and, usually, the ticket. A reviewer should not need to read the other slices in the stack. That is [Google's definition of "small"](https://google.github.io/eng-practices/review/developer/small-cls.html#what-is-small): it is about concepts, not line counts. We use line counts as a proxy because concepts are hard to measure.
 
 There are two kinds of slice:
 
@@ -128,7 +128,7 @@ The API work did not need all of archiving. It needed the foundation: the archiv
 
 ## Who reviews what
 
-- **The author holds the whole feature in their head; reviewers do not.** Each slice is reviewed on its own merits by whoever GitHub's auto-assignment picks, and different people reviewing different slices of one ticket is normal. That is how [Google](https://google.github.io/eng-practices/review/developer/small-cls.html#splitting) and [Meta](https://newsletter.pragmaticengineer.com/p/stacked-diffs) work, and it is what makes a stack cheaper to review than a monolith rather than the same work in more tabs.
+- **The author holds the whole feature in their head; reviewers do not.** Each slice is reviewed on its own merits by whoever GitHub's auto-assignment picks, in any order, and different people reviewing different slices of one ticket is normal. That is how [Google](https://google.github.io/eng-practices/review/developer/small-cls.html#splitting) and [Meta](https://newsletter.pragmaticengineer.com/p/stacked-diffs) work, and it is what makes a stack cheaper to review than a monolith rather than the same work in more tabs.
 - **A plan needs no sign-off.** Plans are usually settled by the author, or in sprint or tech planning. If you are unsure of the boundaries (a large or unfamiliar feature, or one other tickets depend on), a quick look from a senior member of staff or leadership can help, since planning is the cheapest moment to catch a wrong boundary. It is optional and never a gate.
 - **The slice that makes the feature available** is where the feature is run end to end, with its flag on, before customers get it.
 - **Copilot code review** is requested automatically once a pull request's checks pass, including on drafts, so authors see its comments before asking a person to review. A bot comment is never an approval; a person approves every slice.
