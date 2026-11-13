@@ -50,7 +50,10 @@ gh stack submit --auto             # push every branch and open DRAFT pull reque
     3. How it was tested.
     4. The ticket's acceptance criteria this slice covers, where the ticket has any.
     5. If it is over 1,000 readable lines, why it is not split.
-- **Bottom pull request only:** also include the stack plan from `planning-reviewable-slices`.
+    6. If it carries the `hold` label, or is a keystone-only slice, why.
+
+    Write it so a reviewer can understand this pull request without reading the rest of the stack. Do not paste the stack plan in.
+
 - **Cleanup tasks:** list any cleanup task the slice adds or changes, and whether it is marked `ready` (see `managing-cleanup-tasks`).
 
 ## Respond to review in the right slice
@@ -66,16 +69,16 @@ gh stack top
 ```
 
 - **Approvals survive rebases that do not change a slice's diff.** A rebase that does change a slice's diff dismisses its approval. Re-request the person who approved it before (`gh pr edit <number> --add-reviewer <login>`); they review only GitHub's "changes since your last review".
-- **Review bottom-up.** Ask for review of the bottom slice first, because feedback there can change the slices above it; upper slices can be reviewed in parallel. When landing as approved, merge each lower slice as soon as it is approved. When holding, get every slice approved, then remove the label.
+- **Slices can be reviewed in any order, and at the same time.** If feedback on one slice changes code that slices above it build on, update those slices too (`gh stack rebase --upstack`). When landing as approved, merge each slice once it and every slice below it are approved. When holding, get every slice approved, then remove the label.
 - When `main` moves ahead, use **Rebase stack** on GitHub or `gh stack sync`. After a lower slice merges, GitHub rebases and retargets the rest automatically; run `gh stack sync --prune` locally.
 
 ## Landing
 
-Choose the landing mode in the plan.
+Choose the landing mode while planning.
 
 **Land as approved (the default).** Merge each slice as soon as it is approved and green. Merging is bottom-up: merging a slice merges every unmerged slice below it, usually through the merge queue as one group. Use the merge button on the pull request or `gh stack merge <number> --yes`. **Never use `gh pr merge` on a stacked pull request**; it cannot merge a stack.
 
-**Hold and land together.** Use it only for timing: when product is still deciding, or when a set of slices should be signed off as a whole before any of it lands. State the reason in the plan. A hold is never a safety mechanism. If a slice is ejected from the merge queue, the slices below it can still land without it, so every slice must be safe on `main` by itself.
+**Hold and land together.** Use it only for timing: when product is still deciding, or when a set of slices should be signed off as a whole before any of it lands. State the reason in the description of the pull request that carries the label. A hold is never a safety mechanism. If a slice is ejected from the merge queue, the slices below it can still land without it, so every slice must be safe on `main` by itself.
 
 ```bash
 gh pr edit <bottom-pr-number> --add-label hold      # nothing in the stack can merge
@@ -97,7 +100,7 @@ gh pr edit <bottom-pr-number> --remove-label hold   # release it
 
 - **Do** open stacked pull requests as drafts with `gh stack submit --auto`.
 - **Do** run the repository's checks on every slice.
-- **Do** put the stack plan in the bottom pull request.
+- **Do** make every pull request understandable on its own.
 - **Don't** target another branch with a plain pull request.
 - **Don't** merge a slice from the top with `gh pr merge`, or merge out of order.
 - **Don't** mark a pull request ready for review on the author's behalf.
