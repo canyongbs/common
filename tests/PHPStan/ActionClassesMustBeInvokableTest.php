@@ -99,3 +99,17 @@ it('does not report classes in nested Filament actions namespaces excluded by de
 
     expect($result['exitCode'])->toBe(0, "PHPStan should not report classes in nested excluded Filament action namespaces.\nOutput: {$result['output']}");
 });
+
+it('does not report public methods provided by vendor traits, including inherited ones', function () use ($runPhpStanOnActionClassFixture): void {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionWithTraitMethodsFixture.php');
+
+    expect($result['exitCode'])->toBe(0, "PHPStan should not report public methods provided by vendor traits.\nOutput: {$result['output']}");
+});
+
+it('still reports public methods from application traits and the class body', function () use ($runPhpStanOnActionClassFixture): void {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionWithTraitAndOwnPublicMethodFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('disallowed public method \"execute\"');
+    expect($result['output'])->toContain('disallowed public method \"fromTrait\"');
+});

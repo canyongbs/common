@@ -39,6 +39,7 @@ namespace CanyonGBS\Common\Rules\ActionClassesMustBeInvokable;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -52,7 +53,7 @@ use ReflectionMethod;
  * - define a public "__invoke" method;
  * - not expose any other public methods except "__construct".
  *
- * Private and protected helper methods are allowed.
+ * Private and protected helper methods are allowed, as are public methods provided by vendor traits.
  *
  * Abstract classes are ignored.
  *
@@ -112,11 +113,16 @@ class ActionClassesMustBeInvokableRule implements Rule
         }
 
         $nativeReflection = $classReflection->getNativeReflection();
+        $traitMethodNames = $this->collectTraitMethodNames($classReflection);
 
         foreach ($nativeReflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             $methodName = $method->getName();
 
             if (in_array($methodName, ['__invoke', '__construct'], true)) {
+                continue;
+            }
+
+            if (isset($traitMethodNames[$methodName]) && ! $this->isDeclaredInClassBody($node, $methodName)) {
                 continue;
             }
 
@@ -130,6 +136,53 @@ class ActionClassesMustBeInvokableRule implements Rule
         }
 
         return $errors;
+    }
+
+    /**
+     * Public method names provided by vendor traits used by the class or any of its parents, including nested traits.
+     *
+     * Vendor trait methods are owned by the framework or package that ships the trait (for example Laravel's
+     * "InteractsWithQueue"), so a method added by a dependency upgrade must not fail the action. Traits in the
+     * application are not exempt because their public methods can be changed.
+     *
+     * @return array<string, true>
+     */
+    private function collectTraitMethodNames(ClassReflection $classReflection): array
+    {
+        $names = [];
+
+        foreach ([$classReflection, ...$classReflection->getParents()] as $class) {
+            foreach ($class->getTraits(true) as $trait) {
+                if (! $this->isVendorFile($trait->getFileName())) {
+                    continue;
+                }
+
+                foreach ($trait->getNativeReflection()->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                    $names[$method->getName()] = true;
+                }
+            }
+        }
+
+        return $names;
+    }
+
+    private function isVendorFile(string|false|null $fileName): bool
+    {
+        return is_string($fileName) && str_contains($fileName, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR);
+    }
+
+    /**
+     * A method written in the action's own body is still checked even when a trait declares the same name.
+     */
+    private function isDeclaredInClassBody(InClassNode $node, string $methodName): bool
+    {
+        foreach ($node->getOriginalNode()->getMethods() as $classMethod) {
+            if ($classMethod->name->toString() === $methodName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isActionClass(string $className): bool
