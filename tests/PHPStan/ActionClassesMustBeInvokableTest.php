@@ -113,3 +113,17 @@ it('still reports public methods from application traits and the class body', fu
     expect($result['output'])->toContain('disallowed public method \"execute\"');
     expect($result['output'])->toContain('disallowed public method \"fromTrait\"');
 });
+
+it('reports a public method an application parent class overrides from a vendor trait', function () use ($runPhpStanOnActionClassFixture): void {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/ActionInheritingOverriddenTraitMethodFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('disallowed public method \"release\"');
+});
+
+it('only exempts traits in the Composer vendor directory, not any path containing vendor', function () use ($runPhpStanOnActionClassFixture): void {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/vendor/ActionWithTraitUnderVendorPathFixture.php');
+
+    expect($result['exitCode'])->not->toBe(0);
+    expect($result['output'])->toContain('disallowed public method \"fromTrait\"');
+});

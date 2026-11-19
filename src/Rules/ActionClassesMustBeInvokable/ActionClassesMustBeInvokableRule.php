@@ -36,10 +36,10 @@
 
 namespace CanyonGBS\Common\Rules\ActionClassesMustBeInvokable;
 
+use Composer\Autoload\ClassLoader;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
-use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -113,7 +113,6 @@ class ActionClassesMustBeInvokableRule implements Rule
         }
 
         $nativeReflection = $classReflection->getNativeReflection();
-        $traitMethodNames = $this->collectTraitMethodNames($classReflection);
 
         foreach ($nativeReflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             $methodName = $method->getName();
@@ -122,7 +121,7 @@ class ActionClassesMustBeInvokableRule implements Rule
                 continue;
             }
 
-            if (isset($traitMethodNames[$methodName]) && ! $this->isDeclaredInClassBody($node, $methodName)) {
+            if ($this->isProvidedByVendorTrait($method)) {
                 continue;
             }
 
@@ -139,45 +138,23 @@ class ActionClassesMustBeInvokableRule implements Rule
     }
 
     /**
-     * Public method names provided by vendor traits used by the class or any of its parents, including nested traits.
-     *
      * Vendor trait methods are owned by the framework or package that ships the trait (for example Laravel's
      * "InteractsWithQueue"), so a method added by a dependency upgrade must not fail the action. Traits in the
      * application are not exempt because their public methods can be changed.
      *
-     * @return array<string, true>
+     * A method imported from a trait reports the trait's file, while the declaring class reports its own, so the
+     * two files differ only for trait methods. Using the defining file also respects overrides and aliases.
      */
-    private function collectTraitMethodNames(ClassReflection $classReflection): array
+    private function isProvidedByVendorTrait(ReflectionMethod $method): bool
     {
-        $names = [];
+        $methodFile = $method->getFileName();
 
-        foreach ([$classReflection, ...$classReflection->getParents()] as $class) {
-            foreach ($class->getTraits(true) as $trait) {
-                if (! $this->isVendorFile($trait->getFileName())) {
-                    continue;
-                }
-
-                foreach ($trait->getNativeReflection()->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                    $names[$method->getName()] = true;
-                }
-            }
+        if ($methodFile === false || $methodFile === $method->getDeclaringClass()->getFileName()) {
+            return false;
         }
 
-        return $names;
-    }
-
-    private function isVendorFile(string|false|null $fileName): bool
-    {
-        return is_string($fileName) && str_contains($fileName, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR);
-    }
-
-    /**
-     * A method written in the action's own body is still checked even when a trait declares the same name.
-     */
-    private function isDeclaredInClassBody(InClassNode $node, string $methodName): bool
-    {
-        foreach ($node->getOriginalNode()->getMethods() as $classMethod) {
-            if ($classMethod->name->toString() === $methodName) {
+        foreach (array_keys(ClassLoader::getRegisteredLoaders()) as $vendorDirectory) {
+            if (str_starts_with($methodFile, $vendorDirectory . DIRECTORY_SEPARATOR)) {
                 return true;
             }
         }
