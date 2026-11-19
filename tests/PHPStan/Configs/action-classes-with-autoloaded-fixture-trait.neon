@@ -1,0 +1,6 @@
+includes:
+    - action-classes-must-be-invokable.neon
+
+parameters:
+    bootstrapFiles:
+        - ../Fixtures/vendor/TraitInSeparateFile/ActionFixtureTraitInSeparateFile.php

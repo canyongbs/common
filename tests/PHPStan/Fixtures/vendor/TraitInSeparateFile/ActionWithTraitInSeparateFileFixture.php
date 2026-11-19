@@ -36,14 +36,9 @@
 
 namespace App\Actions;
 
-trait ActionFixtureTraitUnderVendorPath
+class ActionWithTraitInSeparateFileFixture
 {
-    public function fromTrait(): void {}
-}
-
-class ActionWithTraitUnderVendorPathFixture
-{
-    use ActionFixtureTraitUnderVendorPath;
+    use ActionFixtureTraitInSeparateFile;
 
     public function __invoke(): void {}
 }

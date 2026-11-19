@@ -33,10 +33,10 @@
 
 </COPYRIGHT>
 */
-$runPhpStanOnActionClassFixture = function (string $filePath): array {
+$runPhpStanOnActionClassFixture = function (string $filePath, string $config = 'action-classes-must-be-invokable'): array {
     $basePath = dirname(__DIR__, 2);
     $phpstanBin = escapeshellarg($basePath . '/vendor/bin/phpstan');
-    $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/action-classes-must-be-invokable.neon');
+    $configPath = escapeshellarg($basePath . '/tests/PHPStan/Configs/' . $config . '.neon');
     $file = escapeshellarg($filePath);
     $command = "{$phpstanBin} analyse {$file} --configuration={$configPath} --error-format=json --no-progress 2>&1";
     exec($command, $outputLines, $exitCode);
@@ -121,8 +121,8 @@ it('reports a public method an application parent class overrides from a vendor 
     expect($result['output'])->toContain('disallowed public method \"release\"');
 });
 
-it('only exempts traits in the Composer vendor directory, not any path containing vendor', function () use ($runPhpStanOnActionClassFixture): void {
-    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/vendor/ActionWithTraitUnderVendorPathFixture.php');
+it('only exempts traits in the Composer vendor directory, not application traits under a path containing vendor', function () use ($runPhpStanOnActionClassFixture): void {
+    $result = $runPhpStanOnActionClassFixture('tests/PHPStan/Fixtures/vendor/TraitInSeparateFile/ActionWithTraitInSeparateFileFixture.php', 'action-classes-with-autoloaded-fixture-trait');
 
     expect($result['exitCode'])->not->toBe(0);
     expect($result['output'])->toContain('disallowed public method \"fromTrait\"');
