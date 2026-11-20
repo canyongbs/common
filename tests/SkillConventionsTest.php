@@ -36,21 +36,22 @@
 
 /**
  * Enforces Canyon GBS' own conventions for the common-authored skills in
- * `.ai/skills` — the frontmatter values every skill we ship is expected to set.
+ * `.ai/skills` — the frontmatter values every skill we write is expected to set.
+ * Third-party skills copied in verbatim (marked by an `UPSTREAM.md`) are exempt.
  *
  * These are our preferences, not requirements of the Agent Skills specification
  * (those objective limits live in the `SkillSpecCompliance` test). Expect this
  * file to grow as we add more house rules.
  *
- * The `skillFrontmatter()` helper and the `skills` dataset are shared from
- * `tests/Pest.php`.
+ * The `skillFrontmatter()` helper and the `common-authored skills` dataset are
+ * shared from `tests/Pest.php`.
  */
 it('is licensed under `Elastic-2.0`', function (string $name, string $path): void {
     $frontmatter = skillFrontmatter($path);
 
     expect($frontmatter)->toHaveKey('license')
         ->and($frontmatter['license'])->toBe('Elastic-2.0');
-})->with('skills');
+})->with('common-authored skills');
 
 it('is authored by `canyongbs`', function (string $name, string $path): void {
     $frontmatter = skillFrontmatter($path);
@@ -59,4 +60,4 @@ it('is authored by `canyongbs`', function (string $name, string $path): void {
         ->and($frontmatter['metadata'])->toBeArray()
         ->and($frontmatter['metadata'])->toHaveKey('author')
         ->and($frontmatter['metadata']['author'])->toBe('canyongbs');
-})->with('skills');
+})->with('common-authored skills');
