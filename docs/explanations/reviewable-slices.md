@@ -133,10 +133,6 @@ The API work did not need all of archiving. It needed the foundation: the archiv
 - **The slice that makes the feature available** is where the feature is run end to end, with its flag on, before customers get it.
 - **Copilot code review** is requested automatically once a pull request's checks pass, including on drafts, so authors see its comments before asking a person to review. A bot comment is never an approval; a person approves every slice.
 
-## Breaking work down before coding
-
-> **Placeholder — not yet written.** This section will describe how to break a ticket down into slices before writing code, with or without AI assistance. Until it is written, plan with the grid above and [`planning-reviewable-slices`](../../.ai/skills/planning-reviewable-slices/SKILL.md).
-
 ## References
 
 | Source                                                                                                                                                                                                                                                                                                                                                                         | What it supports                                                                                       |
