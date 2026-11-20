@@ -55,7 +55,7 @@ The keystone (wiring the entry point or activating the flag) normally comes with
 - The keystone makes available only what this slice and the slices below have built and approved.
 - The feature has been run end to end from the customer's entry point with the flag on. Run it yourself; do not just read it.
 - The enable path (setting, permission, tenant) behaves correctly.
-- The feature's cleanup task is now marked `ready: true`, and tests that activated the flag by hand rely on the activation migration instead.
+- The feature's cleanup task is now marked `ready: true`. Tests that activated the flag by hand may keep those calls until the flag is cleaned up.
 
 ## AI review
 
