@@ -9,7 +9,7 @@ metadata:
 
 # Hiding Unfinished Work
 
-**Nothing unfinished or breaking may reach a customer until it is ready to be activated.** A slice may add customer-facing surface as long as what customers can reach is finished and what is not finished is unreachable, and behaviour customers already use keeps working until its replacement is switched on. This applies to all work, sliced or not. It is a rule about the code: pull request descriptions do not need to explain how a slice follows it. The reasoning is in [Landing Work Customers Can't See Yet](https://github.com/canyongbs/common/blob/main/docs/explanations/landing-work-customers-cant-see-yet.md).
+**Nothing from a ticket may reach customers until the ticket is finished.** A ticket normally covers a complete feature. Until the slice that finishes it, no slice may change what customers see or how the application behaves for them, even if the part it adds is finished on its own. A slice may add customer-facing code as long as no customer can reach it, and behaviour customers already use keeps working unchanged until the finishing slice switches the new behaviour on. If part of the work should reach customers sooner, it needs its own ticket. This applies to all work, sliced or not. It is a rule about the code: pull request descriptions do not need to explain how a slice follows it. The reasoning is in [Landing Work Customers Can't See Yet](https://github.com/canyongbs/common/blob/main/docs/explanations/landing-work-customers-cant-see-yet.md).
 
 ## 1. Choose how to hide it
 
@@ -59,13 +59,13 @@ The keystone is the change that makes the feature available to customers. It is 
 
 **Put it in the slice that finishes the feature**, usually the last concept slice, rather than in a pull request of its own. A pull request that only flips a switch costs a review and delays the feature. Give the keystone its own last slice only when activation must wait for something outside the stack (a product or customer go-ahead, another ticket's work), or when the wiring or activation is complex enough to deserve its own review (see `planning-reviewable-slices`).
 
-In the slice that carries the keystone, also mark the cleanup task `ready: true`. Before it is approved, the feature must have been run end to end from the customer's entry point with the flag on. A stack with nothing customer-facing needs no keystone, and neither does work that sits behind another feature's flag, which that feature's own stack will activate.
+In the slice that carries the keystone, also mark the cleanup task `ready: true`. Before it is approved, the feature must have been run end to end from the customer's entry point with the flag on. A stack that changes nothing customers see or rely on, such as a refactor, needs no keystone, and neither does work that sits behind another feature's flag, which that feature's own stack will activate.
 
 ## 5. Checklist for each slice
 
 Authors run this before marking a pull request ready; reviewers run it before approving.
 
-- [ ] Every **unfinished** way in that this slice adds (page, action, route, API field, notification, job trigger) is unwired or gated on the feature's release flag, **in this slice**. A finished part may be reachable.
+- [ ] Unless this slice finishes the ticket, every way in that it adds (page, action, route, API field, notification, job trigger) is unwired or gated on the feature's release flag, **in this slice**, and nothing customers already use behaves differently. This holds even for parts that are finished on their own.
 - [ ] The feature's release flag is still inactive after this slice deploys; no migration here activates it unless this slice carries the keystone.
 - [ ] If this slice introduces a flag, the feature's cleanup task exists and lists it, with `ready: false`, unless this slice also carries the keystone (then `ready: true`, as for a change delivered in a single pull request).
 - [ ] If this slice adds more cleanup, the feature's cleanup task is updated.

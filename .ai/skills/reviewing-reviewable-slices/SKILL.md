@@ -18,7 +18,7 @@ Review each slice on its own merits. Nobody reviews the whole stack: the author 
     1. **One idea:** the title needs no "and".
     2. **Self-explanatory:** the description, the diff, the code it builds on and the ticket are enough; nothing depends on reading another pull request.
     3. **Complete for its idea:** it has its own tests, and every new model, service, job or method is actually used in this slice. The exception is a foundation slice, or the lower part of a concept split because it was over budget: its new code may be used only by the slice directly above it, and its own tests must prove what it does.
-    4. **Safe to land:** the application still works after it merges, migrations are tolerated by deployed code, **nothing unfinished is reachable by a customer**, and **nothing customers already use changes before its replacement is switched on**. Check the code, not the description: every new page, action, route, API field, notification and job trigger that exposes **unfinished** work is unwired, or gated behind the feature's inactive release flag **in this slice**, and each gated path is tested with the flag on and off. Finished work, including what the slice that finishes the feature makes available, may be reachable. Use the checklist in `hiding-unfinished-work`.
+    4. **Safe to land:** the application still works after it merges, migrations are tolerated by deployed code, and, **unless this slice finishes the ticket, nothing customers see or rely on changes**, even for parts that are finished on their own. Check the code, not the description: every new page, action, route, API field, notification and job trigger is unwired, or gated behind the feature's inactive release flag **in this slice**, behaviour customers already use is unchanged, and each gated path is tested with the flag on and off. Only the slice that finishes the ticket makes its work available. Use the checklist in `hiding-unfinished-work`.
     5. **Sized for one sitting:** check the readable-lines comment on the pull request against the budget.
 4. **Approve when the slice is right on its own.** Do not withhold approval because a slice above it does not exist yet; that is the stack working as intended.
 
@@ -28,8 +28,8 @@ Review each slice on its own merits. Nobody reviews the whole stack: the author 
 - New models, services, jobs or methods with no caller in the slice (outside the foundation and split-concept exception), or "will be used in a later pull request".
 - A refactor or mechanical change mixed with a behaviour change.
 - A slice over 1,000 readable lines without a stated reason, or over 1,500 without serious justification. You may decline to review for size alone and ask for a split.
-- Anything unfinished that a customer could reach, or a breaking change customers would see before it is switched on.
-- The feature's release flag (one hiding unfinished work) activated before the slice that finishes the feature. Zero-downtime flags that a lower slice activates in the migration that makes its schema change are fine, as long as nothing unfinished becomes reachable.
+- Anything from the ticket that a customer could see or would notice before the slice that finishes the ticket, even a part that is finished on its own.
+- The feature's release flag (one hiding unfinished work) activated before the slice that finishes the ticket. Zero-downtime flags that a lower slice activates in the migration that makes its schema change are fine, as long as nothing customers see or rely on changes.
 - A pull request that only activates a flag or wires an entry point, when that change could have gone in the slice that finishes the feature. It is justified only when activation must wait for something outside the stack, or the wiring or activation is complex enough to deserve its own review.
 
 ## Re-review after a rebase
@@ -43,7 +43,7 @@ When someone asks you to look over a plan before coding starts (this is optional
 - Are these the right concepts, and is each slice one of them?
 - Is the foundation slice really shared, and is it used by the slice directly above it?
 - Does the feature need a keystone, and is it in the slice that finishes the feature (or, if it is on its own, is the reason given)?
-- Does every slice leave the application working, with nothing unfinished or breaking reachable?
+- Does every slice leave the application working, with nothing customers see or rely on changing before the slice that finishes the ticket?
 - Is the landing mode right, and is a hold justified?
 
 A comment is enough.

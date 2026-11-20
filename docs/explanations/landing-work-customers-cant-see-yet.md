@@ -1,8 +1,8 @@
 # Landing Work Customers Can't See Yet
 
-[Reviewable Slices](./reviewable-slices.md) lets a large feature merge into `main` one slice at a time, long before it is finished. That only works if one rule holds: **nothing unfinished or breaking reaches a customer until it is ready to be activated.** The rule applies to all of our work, sliced or not. This page explains the ideas we use to keep it. The step-by-step rules and the checklist for each slice are in the [`hiding-unfinished-work`](../../.ai/skills/hiding-unfinished-work/SKILL.md) skill.
+[Reviewable Slices](./reviewable-slices.md) lets a large feature merge into `main` one slice at a time, long before it is finished. That only works if one rule holds: **nothing from a ticket reaches customers until the ticket is finished.** The rule applies to all of our work, sliced or not. This page explains the ideas we use to keep it. The step-by-step rules and the checklist for each slice are in the [`hiding-unfinished-work`](../../.ai/skills/hiding-unfinished-work/SKILL.md) skill.
 
-A slice may include customer-facing surface: a Filament page, an action, a form field, a widget, an API field. What it may not do is let a customer reach something that is not finished, or change behaviour customers already rely on before its replacement is switched on. We do not require every slice to be invisible, and we do not require a final "switch it on" slice on every stack. We require that whatever is visible works and is finished, and that whatever is not finished is unreachable. The ticket closes when the feature is available to customers, not when the first slice merges.
+A ticket normally covers a complete feature or change, and customers should only ever experience it whole: as things were before the ticket, or as they are once it is done. So until the slice that finishes the ticket, no slice may change what customers see or how the application behaves for them, even if the part it adds is finished on its own. A slice may still contain customer-facing code (a Filament page, an action, a form field, a widget, an API field, a notification or a job) as long as no customer can reach it yet, and behaviour customers already rely on keeps working unchanged. The slice that finishes the ticket switches the work on. That does not have to be a separate "switch it on" slice; see [The keystone](#the-keystone). If part of the work should reach customers sooner, it is a separate deliverable and needs its own ticket. The ticket closes when its work is available to customers, not when the first slice merges.
 
 The rule is about the code, not the paperwork. Reviewers check it in the diff, and pull request descriptions do not need to explain how a slice follows it.
 
@@ -38,7 +38,7 @@ The **keystone** is whatever makes the feature available to customers. It takes 
 
 The keystone normally goes in the slice that finishes the feature, usually the last concept slice, so the review that completes the feature also switches it on. That slice is where the whole feature is run end to end before customers get it. We avoid pull requests that only flip a switch: they cost a review and make a finished feature wait for it. A keystone gets its own last slice only when activation has to wait for something outside the stack, such as a product go-ahead or another ticket's work, or when the wiring or activation is complex enough to deserve its own review.
 
-A stack of background work with no customer-facing change needs no keystone, and neither does work that sits behind another feature's flag, which that feature's own stack will activate.
+A stack that changes nothing customers see or rely on, such as a refactor, needs no keystone, and neither does work that sits behind another feature's flag, which that feature's own stack will activate.
 
 ## Holding is a separate decision
 

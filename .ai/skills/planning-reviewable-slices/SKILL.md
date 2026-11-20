@@ -49,7 +49,7 @@ Every slice must pass all five:
 1. **One idea.** The title needs no "and". If it does, it is two slices.
 2. **Self-explanatory.** A reviewer with no context understands what it does and why from the description, the diff, the code it builds on and the ticket, without reading the other slices. Nothing essential lives only in the author's head or another pull request.
 3. **Complete for its idea.** It includes its own tests, and a **real use** of every new model, service, job or method it adds. **One exception:** a foundation slice, or the lower part of a concept split because it was over budget, may add code whose only use is in the slice directly above it; its own tests must still prove what it does. Never add code that "will be used in a later pull request" for any other reason.
-4. **Safe to land.** After it merges, the application still works for users and developers. Migrations are tolerated by the code already deployed (see the `zero-downtime` guideline), nothing unfinished is reachable by a customer (it is unwired, or gated behind an inactive feature flag), and nothing customers already use changes until its replacement is switched on (see `hiding-unfinished-work`).
+4. **Safe to land.** After it merges, the application still works for users and developers. Migrations are tolerated by the code already deployed (see the `zero-downtime` guideline), and, unless it finishes the ticket, it changes nothing customers see or rely on: new work is unwired or gated behind an inactive feature flag, and behaviour customers already use is unchanged (see `hiding-unfinished-work`).
 5. **Sized for one sitting.** Within the budget in section 2.
 
 ## 4. Slice by concept, not by layer
@@ -75,7 +75,7 @@ Decision rules:
     - activation must wait for something outside the stack, such as a product or customer go-ahead, or another ticket's work landing first; or
     - the wiring or activation is complex enough to deserve its own review, such as a data migration with real logic or wiring across many entry points.
 
-    Say which applies in that slice's description. Not every feature needs a keystone.
+    Say which applies in that slice's description. Work that changes nothing customers see or rely on, such as a refactor, needs no keystone.
 
 5. Refactors that prepare the ground go in their own slice **below** everything else, with no behaviour change.
 
@@ -122,7 +122,7 @@ See [reference/examples.md](reference/examples.md) for candidate slices with ver
 - **Do** include a use of every new class or method in the slice that adds it (or, for a foundation slice or the lower part of an over-budget concept, in the slice directly above it).
 - **Don't** split by file type or layer just to make pull requests smaller.
 - **Don't** plan a pull request that only activates a flag or wires an entry point, unless one of the exceptions in section 4, rule 4 applies.
-- **Don't** let a slice reveal anything unfinished to customers.
+- **Don't** let a slice change anything customers see or rely on before the slice that finishes the ticket, even a part that is finished on its own.
 - **Don't** mix a refactor or mechanical change with behaviour changes.
 
 ---
