@@ -47,7 +47,7 @@ metadata:
 
 - **Inactive:** prove the new surface is unreachable. Call `SomeFeature::deactivate()` at the start of these tests, even before the keystone exists, so they keep working once the keystone's migration activates the flag in the test database.
 - **Active:** prove the feature works. **Until the keystone exists, call `SomeFeature::activate()` in these tests.** This is the exception to the "never activate a flag in a test" rule in `managing-feature-flags`: there is no activation migration yet to do it for you.
-- **The keystone removes those `activate()` calls**, so the activation migration is what the tests rely on.
+- **Those `activate()` calls may stay after the keystone.** They go when the flag is cleaned up, with every other reference to the flag class.
 - **Locally:** turn the flag on with `ff:activate SomeFeature` to try or review the work, and `ff:deactivate SomeFeature` to turn it off (see `managing-feature-flags`).
 
 ## 4. The keystone
@@ -59,7 +59,7 @@ The keystone is the change that makes the feature available to customers. It is 
 
 **Put it in the slice that finishes the feature**, usually the last concept slice, rather than in a pull request of its own. A pull request that only flips a switch costs a review and delays the feature. Give the keystone its own last slice only when activation must wait for something outside the stack (a product or customer go-ahead, another ticket's work), or when the wiring or activation is complex enough to deserve its own review (see `planning-reviewable-slices`).
 
-In the slice that carries the keystone, also mark the cleanup task `ready: true` and remove the tests' manual `activate()` calls. Before it is approved, the feature must have been run end to end from the customer's entry point with the flag on. A stack with nothing customer-facing needs no keystone, and neither does work that sits behind another feature's flag, which that feature's own stack will activate.
+In the slice that carries the keystone, also mark the cleanup task `ready: true`. Before it is approved, the feature must have been run end to end from the customer's entry point with the flag on. A stack with nothing customer-facing needs no keystone, and neither does work that sits behind another feature's flag, which that feature's own stack will activate.
 
 ## 5. Checklist for each slice
 
@@ -71,7 +71,7 @@ Authors run this before marking a pull request ready; reviewers run it before ap
 - [ ] If this slice adds more cleanup, the feature's cleanup task is updated.
 - [ ] Tests cover the gated surface with the flag inactive (unreachable) and active (works).
 - [ ] Nothing customers already use changes without an abstraction or expand step that keeps the old path working.
-- [ ] If this slice carries the keystone: it finishes the feature (or, for a keystone-only slice, its description gives the reason), the cleanup task is now `ready: true`, manual `activate()` calls are gone from tests, and the feature has been run end to end with the flag on.
+- [ ] If this slice carries the keystone: it finishes the feature (or, for a keystone-only slice, its description gives the reason), the cleanup task is now `ready: true`, and the feature has been run end to end with the flag on.
 
 ---
 

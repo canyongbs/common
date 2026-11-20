@@ -121,7 +121,7 @@ See the `writing-data-migrations` skill for migration rules (idempotency, requir
 
 The test suite runs your migrations (`RefreshDatabase`), so the activation migration **already activates the flag** — it is active in every test by default. **Do not call `SomeFeature::activate()` in a test, `beforeEach()`, or a helper** to "turn on" a flag; it is redundant and hides a broken activation migration (if the migration fails to activate, the test must fail).
 
-**Exception — a flag that is not activated yet.** While a feature is being built over several pull requests, its flag has no activation migration until the final pull request. Until then, tests of the active path must call `SomeFeature::activate()`; the pull request that adds the activation migration removes those calls. See the `hiding-unfinished-work` skill.
+**Exception — a flag that is not activated yet.** While a feature is being built over several pull requests, its flag has no activation migration until the final pull request. Until then, tests of the active path must call `SomeFeature::activate()`. Those calls may stay once the activation migration is added; they go when the flag is cleaned up, with every other reference to the flag class. See the `hiding-unfinished-work` skill.
 
 To exercise the **inactive** (pre-migration) branch, call `SomeFeature::deactivate()` for that case only:
 

@@ -25,6 +25,13 @@ Rule 2 is what actually blocks. A plain pull request into a feature branch can a
 
 **Merge queue.** The check passes immediately for merge queue runs; it has already been enforced on each pull request before it was queued.
 
+**Known limits.** The check catches the usual mistake of chaining pull requests and opening the last one against `main`. It only looks at pull requests merged into the branches of this pull request or its stack, by their merge commits, so it misses two less common cases:
+
+- A plain pull request was merged into another branch, and this branch was then cut from that one.
+- A plain pull request was merged into this branch, and the branch was then rebased, which rewrites the merge commit.
+
+Closing these would mean many more API calls on every run, or blocking pull requests whose plain merge was genuinely removed. Reviewers should still question a pull request whose diff contains work that was reviewed somewhere other than in a stack.
+
 ## No hold label
 
 **What it checks.** The pull request does not have the `hold` label.

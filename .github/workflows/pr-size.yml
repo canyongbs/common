@@ -13,8 +13,8 @@ jobs:
         name: Readable lines
         runs-on: ubuntu-24.04
 
-        # One run per pull request at a time, whatever the event, so overlapping runs cannot post duplicate comments
-        # or overwrite a newer estimate with an older one.
+        # One run per pull request at a time, whatever the event, so overlapping runs cannot post duplicate comments.
+        # A re-run of an older run is caught before the comment is updated (see below).
         concurrency:
             group: pr-size-${{ github.event.pull_request.number || github.ref }}
             cancel-in-progress: true
@@ -40,6 +40,7 @@ jobs:
                   REPO: ${{ github.repository }}
                   SERVER_URL: ${{ github.server_url }}
                   PR_NUMBER: ${{ github.event.pull_request.number }}
+                  BASE_REF: ${{ github.event.pull_request.base.ref }}
                   BASE_SHA: ${{ github.event.pull_request.base.sha }}
                   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
               run: |
@@ -287,6 +288,12 @@ jobs:
                   if DRY_RUN:
                       print(json.dumps(totals))
                       print(comment)
+                      sys.exit(0)
+
+                  # A re-run of an older run would overwrite a newer estimate, so only update the comment for the current head and base.
+                  current = json.loads(gh(f'repos/{REPO}/pulls/{PR_NUMBER}'))
+                  if current['head']['sha'] != HEAD_SHA or current['base']['ref'] != os.environ['BASE_REF']:
+                      print('The pull request has changed since this run started; leaving the comment to the newer run.')
                       sys.exit(0)
 
                   existing = [
