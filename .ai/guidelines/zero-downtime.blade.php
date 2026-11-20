@@ -13,6 +13,8 @@ Whenever you add or change a migration, or write code that relies on new or chan
 
 Never assume a migration has already run when the code executes. If you are unsure whether a change needs a flag, assume it does.
 
+**Features delivered over several pull requests** use their flag as a release toggle as well: the flag stays inactive while the feature is unfinished, so the migration that adds the feature's schema does **not** activate it. A final (keystone) pull request activates it in its own migration. Code that depends on the new schema is still safe, because it sits behind the same inactive flag.
+
 @if ($assist->hasSkillsEnabled())
-Follow the `managing-feature-flags`, `writing-data-migrations`, and `managing-cleanup-tasks` skills for the full workflow.
+Follow the `managing-feature-flags`, `writing-data-migrations`, and `managing-cleanup-tasks` skills for the full workflow, and `hiding-unfinished-work` for flags that span several pull requests.
 @endif

@@ -1,0 +1,29 @@
+name: PR Checks
+
+on:
+    pull_request:
+        types: [opened, reopened, synchronize, edited, labeled, unlabeled, ready_for_review]
+    merge_group:
+        types: [checks_requested]
+
+permissions: {}
+
+# Only runs for the same kind of event cancel each other, so adding a label does not cancel a push's size comment.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.action }}
+    cancel-in-progress: true
+
+jobs:
+    policy:
+        name: PR Policy
+        uses: $/.github/workflows/pr-policy.yml
+        permissions:
+            contents: read # compare commits
+            pull-requests: read # read stacks and labels
+
+    size:
+        name: PR Size
+        uses: $/.github/workflows/pr-size.yml
+        permissions:
+            contents: read # fetch the pull request's commits
+            pull-requests: write # create or update the size comment
